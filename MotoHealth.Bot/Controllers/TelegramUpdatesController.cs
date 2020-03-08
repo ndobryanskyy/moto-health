@@ -1,9 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using MotoHealth.Bot.Authorization;
+using MotoHealth.Bot.Filters;
 using MotoHealth.Bot.Messages;
 using MotoHealth.Bot.Telegram;
 using Telegram.Bot.Types;
@@ -11,7 +10,7 @@ using Telegram.Bot.Types;
 namespace MotoHealth.Bot.Controllers
 {
     [Route("updates")]
-    [Authorize(Policy = Policy.BotTokenVerificationRequired)]
+    [TypeFilter(typeof(ValidBotTokenRequiredFilter), IsReusable =  true)]
     public sealed class TelegramUpdatesController : ControllerBase
     {
         private readonly ILogger<TelegramUpdatesController> _logger;
@@ -33,15 +32,17 @@ namespace MotoHealth.Bot.Controllers
             [FromBody] Update update,
             CancellationToken cancellationToken)
         {
+            _logger.LogDebug($"Received telegram update: {update.Id}");
+
             if (_updateResolver.TryResolveSupportedUpdate(update, out var botUpdate))
             {
-                _logger.LogInformation($"Handling update of type: {update.Type}");
+                _logger.LogInformation($"Handling update {update.Id} of type: {update.Type}");
 
-                await _updatesQueue.AddUpdateAsync(botUpdate);
+                await _updatesQueue.AddUpdateAsync(botUpdate, cancellationToken);
             }
             else
             {
-                _logger.LogInformation($"Skipping the update of type {update.Type}");
+                _logger.LogInformation($"Skipping the update {update.Id} of type {update.Type}");
             }
         }
     }

@@ -1,10 +1,8 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MotoHealth.Bot.Authorization;
 using MotoHealth.Bot.Messages;
 using MotoHealth.Bot.ServiceBus;
 using MotoHealth.Bot.Telegram;
@@ -28,18 +26,6 @@ namespace MotoHealth.Bot
             services.AddMvcCore();
 
             services.Configure<TelegramOptions>(_configuration.GetSection(TelegramSectionName));
-
-            services.AddScoped<IAuthorizationHandler, BotTokenVerificationAuthorizationRequirementHandler>();
-
-            services.AddAuthentication("TelegramBotToken");
-
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy(Policy.BotTokenVerificationRequired, policy =>
-                {
-                    policy.AddRequirements(new BotTokenVerificationAuthorizationRequirement());
-                });
-            });
 
             services.AddSingleton<QueueClientsProvider>();
 
@@ -68,8 +54,6 @@ namespace MotoHealth.Bot
             }
 
             app.UseRouting();
-
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

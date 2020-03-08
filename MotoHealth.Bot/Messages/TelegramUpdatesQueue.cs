@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.ServiceBus.Core;
 using MotoHealth.Bot.ServiceBus;
@@ -10,7 +11,9 @@ namespace MotoHealth.Bot.Messages
 {
     public interface ITelegramUpdatesQueue
     {
-        Task AddUpdateAsync(IBotUpdate botUpdate);
+        Task AddUpdateAsync(
+            IBotUpdate botUpdate,
+            CancellationToken cancellationToken);
     }
 
     internal sealed class TelegramUpdatesQueue : ITelegramUpdatesQueue
@@ -22,7 +25,7 @@ namespace MotoHealth.Bot.Messages
             _senderClient = clientProvider.Client;
         }
 
-        public async Task AddUpdateAsync(IBotUpdate botUpdate)
+        public async Task AddUpdateAsync(IBotUpdate botUpdate, CancellationToken cancellationToken)
         {
             var convertedBody = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(botUpdate));
 
@@ -30,6 +33,11 @@ namespace MotoHealth.Bot.Messages
             {
                 SessionId = botUpdate.Chat.Id.ToString()
             };
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
 
             await _senderClient.SendAsync(message);
         }

@@ -1,6 +1,6 @@
 ﻿namespace MotoHealth.Bot.Telegram
 {
-    internal sealed class TelegramOptions
+    public sealed class TelegramOptions
     {
         public string BotId { get; set; } = string.Empty;
 
