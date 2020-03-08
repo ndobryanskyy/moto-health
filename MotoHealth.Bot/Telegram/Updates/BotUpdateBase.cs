@@ -1,16 +1,32 @@
-﻿using Telegram.Bot.Types;
+﻿using System.Diagnostics;
+using AutoMapper;
+using Google.Protobuf;
+using MotoHealth.BotUpdates;
 
 namespace MotoHealth.Bot.Telegram.Updates
 {
     internal abstract class BotUpdateBase : IBotUpdate
     {
-        protected BotUpdateBase(Update update)
+        protected BotUpdateBase(int updateId)
         {
-            OriginalUpdate = update;
+            UpdateId = updateId;
         }
 
-        public Update OriginalUpdate { get; }
-        
-        public abstract Chat Chat { get; }
+        public int UpdateId { get; }
+
+        public abstract IChatContext Chat { get; }
+
+        public byte[] Serialize(IMapper mapper)
+        {
+            var botUpdate = new BotUpdateDto();
+
+            SetActualBotUpdate(botUpdate, mapper);
+
+            Debug.Assert(botUpdate.PayloadCase != BotUpdateDto.PayloadOneofCase.None);
+
+            return botUpdate.ToByteArray();
+        }
+
+        protected abstract void SetActualBotUpdate(BotUpdateDto updateDto, IMapper mapper);
     }
 }

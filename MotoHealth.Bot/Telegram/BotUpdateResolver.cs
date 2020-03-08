@@ -19,25 +19,25 @@ namespace MotoHealth.Bot.Telegram
 
         public bool TryResolveSupportedUpdate(Update update, out IBotUpdate? supportedUpdate)
         {
-            supportedUpdate = update.Type switch
+            supportedUpdate = update switch
             {
-                UpdateType.Message => ResolveMessageBotUpdate(update),
+                { Type: UpdateType.Message, Message: Message message } => ResolveMessageBotUpdate(),
                 _ => null
             };
 
             return false;
-        }
 
-        private IMessageBotUpdate? ResolveMessageBotUpdate(Update update)
-        {
-            var message = update.Message ?? throw new ArgumentException($"{nameof(update.Message)} must be available!", nameof(update));
-
-            return message.Type switch
+            IBotUpdate? ResolveMessageBotUpdate()
             {
-                MessageType.Text when TryCreateCommandUpdate(update, message, out var commandUpdate) => commandUpdate,
-                MessageType.Text => new TextMessageBotUpdate(update, message.Text),
-                _ => null
-            };
+                var message = update.Message ?? throw new ArgumentException($"{nameof(update.Message)} must be available!", nameof(update));
+
+                return message.Type switch
+                {
+                    MessageType.Text when TryCreateCommandUpdate(update, message, out var commandUpdate) => commandUpdate,
+                    MessageType.Text => new TextMessageBotUpdate(update.Id, message.Text),
+                    _ => null
+                };
+            }
         }
 
         private bool TryCreateCommandUpdate(
@@ -57,7 +57,7 @@ namespace MotoHealth.Bot.Telegram
                     var command = ParseCommand(message.EntityValues.FirstOrDefault());
                     var arguments = _whitespaceRegex.Split(message.Text.Substring(messageEntity.Length));
 
-                    botUpdate = new CommandBotUpdate(update, command, arguments);
+                    botUpdate = new CommandBotUpdate(message.Chat, command, arguments);
                     return true;
                 }
             }

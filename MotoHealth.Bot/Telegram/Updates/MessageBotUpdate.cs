@@ -1,16 +1,13 @@
-﻿using Telegram.Bot.Types;
-
-namespace MotoHealth.Bot.Telegram.Updates
+﻿namespace MotoHealth.Bot.Telegram.Updates
 {
-    internal abstract class MessageBotUpdate : BotUpdateBase, IMessageBotUpdate
+    internal abstract class MessageBotUpdate : BotUpdateBase
     {
-        protected MessageBotUpdate(Update update)
-            : base(update)
+        protected MessageBotUpdate(int updateId, IChatContext chat) 
+            : base(updateId)
         {
+            Chat = chat;
         }
 
-        public Message Message => OriginalUpdate.Message;
-
-        public override Chat Chat => Message.Chat;
+        public override IChatContext Chat { get; }
     }
 }

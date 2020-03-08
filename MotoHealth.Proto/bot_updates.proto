@@ -1,0 +1,42 @@
+﻿syntax = "proto3";
+
+package moto_health.bot_updates;
+
+message BotUpdateDto {
+	oneof payload {
+		TextMessageBotUpdateDto text_message = 1;
+		CommandBotUpdateDto command = 2;
+	}
+}
+
+message TextMessageBotUpdateDto {
+	int32 update_id = 1;
+	int32 message_id = 2;
+	
+	ChatDto chat = 3;
+
+	string text = 4;
+}
+
+message CommandBotUpdateDto {
+	int32 update_id = 1;
+	int32 message_id = 2;
+
+	ChatDto chat = 3;
+
+	BotCommandDtoEnum command = 4;
+	repeated string arguments = 5;
+}
+
+enum BotCommandDtoEnum {
+	UNKNOWN = 0;
+	START = 1;
+	REPORT_ACCIDENT = 2;
+	ABOUT = 3;
+}
+
+message ChatDto {
+	uint64 id = 1;
+	string username = 2;
+	bool is_group = 3;
+}

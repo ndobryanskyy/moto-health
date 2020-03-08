@@ -1,20 +1,28 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Telegram.Bot.Types;
+﻿using AutoMapper;
+using MotoHealth.BotUpdates;
 
 namespace MotoHealth.Bot.Telegram.Updates
 {
     internal sealed class CommandBotUpdate : MessageBotUpdate, ICommandBotUpdate
     {
-        public CommandBotUpdate(Update update, BotCommand command, IEnumerable<string> arguments)
-            : base(update)
+        public CommandBotUpdate(
+            int updateId,
+            IChatContext chat, 
+            BotCommand command, 
+            string[] arguments)
+            : base(updateId, chat)
         {
             Command = command;
-            Arguments = arguments.ToArray();
+            Arguments = arguments;
         }
         
         public BotCommand Command { get; }
 
         public string[] Arguments { get; }
+
+        protected override void SetActualBotUpdate(BotUpdateDto updateDto, IMapper mapper)
+        {
+            updateDto.Command = mapper.Map<CommandBotUpdateDto>(this);
+        }
     }
 }

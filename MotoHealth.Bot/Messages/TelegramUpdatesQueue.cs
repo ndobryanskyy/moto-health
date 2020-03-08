@@ -1,7 +1,6 @@
-﻿using System.Text;
-using System.Text.Json;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.Azure.ServiceBus.Core;
 using MotoHealth.Bot.ServiceBus;
 using MotoHealth.Bot.Telegram.Updates;
@@ -18,18 +17,22 @@ namespace MotoHealth.Bot.Messages
 
     internal sealed class TelegramUpdatesQueue : ITelegramUpdatesQueue
     {
+        private readonly IMapper _mapper;
         private readonly ISenderClient _senderClient;
 
-        public TelegramUpdatesQueue(IMessagesQueueSenderClientProvider clientProvider)
+        public TelegramUpdatesQueue(
+            IMessagesQueueSenderClientProvider clientProvider, 
+            IMapper mapper)
         {
+            _mapper = mapper;
             _senderClient = clientProvider.Client;
         }
 
         public async Task AddUpdateAsync(IBotUpdate botUpdate, CancellationToken cancellationToken)
         {
-            var convertedBody = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(botUpdate));
+            var serialized = botUpdate.Serialize(_mapper);
 
-            var message = new Message(convertedBody)
+            var message = new Message(serialized)
             {
                 SessionId = botUpdate.Chat.Id.ToString()
             };

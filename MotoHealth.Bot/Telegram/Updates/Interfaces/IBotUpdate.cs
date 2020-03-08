@@ -1,11 +1,13 @@
-﻿using Telegram.Bot.Types;
+﻿using AutoMapper;
 
 namespace MotoHealth.Bot.Telegram.Updates
 {
     public interface IBotUpdate
     {
-        Update OriginalUpdate { get; }
-        
-        Chat Chat { get; }
+        int UpdateId { get; }
+
+        IChatContext Chat { get; }
+
+        byte[] Serialize(IMapper mapper);
     }
 }

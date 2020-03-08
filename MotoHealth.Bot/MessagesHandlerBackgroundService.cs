@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text.Json;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Hosting;
@@ -9,7 +7,7 @@ using MotoHealth.Bot.ServiceBus;
 
 namespace MotoHealth.Bot
 {
-    public sealed class MessagesHandlerBackgroundService : BackgroundService
+    internal sealed class MessagesHandlerBackgroundService : BackgroundService
     {
         private readonly IQueueClient _queueClient;
         private readonly ILogger<MessagesHandlerBackgroundService> _logger;

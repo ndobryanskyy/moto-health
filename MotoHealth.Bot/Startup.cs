@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -22,8 +23,9 @@ namespace MotoHealth.Bot
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHttpContextAccessor();
             services.AddMvcCore();
+
+            services.AddAutoMapper(GetType().Assembly);
 
             services.Configure<TelegramOptions>(_configuration.GetSection(TelegramSectionName));
 
