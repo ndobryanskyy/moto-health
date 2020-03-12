@@ -1,6 +1,6 @@
 ﻿namespace MotoHealth.Bot.Telegram.Updates
 {
-    public interface ICommandBotUpdate : IBotUpdate
+    public interface ICommandBotUpdate : IMessageBotUpdate
     {
         BotCommand Command { get; }
 

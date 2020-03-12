@@ -1,16 +1,14 @@
-﻿using AutoMapper;
-using MotoHealth.BotUpdates;
-
-namespace MotoHealth.Bot.Telegram.Updates
+﻿namespace MotoHealth.Bot.Telegram.Updates
 {
     internal sealed class CommandBotUpdate : MessageBotUpdate, ICommandBotUpdate
     {
         public CommandBotUpdate(
             int updateId,
+            int messageId,
             IChatContext chat, 
             BotCommand command, 
             string[] arguments)
-            : base(updateId, chat)
+            : base(updateId, messageId, chat)
         {
             Command = command;
             Arguments = arguments;
@@ -19,10 +17,5 @@ namespace MotoHealth.Bot.Telegram.Updates
         public BotCommand Command { get; }
 
         public string[] Arguments { get; }
-
-        protected override void SetActualBotUpdate(BotUpdateDto updateDto, IMapper mapper)
-        {
-            updateDto.Command = mapper.Map<CommandBotUpdateDto>(this);
-        }
     }
 }

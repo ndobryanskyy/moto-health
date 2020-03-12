@@ -32,6 +32,12 @@ namespace MotoHealth.Bot.Controllers
             [FromBody] Update update,
             CancellationToken cancellationToken)
         {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogError($"Received incorrect update:\n{ModelState}");
+                return;
+            }
+
             _logger.LogDebug($"Received telegram update: {update.Id}");
 
             if (_updateResolver.TryResolveSupportedUpdate(update, out var botUpdate))
@@ -42,7 +48,7 @@ namespace MotoHealth.Bot.Controllers
             }
             else
             {
-                _logger.LogInformation($"Skipping the update {update.Id} of type {update.Type}");
+                _logger.LogInformation($"Skipping update {update.Id} of type {update.Type}");
             }
         }
     }

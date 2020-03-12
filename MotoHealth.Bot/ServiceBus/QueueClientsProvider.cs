@@ -22,10 +22,15 @@ namespace MotoHealth.Bot.ServiceBus
         public QueueClientsProvider(IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString(Constants.UpdatesQueue.ConnectionStringName);
-            var connectionStringBuilder = new ServiceBusConnectionStringBuilder(connectionString);
+            // var connectionStringBuilder = new ServiceBusConnectionStringBuilder(connectionString);
 
-            _telegramMessagesSenderClient = new MessageSender(connectionStringBuilder);
-            _telegramMessagesReceiverClient = new QueueClient(connectionStringBuilder);
+            var client = new QueueClient(
+                connectionString,
+                "updates"
+            );
+
+            // _telegramMessagesSenderClient = client as IMessageSender;
+            _telegramMessagesReceiverClient = client;
         }
 
         IMessageSender IMessagesQueueSenderClientProvider.Client => _telegramMessagesSenderClient;

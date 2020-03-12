@@ -12,8 +12,6 @@ namespace MotoHealth.Bot
 {
     public sealed class Startup
     {
-        private const string TelegramSectionName = "Telegram";
-
         private readonly IConfiguration _configuration;
 
         public Startup(IConfiguration configuration)
@@ -23,11 +21,11 @@ namespace MotoHealth.Bot
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvcCore();
+            services.AddControllers().AddNewtonsoftJson();
 
             services.AddAutoMapper(GetType().Assembly);
 
-            services.Configure<TelegramOptions>(_configuration.GetSection(TelegramSectionName));
+            services.Configure<TelegramOptions>(_configuration.GetSection(Constants.Telegram.ConfigurationSectionName));
 
             services.AddSingleton<QueueClientsProvider>();
 

@@ -25,6 +25,7 @@ namespace MotoHealth.Bot
             var handlerOptions = new SessionHandlerOptions(ExceptionReceivedHandler)
             {
                 AutoComplete = false,
+                MaxConcurrentSessions = 1
             };
 
             _queueClient.RegisterSessionHandler(HandleUpdatesAsync, handlerOptions);
@@ -60,7 +61,7 @@ namespace MotoHealth.Bot
 
         private Task ExceptionReceivedHandler(ExceptionReceivedEventArgs arg)
         {
-            _logger.LogError(arg.Exception, "Exception while processing updates");
+            _logger.LogError(arg.Exception, "Exception while polling queue");
 
             return Task.CompletedTask;
         }

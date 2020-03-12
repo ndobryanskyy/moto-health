@@ -1,9 +1,11 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Google.Protobuf;
 using Microsoft.Azure.ServiceBus.Core;
 using MotoHealth.Bot.ServiceBus;
 using MotoHealth.Bot.Telegram.Updates;
+using MotoHealth.BotUpdates;
 using Message = Microsoft.Azure.ServiceBus.Message;
 
 namespace MotoHealth.Bot.Messages
@@ -30,7 +32,8 @@ namespace MotoHealth.Bot.Messages
 
         public async Task AddUpdateAsync(IBotUpdate botUpdate, CancellationToken cancellationToken)
         {
-            var serialized = botUpdate.Serialize(_mapper);
+            var mapped = _mapper.Map<BotUpdateDto>(botUpdate);
+            var serialized = mapped.ToByteArray();
 
             var message = new Message(serialized)
             {

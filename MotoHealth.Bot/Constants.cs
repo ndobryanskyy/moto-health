@@ -9,6 +9,8 @@
 
         public static class Telegram
         {
+            public const string ConfigurationSectionName = "Telegram";
+
             public const string BotIdQueryParamName = "botId";
             
             public const string BotSecretQueryParamName = "botSecret";

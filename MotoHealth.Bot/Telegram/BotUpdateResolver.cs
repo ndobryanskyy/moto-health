@@ -1,7 +1,7 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
+using AutoMapper;
 using MotoHealth.Bot.Telegram.Updates;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -17,52 +17,55 @@ namespace MotoHealth.Bot.Telegram
     {
         private readonly Regex _whitespaceRegex = new Regex(@"\s+");
 
+        private readonly IMapper _mapper;
+
+        public BotUpdateResolver(IMapper mapper)
+        {
+            _mapper = mapper;
+        }
+
         public bool TryResolveSupportedUpdate(Update update, out IBotUpdate? supportedUpdate)
         {
             supportedUpdate = update switch
             {
-                { Type: UpdateType.Message, Message: Message message } => ResolveMessageBotUpdate(),
+                { Type: UpdateType.Message, Message: Message message } => ResolveMessageBotUpdate(message),
                 _ => null
             };
 
-            return false;
+            return supportedUpdate != null;
 
-            IBotUpdate? ResolveMessageBotUpdate()
+            IMessageBotUpdate? ResolveMessageBotUpdate(Message message)
             {
-                var message = update.Message ?? throw new ArgumentException($"{nameof(update.Message)} must be available!", nameof(update));
-
                 return message.Type switch
                 {
-                    MessageType.Text when TryCreateCommandUpdate(update, message, out var commandUpdate) => commandUpdate,
-                    MessageType.Text => new TextMessageBotUpdate(update.Id, message.Text),
+                    MessageType.Text when TryCreateCommandUpdate(out var commandUpdate) => commandUpdate,
+                    MessageType.Text => new TextMessageBotUpdate(update.Id, message.MessageId, _mapper.Map<ChatContext>(message.Chat), message.Text),
                     _ => null
                 };
-            }
-        }
 
-        private bool TryCreateCommandUpdate(
-            Update update,
-            Message message, 
-            [NotNullWhen(true)] out ICommandBotUpdate? botUpdate)
-        {
-            botUpdate = null;
-
-            if (message.Entities.Length == 1)
-            {
-                var messageEntity = message.Entities[0];
-
-                if (messageEntity.Type == MessageEntityType.BotCommand &&
-                    messageEntity.Offset == 0)
+                bool TryCreateCommandUpdate(
+                    out ICommandBotUpdate? botUpdate)
                 {
-                    var command = ParseCommand(message.EntityValues.FirstOrDefault());
-                    var arguments = _whitespaceRegex.Split(message.Text.Substring(messageEntity.Length));
+                    botUpdate = null;
 
-                    botUpdate = new CommandBotUpdate(message.Chat, command, arguments);
-                    return true;
+                    if (message.Entities?.Length == 1)
+                    {
+                        var messageEntity = message.Entities[0];
+
+                        if (messageEntity.Type == MessageEntityType.BotCommand &&
+                            messageEntity.Offset == 0)
+                        {
+                            var command = ParseCommand(message.EntityValues.FirstOrDefault());
+                            var arguments = _whitespaceRegex.Split(message.Text.Substring(messageEntity.Length));
+
+                            botUpdate = new CommandBotUpdate(update.Id, message.MessageId, _mapper.Map<ChatContext>(message.Chat), command, arguments);
+                            return true;
+                        }
+                    }
+
+                    return false;
                 }
             }
-
-            return false;
         }
 
         private static BotCommand ParseCommand(string? command)
