@@ -72,9 +72,9 @@ namespace MotoHealth.Bot.Telegram
         {
             return command?.ToLowerInvariant() switch
             {
-                "start" => BotCommand.Start,
-                "accident" => BotCommand.ReportAccident,
-                "about" => BotCommand.About,
+                "/start" => BotCommand.Start,
+                "/accident" => BotCommand.ReportAccident,
+                "/about" => BotCommand.About,
                 _ => BotCommand.Unknown
             };
         }

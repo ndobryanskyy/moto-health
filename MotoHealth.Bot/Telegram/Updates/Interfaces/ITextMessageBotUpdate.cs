@@ -1,6 +1,6 @@
 ﻿namespace MotoHealth.Bot.Telegram.Updates
 {
-    public interface ITextMessageBotUpdate : IBotUpdate
+    public interface ITextMessageBotUpdate : IMessageBotUpdate
     {
         public string Text { get; }
     }

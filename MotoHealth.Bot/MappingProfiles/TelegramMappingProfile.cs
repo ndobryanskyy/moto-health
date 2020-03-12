@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MotoHealth.Bot.Extensions;
 using MotoHealth.Bot.Telegram;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -11,7 +12,7 @@ namespace MotoHealth.Bot.MappingProfiles
         {
             CreateMap<Chat, ChatContext>()
                 .ForCtorParam(
-                    "isGroup",
+                    nameof(ChatContext.IsGroup).ToCamelCase(),
                     x => x.MapFrom(src => src.Type != ChatType.Private));
         }
     }

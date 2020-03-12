@@ -1,11 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
-using Google.Protobuf;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
+using Microsoft.Extensions.Configuration;
 using MotoHealth.Bot.ServiceBus;
 using MotoHealth.Bot.Telegram.Updates;
-using MotoHealth.BotUpdates;
 using Message = Microsoft.Azure.ServiceBus.Message;
 
 namespace MotoHealth.Bot.Messages
@@ -19,21 +18,25 @@ namespace MotoHealth.Bot.Messages
 
     internal sealed class TelegramUpdatesQueue : ITelegramUpdatesQueue
     {
-        private readonly IMapper _mapper;
+        private readonly IBotUpdateSerializer _serializer;
         private readonly ISenderClient _senderClient;
 
         public TelegramUpdatesQueue(
-            IMessagesQueueSenderClientProvider clientProvider, 
-            IMapper mapper)
+            IConfiguration configuration,
+            IQueueClientsFactory clientsFactory,
+            IBotUpdateSerializer serializer)
         {
-            _mapper = mapper;
-            _senderClient = clientProvider.Client;
+            _serializer = serializer;
+
+            var connectionString = configuration.GetConnectionString(Constants.UpdatesQueue.ConnectionStringName);
+            var builder = new ServiceBusConnectionStringBuilder(connectionString);
+
+            _senderClient = clientsFactory.CreateMessageSenderClient(builder);
         }
 
         public async Task AddUpdateAsync(IBotUpdate botUpdate, CancellationToken cancellationToken)
         {
-            var mapped = _mapper.Map<BotUpdateDto>(botUpdate);
-            var serialized = mapped.ToByteArray();
+            var serialized = _serializer.SerializeToMessageBody(botUpdate);
 
             var message = new Message(serialized)
             {

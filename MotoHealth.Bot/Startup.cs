@@ -27,23 +27,17 @@ namespace MotoHealth.Bot
 
             services.Configure<TelegramOptions>(_configuration.GetSection(Constants.Telegram.ConfigurationSectionName));
 
-            services.AddSingleton<QueueClientsProvider>();
+            services.AddSingleton<IQueueClientsFactory, QueueClientsFactory>();
 
-            services.AddSingleton<IMessagesQueueSenderClientProvider>(
-                container => container.GetRequiredService<QueueClientsProvider>()
-            );
-
-            services.AddSingleton<IMessagesQueueReceiverClientProvider>(
-                container => container.GetRequiredService<QueueClientsProvider>()
-            );
-
-            services.AddSingleton<IBotClientProvider, BotClientProvider>();
+            services.AddSingleton<ITelegramBotClientFactory, TelegramBotClientFactory>();
 
             services.AddSingleton<IBotUpdateResolver, BotUpdateResolver>();
 
+            services.AddSingleton<IBotUpdateSerializer, BotUpdateSerializer>();
+
             services.AddSingleton<ITelegramUpdatesQueue, TelegramUpdatesQueue>();
 
-            services.AddHostedService<MessagesHandlerBackgroundService>();
+            services.AddHostedService<UpdatesQueueHandlerBackgroundService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -1,5 +1,7 @@
 ﻿syntax = "proto3";
 
+import "google/protobuf/wrappers.proto";
+
 package moto_health.bot_updates;
 
 message BotUpdateDto {
@@ -37,6 +39,7 @@ enum BotCommandDtoEnum {
 
 message ChatContextDto {
 	int64 id = 1;
-	string username = 2;
-	bool is_group = 3;
+	google.protobuf.StringValue username = 2;
+	google.protobuf.StringValue title = 3;
+	bool is_group = 4;
 }

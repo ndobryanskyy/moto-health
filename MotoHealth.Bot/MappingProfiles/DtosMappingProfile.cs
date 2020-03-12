@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Linq.Expressions;
+using AutoMapper;
 using MotoHealth.Bot.Telegram;
 using MotoHealth.Bot.Telegram.Updates;
 using MotoHealth.BotUpdates;
@@ -12,18 +14,27 @@ namespace MotoHealth.Bot.MappingProfiles
             CreateMap<BotCommand, BotCommandDtoEnum>().ReverseMap();
 
             CreateMap<IChatContext, ChatContextDto>();
+
             CreateMap<ChatContextDto, ChatContext>();
+            CreateMap<ChatContextDto, IChatContext>()
+                .As<ChatContext>();
 
-            CreateMap<TextMessageBotUpdate, TextMessageBotUpdateDto>();
-            CreateMap<TextMessageBotUpdate, BotUpdateDto>()
+            CreateUpdateMap<ITextMessageBotUpdate, TextMessageBotUpdate, TextMessageBotUpdateDto>(updateDto => updateDto.TextMessage);
+            CreateUpdateMap<ICommandBotUpdate, CommandBotUpdate, CommandBotUpdateDto>(updateDto => updateDto.Command);
+        }
+
+        private void CreateUpdateMap<TUpdateInterface, TUpdate, TUpdateDto>(Expression<Func<BotUpdateDto, TUpdateDto>> payloadCasePropertyExpression)
+            where TUpdate: class, TUpdateInterface
+        {
+            CreateMap<TUpdateInterface, TUpdateDto>();
+
+            CreateMap<TUpdateInterface, BotUpdateDto>()
                 .ForMember(
-                    x => x.TextMessage,
-                    opt => opt.MapFrom(x => x));
+                    payloadCasePropertyExpression,
+                    opt => opt.MapFrom(x => x))
+                .ForAllOtherMembers(x => x.Ignore());
 
-            CreateMap<TextMessageBotUpdateDto, TextMessageBotUpdate>();
-
-            CreateMap<ICommandBotUpdate, CommandBotUpdateDto>();
-            CreateMap<CommandBotUpdateDto, CommandBotUpdate>();
+            CreateMap<TUpdateDto, TUpdate>();
         }
     }
 }
