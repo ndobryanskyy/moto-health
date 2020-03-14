@@ -6,7 +6,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Bot.Messages;
 using MotoHealth.Bot.ServiceBus;
-using MotoHealth.Bot.Telegram.Updates;
 
 namespace MotoHealth.Bot
 {
@@ -15,15 +14,21 @@ namespace MotoHealth.Bot
         private readonly IQueueClient _queueClient;
         private readonly ILogger<UpdatesQueueHandlerBackgroundService> _logger;
         private readonly IBotUpdateSerializer _serializer;
+        private readonly IBotContextFactory _botContextFactory;
+        private readonly IBotsRepository _botsRepository;
 
         public UpdatesQueueHandlerBackgroundService(
             ILogger<UpdatesQueueHandlerBackgroundService> logger,
             IConfiguration configuration,
             IQueueClientsFactory clientsFactory,
-            IBotUpdateSerializer serializer)
+            IBotUpdateSerializer serializer,
+            IBotContextFactory botContextFactory,
+            IBotsRepository botsRepository)
         {
             _logger = logger;
             _serializer = serializer;
+            _botContextFactory = botContextFactory;
+            _botsRepository = botsRepository;
 
             var connectionString = configuration.GetConnectionString(Constants.UpdatesQueue.ConnectionStringName);
             var builder = new ServiceBusConnectionStringBuilder(connectionString);
@@ -59,10 +64,16 @@ namespace MotoHealth.Bot
         {
             var botUpdate = _serializer.DeserializeFromMessage(message);
 
-            if (botUpdate is ITextMessageBotUpdate)
-            {
-                _logger.LogInformation("This is a text message");
-            }
+            _logger.LogDebug($"Deserialized update {botUpdate.UpdateId} successfully");
+
+            var bot = await _botsRepository.GetBotForChatAsync(botUpdate.Chat.Id, cancellationToken);
+            var context = _botContextFactory.CreateForUpdate(bot, botUpdate);
+
+            _logger.LogDebug($"Bot started handling update: {context.Update.UpdateId} in chat: {context.Update.Chat.Id}");
+
+            await bot.HandleUpdateAsync(context, cancellationToken);
+
+            _logger.LogDebug($"Bot finished handling update: {context.Update.UpdateId} in chat: {context.Update.Chat.Id}");
 
             await session.CompleteAsync(message.SystemProperties.LockToken);
         }

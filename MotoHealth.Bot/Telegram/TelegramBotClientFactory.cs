@@ -1,14 +1,22 @@
-﻿using Telegram.Bot;
+﻿using Microsoft.Extensions.Options;
+using Telegram.Bot;
 
 namespace MotoHealth.Bot.Telegram
 {
     internal interface ITelegramBotClientFactory
     {
-        ITelegramBotClient CreateClient(string botToken);
+        ITelegramBotClient CreateClient();
     }
 
     internal sealed class TelegramBotClientFactory : ITelegramBotClientFactory
     {
-        public ITelegramBotClient CreateClient(string botToken) => new TelegramBotClient(botToken);
+        private readonly string _botToken;
+
+        public TelegramBotClientFactory(IOptions<TelegramOptions> options)
+        {
+            _botToken = options.Value.BotToken;
+        }
+
+        public ITelegramBotClient CreateClient() => new TelegramBotClient(_botToken);
     }
 }

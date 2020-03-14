@@ -1,8 +1,8 @@
 ﻿namespace MotoHealth.Bot.Telegram.Updates
 {
-    internal abstract class MessageBotUpdate : BotUpdateBase, IMessageBotUpdate
+    internal abstract class MessageBotUpdateBase : BotUpdateBase, IMessageBotUpdate
     {
-        protected MessageBotUpdate(int updateId, int messageId, IChatContext chat) 
+        protected MessageBotUpdateBase(int updateId, int messageId, IChatContext chat) 
             : base(updateId)
         {
             MessageId = messageId;

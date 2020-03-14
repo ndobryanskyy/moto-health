@@ -1,6 +1,6 @@
 ﻿namespace MotoHealth.Bot.Telegram.Updates
 {
-    internal sealed class CommandBotUpdate : MessageBotUpdate, ICommandBotUpdate
+    internal sealed class CommandBotUpdate : MessageBotUpdateBase, ICommandBotUpdate
     {
         public CommandBotUpdate(
             int updateId,
