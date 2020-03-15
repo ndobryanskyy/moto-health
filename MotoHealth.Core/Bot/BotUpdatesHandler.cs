@@ -39,7 +39,7 @@ namespace MotoHealth.Core.Bot
                 await _repository.AddAsync(chatController, cancellationToken);
             }
 
-            var updateContext = _botUpdateContextFactory.CreateForUpdate(chatController, update);
+            var updateContext = _botUpdateContextFactory.CreateForUpdate(update);
 
             await chatController.HandleUpdateAsync(updateContext, cancellationToken);
         }

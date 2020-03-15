@@ -4,6 +4,6 @@ namespace MotoHealth.Core.Bot.Abstractions
 {
     public interface IBotUpdateContextFactory
     {
-        IBotUpdateContext CreateForUpdate(IChatController controller, IBotUpdate update);
+        IBotUpdateContext CreateForUpdate(IBotUpdate update);
     }
 }
