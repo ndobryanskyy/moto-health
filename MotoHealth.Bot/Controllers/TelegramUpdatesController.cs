@@ -44,7 +44,7 @@ namespace MotoHealth.Bot.Controllers
 
             if (_updateResolver.TryResolveSupportedUpdate(update, out var botUpdate))
             {
-                _logger.LogInformation($"Handling update {update.Id} of type: {update.Type}");
+                _logger.LogInformation($"Update {update.Id} resolved to supported type: {update.Type}");
 
                 await _updatesQueue.EnqueueUpdateAsync(botUpdate, cancellationToken);
             }

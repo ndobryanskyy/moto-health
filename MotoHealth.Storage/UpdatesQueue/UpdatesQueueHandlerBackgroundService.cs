@@ -67,7 +67,7 @@ namespace MotoHealth.Infrastructure.UpdatesQueue
 
             _logger.LogDebug($"Deserialized update {botUpdate.UpdateId} successfully");
 
-            var handler = servicesScope.ServiceProvider.GetRequiredService<IBotUpdatesHandler>();
+            var handler = servicesScope.ServiceProvider.GetRequiredService<IBotUpdateHandler>();
             await handler.HandleBotUpdateAsync(botUpdate, cancellationToken);
 
             await session.CompleteAsync(message.SystemProperties.LockToken);

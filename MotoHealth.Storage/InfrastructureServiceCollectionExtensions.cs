@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using MotoHealth.Core.Bot.Abstractions;
-using MotoHealth.Infrastructure.ChatControllersStorage;
+using MotoHealth.Infrastructure.ChatStorage;
 using MotoHealth.Infrastructure.ServiceBus;
 using MotoHealth.Infrastructure.UpdatesQueue;
 
@@ -21,8 +21,9 @@ namespace MotoHealth.Infrastructure
             services.Configure(configurator.ConfigureUpdatesQueue);
 
             services
-                .AddSingleton<IChatControllersInMemoryCache, ChatControllersInMemoryCache>()
-                .AddSingleton<IChatControllersStore, NoOpChatControllersStore>()
+                .AddSingleton<IDefaultChatStateFactory, DefaultChatStateFactory>()
+                .AddSingleton<IChatStateInMemoryCache, ChatStateInMemoryCache>()
+                .AddSingleton<IChatStatesStore, NoOpChatStatesStore>()
                 .AddSingleton<IServiceBusClientsFactory, ServiceBusClientsFactory>()
                 .AddSingleton<IBotUpdatesSerializer, BotUpdatesSerializer>()
                 .AddSingleton<IBotUpdatesQueue, ServiceBusUpdatesQueue>();

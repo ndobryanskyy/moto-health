@@ -7,12 +7,15 @@ namespace MotoHealth.Core.Bot
 {
     internal sealed class ChatController : IChatController
     {
-        public ChatController(long chatId)
+        public ChatController(long chatId, IChatState state)
         {
             ChatId = chatId;
+            State = state;
         }
 
-        public long ChatId { get; }
+        private long ChatId { get; }
+
+        private IChatState State { get; }
 
         public async Task HandleUpdateAsync(IBotUpdateContext context, CancellationToken cancellationToken)
         {
