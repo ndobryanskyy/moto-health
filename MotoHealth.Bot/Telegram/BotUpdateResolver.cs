@@ -2,7 +2,8 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using AutoMapper;
-using MotoHealth.Bot.Telegram.Updates;
+using MotoHealth.Core.Bot.Updates;
+using MotoHealth.Core.Bot.Updates.Abstractions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 

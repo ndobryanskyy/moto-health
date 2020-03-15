@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MotoHealth.Bot.Telegram;
+using MotoHealth.Core.Telegram;
 
 namespace MotoHealth.Bot.Filters
 {

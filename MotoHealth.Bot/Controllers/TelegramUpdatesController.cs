@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Bot.Filters;
-using MotoHealth.Bot.Messages;
 using MotoHealth.Bot.Telegram;
+using MotoHealth.Core.Bot.Abstractions;
 using Telegram.Bot.Types;
 
 namespace MotoHealth.Bot.Controllers
@@ -15,12 +15,12 @@ namespace MotoHealth.Bot.Controllers
     {
         private readonly ILogger<TelegramUpdatesController> _logger;
         private readonly IBotUpdateResolver _updateResolver;
-        private readonly ITelegramUpdatesQueue _updatesQueue;
+        private readonly IBotUpdatesQueue _updatesQueue;
 
         public TelegramUpdatesController(
             ILogger<TelegramUpdatesController> logger,
             IBotUpdateResolver updateResolver,
-            ITelegramUpdatesQueue updatesQueue)
+            IBotUpdatesQueue updatesQueue)
         {
             _logger = logger;
             _updateResolver = updateResolver;
@@ -34,6 +34,8 @@ namespace MotoHealth.Bot.Controllers
         {
             if (!ModelState.IsValid)
             {
+                // TODO Dead letter the update
+
                 _logger.LogError($"Received incorrect update:\n{ModelState}");
                 return;
             }
@@ -44,7 +46,7 @@ namespace MotoHealth.Bot.Controllers
             {
                 _logger.LogInformation($"Handling update {update.Id} of type: {update.Type}");
 
-                await _updatesQueue.AddUpdateAsync(botUpdate, cancellationToken);
+                await _updatesQueue.EnqueueUpdateAsync(botUpdate, cancellationToken);
             }
             else
             {

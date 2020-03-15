@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MotoHealth.Bot.Extensions.Startup;
 using MotoHealth.Bot.Telegram;
+using MotoHealth.Core;
+using MotoHealth.Infrastructure;
 
 namespace MotoHealth.Bot
 {
@@ -22,14 +23,30 @@ namespace MotoHealth.Bot
         {
             services.AddControllers().AddNewtonsoftJson();
 
-            services.AddAutoMapper(GetType().Assembly);
+            services.AddAutoMapper(new []
+            {
+                CoreApplicationPartMarker.Assembly,
+                InfrastructureApplicationPartMarker.Assembly,
+                GetType().Assembly
+            });
 
-            services.AddBots();
-            services.AddUpdatesQueue();
+            services.AddCore(new CoreOptionsConfigurator
+            {
+                ConfigureTelegram = telegramOptions =>
+                {
+                    _configuration.Bind(Constants.Telegram.ConfigurationSectionName, telegramOptions);
+                }
+            });
 
-            services.Configure<TelegramOptions>(_configuration.GetSection(Constants.Telegram.ConfigurationSectionName));
+            services.AddInfrastructure(new InfrastructureOptionsConfigurator
+            {
+                ConfigureUpdatesQueue = updatesQueueOptions =>
+                {
+                    updatesQueueOptions.ConnectionString = _configuration.GetConnectionString(Constants.UpdatesQueue.ConnectionStringName);
+                }
+            });
 
-            services.AddSingleton<ITelegramBotClientFactory, TelegramBotClientFactory>();
+            services.AddTransient<IBotUpdateResolver, BotUpdateResolver>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
