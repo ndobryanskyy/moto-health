@@ -5,7 +5,7 @@ namespace MotoHealth.Infrastructure.ChatStorage
 {
     internal sealed class DefaultChatStateFactory : IDefaultChatStateFactory
     {
-        public IChatState CreateDefaultState(long chatId)
+        public IChatState CreateDefaultState(long chatId) 
             => new ChatStateTableEntity(chatId);
     }
 }

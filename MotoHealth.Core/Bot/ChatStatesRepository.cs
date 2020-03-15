@@ -30,7 +30,7 @@ namespace MotoHealth.Core.Bot
                 return fromCache;
             }
 
-            _logger.LogInformation($"Cache miss for {chatId}");
+            _logger.LogDebug($"Cache miss for {chatId}");
 
             var fromStore = await _store.GetByChatIdAsync(chatId, cancellationToken);
 

@@ -43,6 +43,10 @@ namespace MotoHealth.Bot
                 ConfigureUpdatesQueue = updatesQueueOptions =>
                 {
                     updatesQueueOptions.ConnectionString = _configuration.GetConnectionString(Constants.UpdatesQueue.ConnectionStringName);
+                },
+                ConfigureChatStorage = chatsStorageOptions =>
+                {
+                    chatsStorageOptions.StorageAccountConnectionString = _configuration.GetConnectionString(Constants.ChatsStorage.ConnectionStringName);
                 }
             });
 

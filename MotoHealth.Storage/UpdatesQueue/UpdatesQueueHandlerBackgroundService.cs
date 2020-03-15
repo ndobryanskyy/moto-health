@@ -45,6 +45,8 @@ namespace MotoHealth.Infrastructure.UpdatesQueue
 
             _queueClient.RegisterSessionHandler(HandleUpdatesAsync, handlerOptions);
 
+            _logger.LogInformation("Successfully registered session handler for queue");
+
             var completionSource = new TaskCompletionSource<object>();
 
             stoppingToken.Register(() =>

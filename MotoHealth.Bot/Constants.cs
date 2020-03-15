@@ -15,5 +15,10 @@
             
             public const string BotSecretQueryParamName = "botSecret";
         }
+
+        public static class ChatsStorage
+        {
+            public const string ConnectionStringName = "ChatsStorageAccount";
+        }
     }
 }

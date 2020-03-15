@@ -3,27 +3,23 @@ using MotoHealth.Core.Bot.Abstractions;
 
 namespace MotoHealth.Infrastructure.ChatStorage.Entities
 {
-    public sealed class ChatStateTableEntity : TableEntity, IChatState
+    internal sealed class ChatStateTableEntity : TableEntity, IChatState
     {
-        private long _associatedChatId;
-
-        public ChatStateTableEntity(long chatId)
+        /// <summary>
+        /// Used for deserialization
+        /// </summary>
+        public ChatStateTableEntity()
         {
-            AssociatedChatId = chatId;
-
             RowKey = ChatsTableEntityTypes.State;
         }
 
-        public long AssociatedChatId
+        public ChatStateTableEntity(long chatId) : this()
         {
-            get => _associatedChatId;
-            private set
-            {
-                _associatedChatId = value;
-
-                PartitionKey = _associatedChatId.ToString();
-            }
+            AssociatedChatId = chatId;
+            PartitionKey = chatId.ToString();
         }
+
+        public long AssociatedChatId { get; set; }
 
         public bool UserSubscribed { get; set; }
     }
