@@ -7,7 +7,7 @@ namespace MotoHealth.Core.Bot.Updates
         public TextMessageBotUpdate(
             int updateId,
             int messageId,
-            IChatContext chat, 
+            TelegramChat chat, 
             string text) 
             : base(updateId, messageId, chat)
         {

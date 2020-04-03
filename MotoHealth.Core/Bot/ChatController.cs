@@ -23,6 +23,16 @@ namespace MotoHealth.Core.Bot
             {
                 await context.SendTextMessageAsync(textMessage.Text, cancellationToken);
             }
+
+            if (context.Update is IContactMessageBotUpdate contact)
+            {
+                await context.SendTextMessageAsync($"Contact's phone number: {contact.Contact.PhoneNumber}", cancellationToken);
+            }
+
+            if (context.Update is ICommandBotUpdate command)
+            {
+                await context.SendTextMessageAsync($"Your command was: {command.Command}", cancellationToken);
+            }
         }
     }
 }

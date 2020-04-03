@@ -35,12 +35,7 @@ namespace MotoHealth.Infrastructure.UpdatesQueue
         {
             var parsed = BotUpdateDto.Parser.ParseFrom(message.Body);
 
-            return parsed.PayloadCase switch
-            {
-                BotUpdateDto.PayloadOneofCase.TextMessage => _mapper.Map<TextMessageBotUpdate>(parsed.TextMessage),
-                BotUpdateDto.PayloadOneofCase.Command => _mapper.Map<CommandBotUpdate>(parsed.Command),
-                _ => throw new NotImplementedException("Incorrectly deserialized message should be sent to the dead letter queue")
-            };
+            return _mapper.Map<IBotUpdate>(parsed);
         }
     }
 }

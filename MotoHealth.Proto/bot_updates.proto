@@ -8,6 +8,7 @@ message BotUpdateDto {
 	oneof payload {
 		TextMessageBotUpdateDto text_message = 1;
 		CommandBotUpdateDto command = 2;
+		ContactMessageBotUpdateDto contact_message = 3;
 	}
 }
 
@@ -15,7 +16,7 @@ message TextMessageBotUpdateDto {
 	int32 update_id = 1;
 	int32 message_id = 2;
 	
-	ChatContextDto chat = 3;
+	TelegramChatDto chat = 3;
 
 	string text = 4;
 }
@@ -24,10 +25,19 @@ message CommandBotUpdateDto {
 	int32 update_id = 1;
 	int32 message_id = 2;
 
-	ChatContextDto chat = 3;
+	TelegramChatDto chat = 3;
 
 	BotCommandDtoEnum command = 4;
 	repeated string arguments = 5;
+}
+
+message ContactMessageBotUpdateDto {
+	int32 update_id = 1;
+	int32 message_id = 2;
+
+	TelegramChatDto chat = 3;
+
+	TelegramContactDto contact = 4;
 }
 
 enum BotCommandDtoEnum {
@@ -37,9 +47,30 @@ enum BotCommandDtoEnum {
 	ABOUT = 3;
 }
 
-message ChatContextDto {
+message TelegramChatDto {
 	int64 id = 1;
-	google.protobuf.StringValue username = 2;
-	google.protobuf.StringValue title = 3;
-	bool is_group = 4;
+
+	TelegramUserDto from = 2;
+	TelegramGroupDto group = 3;
+}
+
+message TelegramUserDto {
+	int32 id = 1;
+
+	google.protobuf.StringValue first_name = 2;
+	google.protobuf.StringValue last_name = 3;
+	google.protobuf.StringValue username = 4;
+	google.protobuf.StringValue language_code = 5;
+}
+
+message TelegramGroupDto {
+	google.protobuf.StringValue title = 1;
+}
+
+message TelegramContactDto {
+	int32 user_id = 1;
+
+	string phone_number = 2;
+	google.protobuf.StringValue first_name = 3;
+	google.protobuf.StringValue last_name = 4;
 }

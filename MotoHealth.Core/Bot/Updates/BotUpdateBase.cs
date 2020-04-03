@@ -11,6 +11,6 @@ namespace MotoHealth.Core.Bot.Updates
 
         public int UpdateId { get; }
 
-        public abstract IChatContext Chat { get; }
+        public abstract ITelegramChat Chat { get; }
     }
 }

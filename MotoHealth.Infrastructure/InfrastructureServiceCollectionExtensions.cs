@@ -28,6 +28,7 @@ namespace MotoHealth.Infrastructure
 
             services
                 .AddSingleton<ICloudTablesProvider, CloudTablesProvider>()
+                .AddSingleton<IAzureTablesInitializer, AzureTablesInitializer>()
                 .AddSingleton<IDefaultChatStateFactory, DefaultChatStateFactory>()
                 .AddSingleton<IChatStateInMemoryCache, ChatStateInMemoryCache>()
                 .AddSingleton<IChatStatesStore, AzureTableChatStatesStore>()
@@ -35,7 +36,7 @@ namespace MotoHealth.Infrastructure
                 .AddSingleton<IBotUpdatesSerializer, BotUpdatesSerializer>()
                 .AddSingleton<IBotUpdatesQueue, ServiceBusUpdatesQueue>();
 
-            services.AddHostedService<TableStorageMigrationsHostedService>();
+            services.AddHostedService<AzureTablesInitializerHostedService>();
             services.AddHostedService<UpdatesQueueHandlerBackgroundService>();
 
             return services;

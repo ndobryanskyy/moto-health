@@ -4,6 +4,6 @@
     {
         int UpdateId { get; }
 
-        IChatContext Chat { get; }
+        ITelegramChat Chat { get; }
     }
 }

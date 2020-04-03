@@ -37,15 +37,15 @@ namespace MotoHealth.Bot.Telegram
 
             IMessageBotUpdate? ResolveMessageBotUpdate(Message message)
             {
-                return message.Type switch
+                return message switch
                 {
-                    MessageType.Text when TryCreateCommandUpdate(out var commandUpdate) => commandUpdate,
-                    MessageType.Text => new TextMessageBotUpdate(update.Id, message.MessageId, _mapper.Map<ChatContext>(message.Chat), message.Text),
+                    { Type: MessageType.Contact, Contact: Contact contact } => new ContactMessageBotUpdate(update.Id, message.MessageId, GetChatFromMessage(message), _mapper.Map<TelegramContact>(contact)),
+                    { Type: MessageType.Text } when TryCreateCommandUpdate(out var commandUpdate) => commandUpdate,
+                    { Type: MessageType.Text } => new TextMessageBotUpdate(update.Id, message.MessageId, GetChatFromMessage(message), message.Text),
                     _ => null
                 };
 
-                bool TryCreateCommandUpdate(
-                    out ICommandBotUpdate? botUpdate)
+                bool TryCreateCommandUpdate(out ICommandBotUpdate? botUpdate)
                 {
                     botUpdate = null;
 
@@ -59,7 +59,7 @@ namespace MotoHealth.Bot.Telegram
                             var command = ParseCommand(message.EntityValues.FirstOrDefault());
                             var arguments = _whitespaceRegex.Split(message.Text.Substring(messageEntity.Length));
 
-                            botUpdate = new CommandBotUpdate(update.Id, message.MessageId, _mapper.Map<ChatContext>(message.Chat), command, arguments);
+                            botUpdate = new CommandBotUpdate(update.Id, message.MessageId, GetChatFromMessage(message), command, arguments);
                             return true;
                         }
                     }
@@ -69,13 +69,23 @@ namespace MotoHealth.Bot.Telegram
             }
         }
 
+        private TelegramChat GetChatFromMessage(Message message)
+        {
+            var isGroup = message.Chat.Type != ChatType.Private;
+
+            var from = _mapper.Map<TelegramUser>(message.From);
+            var group = isGroup ? _mapper.Map<TelegramGroup>(message.Chat) : null;
+
+            return new TelegramChat(message.Chat.Id, from, group);
+        }
+
         private static BotCommand ParseCommand(string? command)
         {
             return command?.ToLowerInvariant() switch
             {
                 "/start" => BotCommand.Start,
-                "/accident" => BotCommand.ReportAccident,
-                "/about" => BotCommand.About,
+                "/dtp" => BotCommand.ReportAccident,
+                "/info" => BotCommand.About,
                 _ => BotCommand.Unknown
             };
         }

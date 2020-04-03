@@ -3,7 +3,7 @@ using MotoHealth.Core.Bot.Abstractions;
 
 namespace MotoHealth.Infrastructure.ChatStorage.Entities
 {
-    internal sealed class ChatStateTableEntity : TableEntity, IChatState
+    internal sealed class ChatStateTableEntity : TableWithVersionedSchema, IChatState
     {
         /// <summary>
         /// Used for deserialization
@@ -15,9 +15,14 @@ namespace MotoHealth.Infrastructure.ChatStorage.Entities
 
         public ChatStateTableEntity(long chatId) : this()
         {
+            EntitySchemaVersion = LatestEntitySchemaVersion;
+
             AssociatedChatId = chatId;
             PartitionKey = chatId.ToString();
         }
+
+        [IgnoreProperty]
+        public override int LatestEntitySchemaVersion => 1;
 
         public long AssociatedChatId { get; set; }
 

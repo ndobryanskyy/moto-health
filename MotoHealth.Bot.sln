@@ -7,9 +7,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Bot", "MotoHealt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Proto", "MotoHealth.Proto\MotoHealth.Proto.csproj", "{DDD1A55E-A068-47A4-BBED-1819AE6761FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotoHealth.Infrastructure", "MotoHealth.Storage\MotoHealth.Infrastructure.csproj", "{A0AF0A6B-5335-4022-B109-4CCB39BB0E9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Core", "MotoHealth.Core\MotoHealth.Core.csproj", "{076BE4D2-B7D5-4BA9-B1C6-5F2B6106ED4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotoHealth.Core", "MotoHealth.Core\MotoHealth.Core.csproj", "{076BE4D2-B7D5-4BA9-B1C6-5F2B6106ED4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Infrastructure", "MotoHealth.Infrastructure\MotoHealth.Infrastructure.csproj", "{E556F19E-F47D-4D05-83E3-6EEB20228C2C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{5F96DE0B-0BFC-47AE-B862-4B7C80EE6B6B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Bot.Tests", "Tests\MotoHealth.Bot.Tests\MotoHealth.Bot.Tests.csproj", "{F59A8B73-3FE8-4D3D-B0F7-2000DB06D0A6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", "{D4EF39BB-BD59-4B7D-A4F8-9A2CCBB7B283}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,17 +34,24 @@ Global
 		{DDD1A55E-A068-47A4-BBED-1819AE6761FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDD1A55E-A068-47A4-BBED-1819AE6761FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDD1A55E-A068-47A4-BBED-1819AE6761FE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A0AF0A6B-5335-4022-B109-4CCB39BB0E9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A0AF0A6B-5335-4022-B109-4CCB39BB0E9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A0AF0A6B-5335-4022-B109-4CCB39BB0E9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A0AF0A6B-5335-4022-B109-4CCB39BB0E9D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{076BE4D2-B7D5-4BA9-B1C6-5F2B6106ED4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{076BE4D2-B7D5-4BA9-B1C6-5F2B6106ED4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{076BE4D2-B7D5-4BA9-B1C6-5F2B6106ED4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{076BE4D2-B7D5-4BA9-B1C6-5F2B6106ED4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E556F19E-F47D-4D05-83E3-6EEB20228C2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E556F19E-F47D-4D05-83E3-6EEB20228C2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E556F19E-F47D-4D05-83E3-6EEB20228C2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E556F19E-F47D-4D05-83E3-6EEB20228C2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F59A8B73-3FE8-4D3D-B0F7-2000DB06D0A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F59A8B73-3FE8-4D3D-B0F7-2000DB06D0A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F59A8B73-3FE8-4D3D-B0F7-2000DB06D0A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F59A8B73-3FE8-4D3D-B0F7-2000DB06D0A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F59A8B73-3FE8-4D3D-B0F7-2000DB06D0A6} = {5F96DE0B-0BFC-47AE-B862-4B7C80EE6B6B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9A81FF3F-5309-4D13-AD13-D7B99768FEC5}

@@ -4,7 +4,10 @@ namespace MotoHealth.Core.Bot.Updates
 {
     public abstract class MessageBotUpdateBase : BotUpdateBase, IMessageBotUpdate
     {
-        protected MessageBotUpdateBase(int updateId, int messageId, IChatContext chat) 
+        protected MessageBotUpdateBase(
+            int updateId,
+            int messageId, 
+            TelegramChat chat) 
             : base(updateId)
         {
             MessageId = messageId;
@@ -13,6 +16,6 @@ namespace MotoHealth.Core.Bot.Updates
 
         public int MessageId { get; }
 
-        public override IChatContext Chat { get; }
+        public override ITelegramChat Chat { get; }
     }
 }
