@@ -57,7 +57,9 @@ namespace MotoHealth.Bot.Telegram
                             messageEntity.Offset == 0)
                         {
                             var command = ParseCommand(message.EntityValues.FirstOrDefault());
-                            var arguments = _whitespaceRegex.Split(message.Text.Substring(messageEntity.Length));
+                            var arguments = _whitespaceRegex.Split(message.Text.Substring(messageEntity.Length))
+                                .Where(x => !string.IsNullOrEmpty(x))
+                                .ToArray();
 
                             botUpdate = new CommandBotUpdate(update.Id, message.MessageId, GetChatFromMessage(message), command, arguments);
                             return true;
