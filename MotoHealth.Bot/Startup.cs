@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Console;
 using MotoHealth.Bot.Telegram;
 using MotoHealth.Core;
 using MotoHealth.Infrastructure;
@@ -21,6 +22,11 @@ namespace MotoHealth.Bot
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<ConsoleLoggerOptions>(options =>
+            {
+                options.TimestampFormat = "[HH:mm:ss.fff] ";
+            });
+
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddAutoMapper(new []

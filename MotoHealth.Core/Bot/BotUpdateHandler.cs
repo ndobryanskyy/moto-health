@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.Updates.Abstractions;
+using MotoHealth.Core.Extensions;
 
 namespace MotoHealth.Core.Bot
 {
@@ -39,12 +40,18 @@ namespace MotoHealth.Core.Bot
                 await _statesRepository.AddAsync(chatState, cancellationToken);
             }
 
+            var clonedChatState = chatState.Clone();
+
             var updateContext = _chatFactory.CreateUpdateContext(update);
-            var controller = _chatFactory.CreateController(chatId, chatState);
+            var controller = _chatFactory.CreateController(updateContext, clonedChatState);
 
             _logger.LogDebug($"Handling update {update.UpdateId} for chat {chatId}");
 
-            await controller.HandleUpdateAsync(updateContext, cancellationToken);
+            await controller.HandleUpdateAsync(cancellationToken);
+
+            await _statesRepository.UpdateAsync(clonedChatState, cancellationToken);
+
+            _logger.LogDebug($"Successfully handled update {update.UpdateId} for chat {chatId}");
         }
     }
 }

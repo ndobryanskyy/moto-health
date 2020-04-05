@@ -5,6 +5,6 @@ namespace MotoHealth.Core.Bot.Abstractions
 {
     public interface IChatController
     {
-        Task HandleUpdateAsync(IBotUpdateContext context, CancellationToken cancellationToken);
+        Task HandleUpdateAsync(CancellationToken cancellationToken);
     }
 }

@@ -16,8 +16,8 @@ namespace MotoHealth.Core.Bot
             _botClientFactory = botClientFactory;
         }
 
-        public IChatController CreateController(long chatId, IChatState state) 
-            => new ChatController(chatId, state);
+        public IChatController CreateController(IBotUpdateContext updateContext, IChatState state) 
+            => new ChatController(updateContext, state);
 
         public IChatState CreateDefaultState(long chatId)
             => _defaultChatStateFactory.CreateDefaultState(chatId);

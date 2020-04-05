@@ -8,5 +8,7 @@ namespace MotoHealth.Core.Bot.Abstractions
         ValueTask<IChatState?> GetForChatAsync(long chatId, CancellationToken cancellationToken);
 
         Task AddAsync(IChatState state, CancellationToken cancellationToken);
+
+        Task UpdateAsync(IChatState state, CancellationToken cancellationToken);
     }
 }

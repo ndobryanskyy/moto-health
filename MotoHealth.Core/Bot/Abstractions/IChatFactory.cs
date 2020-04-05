@@ -4,7 +4,7 @@ namespace MotoHealth.Core.Bot.Abstractions
 {
     public interface IChatFactory
     {
-        IChatController CreateController(long chatId, IChatState state);
+        IChatController CreateController(IBotUpdateContext updateContext, IChatState state);
 
         IChatState CreateDefaultState(long chatId);
 

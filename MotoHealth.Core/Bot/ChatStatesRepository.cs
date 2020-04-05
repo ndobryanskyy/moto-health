@@ -49,5 +49,13 @@ namespace MotoHealth.Core.Bot
             await _store.AddAsync(state, cancellationToken);
             _cache.CacheChatState(state);
         }
+
+        public async Task UpdateAsync(IChatState state, CancellationToken cancellationToken)
+        {
+            _logger.LogDebug($"Updating state for chat {state.AssociatedChatId}");
+
+            await _store.UpdateAsync(state, cancellationToken);
+            _cache.CacheChatState(state);
+        }
     }
 }
