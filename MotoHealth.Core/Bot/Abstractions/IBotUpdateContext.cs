@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using MotoHealth.Core.Bot.Messages;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 
 namespace MotoHealth.Core.Bot.Abstractions
@@ -8,6 +9,6 @@ namespace MotoHealth.Core.Bot.Abstractions
     {
         IBotUpdate Update { get; }
 
-        Task SendTextMessageAsync(string text, CancellationToken cancellationToken);
+        Task SendMessageAsync(IMessage message, CancellationToken cancellationToken);
     }
 }

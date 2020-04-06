@@ -11,15 +11,18 @@ namespace MotoHealth.Core.Bot
     {
         private readonly ILogger<BotUpdateHandler> _logger;
         private readonly IChatStatesRepository _statesRepository;
+        private readonly IAccidentReportDialogHandler _accidentReportDialogHandler;
         private readonly IChatFactory _chatFactory;
 
         public BotUpdateHandler(
             ILogger<BotUpdateHandler> logger,
             IChatStatesRepository statesRepository,
+            IAccidentReportDialogHandler accidentReportDialogHandler,
             IChatFactory chatFactory)
         {
             _logger = logger;
             _statesRepository = statesRepository;
+            _accidentReportDialogHandler = accidentReportDialogHandler;
             _chatFactory = chatFactory;
         }
 
@@ -47,7 +50,7 @@ namespace MotoHealth.Core.Bot
 
             _logger.LogDebug($"Handling update {update.UpdateId} for chat {chatId}");
 
-            await controller.HandleUpdateAsync(cancellationToken);
+            await controller.HandleUpdateAsync(_accidentReportDialogHandler, cancellationToken);
 
             await _statesRepository.UpdateAsync(clonedChatState, cancellationToken);
 

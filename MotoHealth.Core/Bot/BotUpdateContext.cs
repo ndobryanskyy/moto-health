@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using MotoHealth.Core.Bot.Abstractions;
+using MotoHealth.Core.Bot.Messages;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 using Telegram.Bot;
 
@@ -19,9 +20,9 @@ namespace MotoHealth.Core.Bot
 
         public IBotUpdate Update { get; }
 
-        public async Task SendTextMessageAsync(string text, CancellationToken cancellationToken)
+        public async Task SendMessageAsync(IMessage message, CancellationToken cancellationToken)
         {
-            await _client.SendTextMessageAsync(Update.Chat.Id, text, cancellationToken: cancellationToken);
+            await message.SendAsync(Update.Chat.Id, _client, cancellationToken);
         }
     }
 }

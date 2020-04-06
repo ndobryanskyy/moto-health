@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using MotoHealth.Core.Bot;
 using MotoHealth.Core.Bot.Abstractions;
+using MotoHealth.Core.Bot.Messages;
 using MotoHealth.Core.Telegram;
 
 namespace MotoHealth.Core
@@ -23,7 +24,9 @@ namespace MotoHealth.Core
                 .AddTransient<IChatStatesRepository, ChatStatesRepository>()
                 .AddSingleton<ITelegramBotClientFactory, TelegramBotClientFactory>()
                 .AddSingleton<IChatFactory, ChatFactory>()
-                .AddTransient<IBotUpdateHandler, BotUpdateHandler>();
+                .AddSingleton<IMessageFactory, MessageFactory>()
+                .AddTransient<IBotUpdateHandler, BotUpdateHandler>()
+                .AddTransient<IAccidentReportDialogHandler, AccidentReportDialogHandler>();
 
             return services;
         }

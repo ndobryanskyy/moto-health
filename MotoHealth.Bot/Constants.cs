@@ -4,7 +4,7 @@
     {
         public static class UpdatesQueue
         {
-            public const string ConnectionStringName = "UpdatesQueue";
+            public const string ConfigurationSectionName = "UpdatesQueue";
         }
 
         public static class Telegram

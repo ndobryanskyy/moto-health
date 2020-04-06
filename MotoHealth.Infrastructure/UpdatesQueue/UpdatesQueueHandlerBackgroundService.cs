@@ -17,6 +17,8 @@ namespace MotoHealth.Infrastructure.UpdatesQueue
         private readonly ILogger<UpdatesQueueHandlerBackgroundService> _logger;
         private readonly IBotUpdatesSerializer _updatesSerializer;
         private readonly IServiceProvider _services;
+        
+        private readonly SessionHandlerOptions _handlerOptions;
 
         public UpdatesQueueHandlerBackgroundService(
             ILogger<UpdatesQueueHandlerBackgroundService> logger,
@@ -29,23 +31,29 @@ namespace MotoHealth.Infrastructure.UpdatesQueue
             _updatesSerializer = updatesSerializer;
             _services = services;
 
-            var connectionString = updatesQueueOptions.Value.ConnectionString;
+            var options = updatesQueueOptions.Value;
+
+            var connectionString = options.ConnectionString;
             var builder = new ServiceBusConnectionStringBuilder(connectionString);
 
             _queueClient = clientsFactory.CreateSessionHandlingClient(builder);
+
+            _handlerOptions = new SessionHandlerOptions(ExceptionReceivedHandler)
+            {
+                AutoComplete = false,
+                MessageWaitTimeout = TimeSpan.FromSeconds(options.MessageWaitTimeoutInSeconds),
+                MaxConcurrentSessions = options.MaxConcurrentHandlers
+            };
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var handlerOptions = new SessionHandlerOptions(ExceptionReceivedHandler)
-            {
-                AutoComplete = false,
-                MaxConcurrentSessions = 1
-            };
+            _queueClient.RegisterSessionHandler(HandleUpdatesAsync, _handlerOptions);
 
-            _queueClient.RegisterSessionHandler(HandleUpdatesAsync, handlerOptions);
-
-            _logger.LogInformation("Successfully registered session handler for queue");
+            _logger.LogInformation(
+                $"Successfully registered session handler for queue with {_handlerOptions.MaxConcurrentSessions} max concurrent sessions " + 
+                $"and timeout of {_handlerOptions.MessageWaitTimeout.TotalSeconds} seconds"
+            );
 
             var completionSource = new TaskCompletionSource<object>();
 
