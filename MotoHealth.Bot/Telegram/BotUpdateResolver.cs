@@ -6,6 +6,7 @@ using MotoHealth.Core.Bot.Updates;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using BotCommand = MotoHealth.Core.Bot.Updates.BotCommand;
 
 namespace MotoHealth.Bot.Telegram
 {

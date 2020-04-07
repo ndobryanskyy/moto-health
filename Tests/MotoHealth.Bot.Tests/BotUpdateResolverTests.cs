@@ -8,6 +8,7 @@ using MotoHealth.Core.Bot.Updates;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Xunit;
+using BotCommand = MotoHealth.Core.Bot.Updates.BotCommand;
 
 namespace MotoHealth.Bot.Tests
 {

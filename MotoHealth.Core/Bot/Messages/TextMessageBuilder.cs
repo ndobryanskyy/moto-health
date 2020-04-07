@@ -50,7 +50,7 @@ namespace MotoHealth.Core.Bot.Messages
             return this;
         }
 
-        public async Task SendAsync(ChatId chatId, ITelegramBotClient client, CancellationToken cancellationToken) 
+        public async Task SendAsync(ChatId chatId, ITelegramBotClient client, CancellationToken cancellationToken)
             => await client.SendTextMessageAsync(chatId, _text, _parseMode, replyMarkup: _replyMarkup, cancellationToken: cancellationToken);
     }
 }
