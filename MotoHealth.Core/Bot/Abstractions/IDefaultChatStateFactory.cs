@@ -2,6 +2,6 @@
 {
     public interface IDefaultChatStateFactory
     {
-        IChatState CreateDefaultState(long chatId);
+        IChatState CreateDefaultState(long chatId, int userId);
     }
 }

@@ -13,6 +13,7 @@ namespace MotoHealth.Core.Telegram
 
             CreateMap<Contact, TelegramContact>();
             CreateMap<User, TelegramUser>();
+            CreateMap<Chat, TelegramGroup>();
         }
     }
 }

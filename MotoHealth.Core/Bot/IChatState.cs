@@ -4,6 +4,8 @@
     {
         long AssociatedChatId { get; }
 
+        int AssociatedUserId { get; }
+
         bool UserSubscribed { get; set; }
 
         IAccidentReportDialogState? AccidentReportDialog { get; }

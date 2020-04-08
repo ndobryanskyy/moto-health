@@ -6,7 +6,7 @@ namespace MotoHealth.Core.Bot.Abstractions
     {
         IChatController CreateController(IBotUpdateContext updateContext, IChatState state);
 
-        IChatState CreateDefaultState(long chatId);
+        IChatState CreateDefaultState(long chatId, int userId);
 
         IBotUpdateContext CreateUpdateContext(IBotUpdate update);
     }

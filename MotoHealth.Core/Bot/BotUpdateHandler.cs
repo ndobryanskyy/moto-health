@@ -28,19 +28,29 @@ namespace MotoHealth.Core.Bot
 
         public async Task HandleBotUpdateAsync(IBotUpdate update, CancellationToken cancellationToken)
         {
+            if (update.Chat.Group != null)
+            {
+                _logger.LogInformation($"Skipping group chat update: {update.UpdateId}");
+                return;
+            }
+
             var chatId = update.Chat.Id;
 
             var chatState = await _statesRepository.GetForChatAsync(chatId, cancellationToken);
 
             if (chatState == null)
             {
+                var userId = update.Chat.From.Id;
+
                 _logger.LogInformation($"New chat started {chatId}");
 
-                chatState = _chatFactory.CreateDefaultState(chatId);
+                chatState = _chatFactory.CreateDefaultState(chatId, userId);
 
                 chatState.UserSubscribed = true;
 
                 await _statesRepository.AddAsync(chatState, cancellationToken);
+                
+                _logger.LogInformation($"User {userId} subscribed to updates");
             }
 
             var clonedChatState = chatState.Clone();
