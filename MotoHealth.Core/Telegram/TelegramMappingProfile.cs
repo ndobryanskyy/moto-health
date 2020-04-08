@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MotoHealth.Core.Bot;
 using MotoHealth.Core.Bot.Updates;
 using Telegram.Bot.Types;
 
@@ -8,6 +9,8 @@ namespace MotoHealth.Core.Telegram
     {
         public TelegramMappingProfile()
         {
+            CreateMap<CommandDefinition, BotCommand>();
+
             CreateMap<Contact, TelegramContact>();
             CreateMap<User, TelegramUser>();
         }

@@ -7,8 +7,10 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Infrastructure.ChatStorage;
 using MotoHealth.Infrastructure.ServiceBus;
+using Telegram.Bot;
 
 namespace MotoHealth.Bot.Tests.Fixtures
 {
@@ -20,27 +22,29 @@ namespace MotoHealth.Bot.Tests.Fixtures
 
             var serviceBusFactoryMock = SetupServiceBusClientsFactoryMock();
             var azureTablesInitializerMock = SetupAzureTablesInitializerMock();
+            var telegramBotClientFactoryMock = SetupTelegramBotClientFactoryMock();
 
             builder.ConfigureTestServices(services =>
             {
                 services.AddSingleton(serviceBusFactoryMock.Object);
                 services.AddSingleton(azureTablesInitializerMock.Object);
+                services.AddSingleton(telegramBotClientFactoryMock.Object);
             });
         }
 
         private static Mock<IServiceBusClientsFactory> SetupServiceBusClientsFactoryMock()
         {
-            var serviceBusFactoryMock = new Mock<IServiceBusClientsFactory>();
+            var factoryMock = new Mock<IServiceBusClientsFactory>();
 
-            serviceBusFactoryMock
+            factoryMock
                 .Setup(x => x.CreateSessionHandlingClient(It.IsAny<ServiceBusConnectionStringBuilder>()))
                 .Returns(Mock.Of<IQueueClient>());
 
-            serviceBusFactoryMock
+            factoryMock
                 .Setup(x => x.CreateMessageSenderClient(It.IsAny<ServiceBusConnectionStringBuilder>()))
                 .Returns(Mock.Of<IMessageSender>());
 
-            return serviceBusFactoryMock;
+            return factoryMock;
         }
 
         private static Mock<IAzureTablesInitializer> SetupAzureTablesInitializerMock()
@@ -52,6 +56,17 @@ namespace MotoHealth.Bot.Tests.Fixtures
                 .Returns(Task.CompletedTask);
 
             return initializerMock;
+        }
+
+        private static Mock<ITelegramBotClientFactory> SetupTelegramBotClientFactoryMock()
+        {
+            var factoryMock = new Mock<ITelegramBotClientFactory>();
+
+            factoryMock
+                .Setup(x => x.CreateClient())
+                .Returns(Mock.Of<ITelegramBotClient>());
+
+            return factoryMock;
         }
     }
 }

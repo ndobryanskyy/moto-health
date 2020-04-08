@@ -13,8 +13,6 @@ namespace MotoHealth.Infrastructure.UpdatesQueue
 
         public UpdatesQueueMappingProfile()
         {
-            CreateMap<BotCommand, BotCommandDtoEnum>().ReverseMap();
-
             CreateMap<ITelegramUser, TelegramUserDto>();
             CreateMap<TelegramUserDto, TelegramUser>();
 

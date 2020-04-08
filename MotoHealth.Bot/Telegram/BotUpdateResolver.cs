@@ -6,7 +6,6 @@ using MotoHealth.Core.Bot.Updates;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using BotCommand = MotoHealth.Core.Bot.Updates.BotCommand;
 
 namespace MotoHealth.Bot.Telegram
 {
@@ -50,14 +49,15 @@ namespace MotoHealth.Bot.Telegram
                 {
                     botUpdate = null;
 
-                    if (message.Entities?.Length == 1)
+                    var entityValues = message.EntityValues?.ToArray() ?? new string[0];
+                    if (message.Entities?.Length == 1 && entityValues.Length == 1)
                     {
                         var messageEntity = message.Entities[0];
 
                         if (messageEntity.Type == MessageEntityType.BotCommand &&
                             messageEntity.Offset == 0)
                         {
-                            var command = ParseCommand(message.EntityValues.FirstOrDefault());
+                            var command = entityValues[0];
                             var arguments = _whitespaceRegex.Split(message.Text.Substring(messageEntity.Length))
                                 .Where(x => !string.IsNullOrEmpty(x))
                                 .ToArray();
@@ -80,17 +80,6 @@ namespace MotoHealth.Bot.Telegram
             var group = isGroup ? _mapper.Map<TelegramGroup>(message.Chat) : null;
 
             return new TelegramChat(message.Chat.Id, from, group);
-        }
-
-        private static BotCommand ParseCommand(string? command)
-        {
-            return command?.ToLowerInvariant() switch
-            {
-                "/start" => BotCommand.Start,
-                "/dtp" => BotCommand.ReportAccident,
-                "/info" => BotCommand.About,
-                _ => BotCommand.Unknown
-            };
         }
     }
 }

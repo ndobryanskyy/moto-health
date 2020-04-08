@@ -27,7 +27,7 @@ message CommandBotUpdateDto {
 
 	TelegramChatDto chat = 3;
 
-	BotCommandDtoEnum command = 4;
+	string command = 4;
 	repeated string arguments = 5;
 }
 
@@ -38,13 +38,6 @@ message ContactMessageBotUpdateDto {
 	TelegramChatDto chat = 3;
 
 	TelegramContactDto contact = 4;
-}
-
-enum BotCommandDtoEnum {
-	UNKNOWN = 0;
-	START = 1;
-	REPORT_ACCIDENT = 2;
-	ABOUT = 3;
 }
 
 message TelegramChatDto {

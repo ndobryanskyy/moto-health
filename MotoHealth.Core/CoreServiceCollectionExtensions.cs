@@ -25,6 +25,7 @@ namespace MotoHealth.Core
                 .AddSingleton<ITelegramBotClientFactory, TelegramBotClientFactory>()
                 .AddSingleton<IChatFactory, ChatFactory>()
                 .AddSingleton<IMessageFactory, MessageFactory>()
+                .AddSingleton<IBotCommandsRegistry, BotCommandsRegistry>()
                 .AddTransient<IBotUpdateHandler, BotUpdateHandler>()
                 .AddTransient<IAccidentReportDialogHandler, AccidentReportDialogHandler>();
 

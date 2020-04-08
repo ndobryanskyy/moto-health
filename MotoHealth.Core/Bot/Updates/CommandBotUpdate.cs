@@ -8,7 +8,7 @@ namespace MotoHealth.Core.Bot.Updates
             int updateId,
             int messageId,
             TelegramChat chat, 
-            BotCommand command, 
+            string command, 
             string[] arguments)
             : base(updateId, messageId, chat)
         {
@@ -16,7 +16,7 @@ namespace MotoHealth.Core.Bot.Updates
             Arguments = arguments;
         }
         
-        public BotCommand Command { get; }
+        public string Command { get; }
 
         public string[] Arguments { get; }
     }

@@ -128,7 +128,7 @@ namespace MotoHealth.Core.Bot
                         }
                         else
                         {
-                            // TODO handle wrong update type
+                            // TODO handle wrong update type and other negative answers
                             return false;
                         }
                     }

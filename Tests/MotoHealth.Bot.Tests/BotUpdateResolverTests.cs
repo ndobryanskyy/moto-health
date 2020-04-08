@@ -8,7 +8,6 @@ using MotoHealth.Core.Bot.Updates;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Xunit;
-using BotCommand = MotoHealth.Core.Bot.Updates.BotCommand;
 
 namespace MotoHealth.Bot.Tests
 {
@@ -81,9 +80,9 @@ namespace MotoHealth.Bot.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Should_Resolve_Unknown_Command_Update(bool messageInGroup)
+        public void Should_Resolve_Command_Update(bool messageInGroup)
         {
-            const string unknownCommand = "/RANDOM_COMMAND";
+            const string sampleCommand = "/start";
 
             var autoFixture = new Fixture();
 
@@ -93,7 +92,7 @@ namespace MotoHealth.Bot.Tests
                 {
                     Type = MessageEntityType.BotCommand,
                     Offset = 0,
-                    Length = unknownCommand.Length
+                    Length = sampleCommand.Length
                 }
             };
 
@@ -102,7 +101,7 @@ namespace MotoHealth.Bot.Tests
                 : autoFixture.BuildDefaultPrivateMessage();
 
             var message = messageBuilder
-                .With(x => x.Text, $"{unknownCommand}    a       b")
+                .With(x => x.Text, $"{sampleCommand}    a       b")
                 .With(x => x.Entities, messageEntities)
                 .Create();
 
@@ -133,7 +132,7 @@ namespace MotoHealth.Bot.Tests
             commandUpdate.UpdateId.Should().Be(update.Id);
             commandUpdate.MessageId.Should().Be(message.MessageId);
 
-            commandUpdate.Command.Should().Be(BotCommand.Unknown);
+            commandUpdate.Command.Should().Be(sampleCommand);
             commandUpdate.Arguments.Should().HaveCount(2).And.ContainInOrder("a", "b");
 
             commandUpdate.Chat.Id.Should().Be(message.Chat.Id);
@@ -149,59 +148,16 @@ namespace MotoHealth.Bot.Tests
             }
         }
 
-        [Theory]
-        [InlineData("/start", BotCommand.Start)]
-        [InlineData("/info", BotCommand.About)]
-        [InlineData("/dtp", BotCommand.ReportAccident)]
-        public void Should_Resolve_Known_Command_Update(string messageText, BotCommand expectedBotCommand)
-        {
-            var autoFixture = new Fixture();
-
-            var messageEntities = new[]
-            {
-                new MessageEntity
-                {
-                    Type = MessageEntityType.BotCommand,
-                    Offset = 0,
-                    Length = messageText.Length
-                }
-            };
-
-            var message = autoFixture
-                .BuildDefaultPrivateMessage()
-                .With(x => x.Text, messageText)
-                .With(x => x.Entities, messageEntities)
-                .Create();
-
-            _mapperMock
-                .Setup(x => x.Map<TelegramUser>(message.From))
-                .Returns(new TelegramUser());
-
-            var update = autoFixture.BuildDefaultUpdate()
-                .With(x => x.Message, message)
-                .Create();
-
-            var resolver = CreateResolver();
-
-            var updateResolved = resolver.TryResolveSupportedUpdate(update, out var supportedUpdate);
-
-            updateResolved.Should().BeTrue();
-
-            var commandUpdate = supportedUpdate.Should().BeOfType<CommandBotUpdate>().Subject;
-                
-            commandUpdate.Command.Should().Be(expectedBotCommand);
-            commandUpdate.Arguments.Should().BeEmpty();
-        }
-
+        // TODO: Should be fixed later
         [Fact]
-        public void Should_Resolve_Text_Message_Update_If_More_Than_One_MessageEntity_Present()
+        public void Should_Resolve_TextMessage_Update_If_More_Than_One_MessageEntity_Present()
         {
             var autoFixture = new Fixture();
 
-            var command1 = $"/{BotCommand.Start.ToString().ToLowerInvariant()}";
-            var command2 = $"/{BotCommand.About.ToString().ToLowerInvariant()}";
+            const string command = "/start";
+            const string url = "https://sample-url.org";
 
-            var text = $"{command1} {command2}";
+            var text = $"{command} {url}";
 
             var messageEntities = new[]
             {
@@ -209,14 +165,14 @@ namespace MotoHealth.Bot.Tests
                 {
                     Type = MessageEntityType.BotCommand,
                     Offset = 0,
-                    Length = command1.Length
+                    Length = command.Length
                 },
 
                 new MessageEntity
                 {
-                    Type = MessageEntityType.BotCommand,
-                    Offset = command1.Length + 1,
-                    Length = command2.Length
+                    Type = MessageEntityType.Url,
+                    Offset = command.Length + 1,
+                    Length = url.Length
                 }
             };
 

@@ -2,15 +2,22 @@
 using System.Threading.Tasks;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.Messages;
-using MotoHealth.Core.Bot.Updates;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 
 namespace MotoHealth.Core.Bot
 {
     internal sealed class ChatController : IChatController
     {
-        public ChatController(IBotUpdateContext context, IChatState state, IMessageFactory messageFactory)
+        private readonly IBotCommandsRegistry _commandsRegistry;
+
+        public ChatController(
+            IBotUpdateContext context, 
+            IChatState state, 
+            IMessageFactory messageFactory,
+            IBotCommandsRegistry commandsRegistry)
         {
+            _commandsRegistry = commandsRegistry;
+
             Context = context;
             State = state;
             MessageFactory = messageFactory;
@@ -44,13 +51,11 @@ namespace MotoHealth.Core.Bot
 
             async Task HandleCommandAsync(ICommandBotUpdate commandBotUpdate)
             {
-                switch (commandBotUpdate.Command)
+                if (_commandsRegistry.ReportAccident.Matches(commandBotUpdate))
                 {
-                    case BotCommand.ReportAccident:
-                        var dialogState = State.StartAccidentReportingDialog(1);
+                    var dialogState = State.StartAccidentReportingDialog(1);
 
-                        await HandleAccidentReportDialog(dialogState);
-                        break;
+                    await HandleAccidentReportDialog(dialogState);
                 }
             }
 

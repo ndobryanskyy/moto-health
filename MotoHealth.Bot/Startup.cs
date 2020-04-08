@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Console;
-using MotoHealth.Bot.Telegram;
 using MotoHealth.Core;
 using MotoHealth.Infrastructure;
 
@@ -44,6 +43,8 @@ namespace MotoHealth.Bot
                 }
             });
 
+            services.AddApp();
+
             services.AddInfrastructure(new InfrastructureOptionsConfigurator
             {
                 ConfigureUpdatesQueue = updatesQueueOptions =>
@@ -55,8 +56,6 @@ namespace MotoHealth.Bot
                     chatsStorageOptions.StorageAccountConnectionString = _configuration.GetConnectionString(Constants.ChatsStorage.ConnectionStringName);
                 }
             });
-
-            services.AddTransient<IBotUpdateResolver, BotUpdateResolver>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
