@@ -7,6 +7,11 @@
             public const string ConfigurationSectionName = "UpdatesQueue";
         }
 
+        public static class AccidentsQueue
+        {
+            public const string ConnectionStringName = "AccidentsQueue";
+        }
+
         public static class Telegram
         {
             public const string ConfigurationSectionName = "Telegram";

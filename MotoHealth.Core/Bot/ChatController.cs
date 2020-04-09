@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using MotoHealth.Core.Bot.Abstractions;
+using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Core.Bot.Messages;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 

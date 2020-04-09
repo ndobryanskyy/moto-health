@@ -1,4 +1,4 @@
-﻿namespace MotoHealth.Core.Bot
+﻿namespace MotoHealth.Core.Bot.AccidentReporting
 {
     public interface IAccidentReportDialogState : IWaterfallDialogState
     {

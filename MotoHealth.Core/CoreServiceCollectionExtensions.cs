@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using MotoHealth.Core.Bot;
 using MotoHealth.Core.Bot.Abstractions;
+using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Core.Bot.Messages;
 using MotoHealth.Core.Telegram;
 

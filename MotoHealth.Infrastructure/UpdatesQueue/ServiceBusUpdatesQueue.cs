@@ -14,7 +14,7 @@ namespace MotoHealth.Infrastructure.UpdatesQueue
     {
         private readonly ILogger<IBotUpdatesQueue> _logger;
         private readonly IBotUpdatesSerializer _serializer;
-        private readonly IMessageSender _senderClient;
+        private readonly IMessageSender _messageSender;
 
         public ServiceBusUpdatesQueue(
             ILogger<IBotUpdatesQueue> logger,
@@ -28,7 +28,7 @@ namespace MotoHealth.Infrastructure.UpdatesQueue
             var connectionString = updatesQueueOptions.Value.ConnectionString;
             var connectionStringBuilder = new ServiceBusConnectionStringBuilder(connectionString);
 
-            _senderClient = clientsFactory.CreateMessageSenderClient(connectionStringBuilder);
+            _messageSender = clientsFactory.CreateMessageSenderClient(connectionStringBuilder);
         }
 
         public async Task EnqueueUpdateAsync(IBotUpdate botUpdate, CancellationToken cancellationToken)
@@ -39,6 +39,7 @@ namespace MotoHealth.Infrastructure.UpdatesQueue
 
             var message = new Message(serialized)
             {
+                MessageId = botUpdate.UpdateId.ToString(),
                 SessionId = botUpdate.Chat.Id.ToString()
             };
 
@@ -47,7 +48,7 @@ namespace MotoHealth.Infrastructure.UpdatesQueue
                 return;
             }
 
-            await _senderClient.SendAsync(message);
+            await _messageSender.SendAsync(message);
 
             _logger.LogDebug($"Successfully added update {botUpdate.UpdateId} to updates queue");
         }

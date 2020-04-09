@@ -1,4 +1,6 @@
-﻿namespace MotoHealth.Core.Bot
+﻿using MotoHealth.Core.Bot.AccidentReporting;
+
+namespace MotoHealth.Core.Bot
 {
     public interface IChatState
     {

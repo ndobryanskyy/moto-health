@@ -1,5 +1,7 @@
-﻿using Microsoft.Azure.Cosmos.Table;
+﻿using System;
+using Microsoft.Azure.Cosmos.Table;
 using MotoHealth.Core.Bot;
+using MotoHealth.Core.Bot.AccidentReporting;
 
 namespace MotoHealth.Infrastructure.ChatStorage.Entities
 {
@@ -20,6 +22,7 @@ namespace MotoHealth.Infrastructure.ChatStorage.Entities
         {
             AccidentReportDialog = new AccidentReportDialogState
             {
+                InstanceId = Guid.NewGuid().ToString("D"),
                 Version = version,
                 CurrentStep = 1
             };
@@ -38,6 +41,8 @@ namespace MotoHealth.Infrastructure.ChatStorage.Entities
         public class AccidentReportDialogState : IAccidentReportDialogState
         {
             public int Version { get; set; }
+
+            public string InstanceId { get; set; } = string.Empty;
 
             public int CurrentStep { get; set; }
 

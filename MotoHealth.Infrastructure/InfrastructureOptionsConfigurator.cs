@@ -1,4 +1,5 @@
 ﻿using System;
+using MotoHealth.Infrastructure.AccidentReporting;
 using MotoHealth.Infrastructure.ChatStorage;
 using MotoHealth.Infrastructure.UpdatesQueue;
 
@@ -9,5 +10,7 @@ namespace MotoHealth.Infrastructure
         public Action<UpdatesQueueOptions>? ConfigureUpdatesQueue { get; set; }
 
         public Action<ChatStorageOptions>? ConfigureChatStorage { get; set; }
+
+        public Action<AccidentsQueueOptions>? ConfigureAccidentsQueue { get; set; }
     }
 }

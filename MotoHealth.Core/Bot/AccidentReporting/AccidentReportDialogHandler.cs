@@ -6,7 +6,7 @@ using MotoHealth.Core.Bot.Messages;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace MotoHealth.Core.Bot
+namespace MotoHealth.Core.Bot.AccidentReporting
 {
     public interface IAccidentReportDialogHandler
     {
@@ -15,12 +15,14 @@ namespace MotoHealth.Core.Bot
 
     internal sealed class AccidentReportDialogHandler : IAccidentReportDialogHandler
     {
+        private readonly IAccidentsQueue _accidentsQueue;
         private static readonly KeyboardButton CancelButton = new KeyboardButton("ОТМЕНА");
         
         private readonly Messages _messages;
 
-        public AccidentReportDialogHandler(IMessageFactory messageFactory)
+        public AccidentReportDialogHandler(IMessageFactory messageFactory, IAccidentsQueue accidentsQueue)
         {
+            _accidentsQueue = accidentsQueue;
             _messages = new Messages(messageFactory);
         }
 
@@ -36,7 +38,7 @@ namespace MotoHealth.Core.Bot
             IAccidentReportDialogState state,
             CancellationToken cancellationToken)
         {
-            var cancelled = await TryHandleCancelButtonAsync(context, cancellationToken);
+            var cancelled = await TryHandleCancelButtonAsync();
             if (cancelled) return true;
 
             switch (state.CurrentStep)
@@ -123,6 +125,8 @@ namespace MotoHealth.Core.Bot
                         if (context.Update is ITextMessageBotUpdate textMessage &&
                             textMessage.Text.Trim().Equals("да", StringComparison.InvariantCultureIgnoreCase))
                         {
+                            await AddReportToQueueAsync();
+
                             await context.SendMessageAsync(_messages.SuccessfullySent, cancellationToken);
                             return true;
                         }
@@ -142,20 +146,35 @@ namespace MotoHealth.Core.Bot
             state.CurrentStep++;
 
             return false;
-        }
 
-        private async Task<bool> TryHandleCancelButtonAsync(IBotUpdateContext context, CancellationToken cancellationToken)
-        {
-            if (context.Update is ITextMessageBotUpdate textUpdate)
+            async Task<bool> TryHandleCancelButtonAsync()
             {
-                if (textUpdate.Text == CancelButton.Text)
+                if (context.Update is ITextMessageBotUpdate textUpdate)
                 {
-                    await context.SendMessageAsync(_messages.Canceled, cancellationToken);
-                    return true;
+                    if (textUpdate.Text == CancelButton.Text)
+                    {
+                        await context.SendMessageAsync(_messages.Canceled, cancellationToken);
+                        return true;
+                    }
                 }
+
+                return false;
             }
 
-            return false;
+            async Task AddReportToQueueAsync()
+            {
+                var report = new AccidentReport(
+                    state.InstanceId,
+                    context.Update.Chat.From.Id,
+                    DateTime.UtcNow, 
+                    state.Address,
+                    state.Participants,
+                    state.Victims,
+                    state.ReporterPhoneNumber ?? "Нет"
+                );
+
+                await _accidentsQueue.EnqueueReportAsync(report, cancellationToken);
+            }
         }
 
         private sealed class Messages
@@ -204,7 +223,7 @@ namespace MotoHealth.Core.Bot
                 });
 
             public IMessage ReportSummaryWithPrompt(IAccidentReportDialogState state) => _messageFactory
-                .CreateTextMessage("Вы собираетесь сообщить о ДТП\n\n" +
+                .CreateTextMessage("🚨 Вы собираетесь сообщить о ДТП\n\n" +
                                    $" • *Адрес:* {state.Address}\n" +
                                    $" • *Участники:* {state.Participants}\n" +
                                    $" • *Есть жертвы:* {state.Victims}\n" +
