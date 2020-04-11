@@ -16,7 +16,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
     internal sealed class AccidentReportDialogHandler : IAccidentReportDialogHandler
     {
         private readonly IAccidentsQueue _accidentsQueue;
-        private static readonly KeyboardButton CancelButton = new KeyboardButton("ОТМЕНА");
+        private static readonly KeyboardButton CancelButton = new KeyboardButton("Отмена");
         
         private readonly Messages _messages;
 
@@ -198,7 +198,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                 });
 
             public IMessage SpecifyParticipants => _messageFactory
-                .CreateTextMessage("🛵 Укажите участников ДТП")
+                .CreateTextMessage("🛵 Укажите участника ДТП")
                 .WithReplyKeyboard(new[]
                 {
                     new [] { new KeyboardButton("Мотоцикл"), new KeyboardButton("Мопед") },
@@ -215,7 +215,9 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                 });
 
             public IMessage AskForContacts => _messageFactory
-                .CreateTextMessage("💬 Сообщить оператору Ваш номер телефона?")
+                .CreateTextMessage("📞 Сообщить оператору Ваш номер телефона?\n\n\n" +
+                                   "💡 _Нажмите *да* чтобы автоматически отправить номер_")
+                .ParseAsMarkdown()
                 .WithReplyKeyboard(new[]
                 {
                     new [] { KeyboardButton.WithRequestContact("Да"), new KeyboardButton("Нет") },
@@ -228,7 +230,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                                    $" • *Участники:* {state.Participants}\n" +
                                    $" • *Есть жертвы:* {state.Victims}\n" +
                                    $" • *Телефон:* {state.ReporterPhoneNumber}\n\n" +
-                                   $"_Отправить?_")
+                                   "_Отправить?_")
                 .ParseAsMarkdown()
                 .WithReplyKeyboard(new[]
                 {

@@ -57,6 +57,16 @@ namespace MotoHealth.Core.Bot
                     var dialogState = State.StartAccidentReportingDialog(1);
 
                     await HandleAccidentReportDialog(dialogState);
+                } 
+                else if (_commandsRegistry.About.Matches(commandBotUpdate))
+                {
+                    var message = MessageFactory
+                        .CreateTextMessage("Moto Health Odessa\n\n" + 
+                                           "*Телефон:* \\+380960543434\n" + 
+                                           "*Сайт:* [mh\\.od\\.ua](http://www.mh.od.ua)")
+                        .ParseAsMarkdown();
+
+                    await Context.SendMessageAsync(message, cancellationToken);
                 }
             }
 
