@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MotoHealth.Core.Extensions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -11,24 +13,45 @@ namespace MotoHealth.Core.Bot.Messages
 {
     internal sealed class TextMessageBuilder : IMessage
     {
-        private readonly string _text;
+        private string? _text;
         private ParseMode _parseMode = ParseMode.Default;
         private IReplyMarkup? _replyMarkup;
 
-        public TextMessageBuilder(string text)
+        public TextMessageBuilder WithPlainText(string text)
         {
-            if (string.IsNullOrEmpty(text))
-            {
-                // TODO: throw some distinguishable exception
-                throw new InvalidOperationException("Message text must not be empty");
-            }
+            _parseMode = ParseMode.Default;
 
             _text = text;
+
+            return this;
         }
 
-        public TextMessageBuilder ParseAsMarkdown()
+        public TextMessageBuilder WithMarkdownText(string text)
         {
             _parseMode = ParseMode.MarkdownV2;
+
+            _text = text;
+
+            return this;
+        }
+
+        public TextMessageBuilder WithInterpolatedMarkdownText(FormattableString text, bool escapeInterpolatedValues)
+        {
+            _parseMode = ParseMode.MarkdownV2;
+
+            if (escapeInterpolatedValues)
+            {
+                var escapedParameters = text.GetArguments()
+                    .Select(x => x?.ToString()?.EscapeForMarkdown())
+                    .ToArray();
+
+                // ReSharper disable once CoVariantArrayConversion - read-only usage.
+                _text = string.Format(text.Format, escapedParameters);
+            }
+            else
+            {
+                _text = text.ToString();
+            }
 
             return this;
         }
@@ -51,6 +74,14 @@ namespace MotoHealth.Core.Bot.Messages
         }
 
         public async Task SendAsync(ChatId chatId, ITelegramBotClient client, CancellationToken cancellationToken)
-            => await client.SendTextMessageAsync(chatId, _text, _parseMode, replyMarkup: _replyMarkup, cancellationToken: cancellationToken);
+        {
+            if (string.IsNullOrEmpty(_text))
+            {
+                // TODO: throw some distinguishable exception
+                throw new InvalidOperationException("Cannot send text message with empty text");
+            }
+
+            await client.SendTextMessageAsync(chatId, _text, _parseMode, replyMarkup: _replyMarkup, cancellationToken: cancellationToken);
+        }
     }
 }

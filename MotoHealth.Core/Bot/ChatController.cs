@@ -45,7 +45,7 @@ namespace MotoHealth.Core.Bot
             else
             {
                 await Context.SendMessageAsync(
-                    MessageFactory.CreateTextMessage("..."),
+                    MessageFactory.CreateTextMessage().WithPlainText("..."),
                     cancellationToken
                 );
             }
@@ -60,11 +60,10 @@ namespace MotoHealth.Core.Bot
                 } 
                 else if (_commandsRegistry.About.Matches(commandBotUpdate))
                 {
-                    var message = MessageFactory
-                        .CreateTextMessage("Moto Health Odessa\n\n" + 
+                    var message = MessageFactory.CreateTextMessage()
+                        .WithMarkdownText("Moto Health Odessa\n\n" + 
                                            "*Телефон:* \\+380960543434\n" + 
-                                           "*Сайт:* [mh\\.od\\.ua](http://www.mh.od.ua)")
-                        .ParseAsMarkdown();
+                                           "*Сайт:* [mh\\.od\\.ua](http://www.mh.od.ua)");
 
                     await Context.SendMessageAsync(message, cancellationToken);
                 }

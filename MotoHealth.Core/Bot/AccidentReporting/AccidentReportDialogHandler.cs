@@ -186,19 +186,19 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                 _messageFactory = messageFactory;
             }
 
-            public IMessage Canceled => _messageFactory
-                .CreateTextMessage("⛔ Отменено")
+            public IMessage Canceled => _messageFactory.CreateTextMessage()
+                .WithPlainText("⛔ Отменено")
                 .WithClearedReplyKeyboard();
 
-            public IMessage SpecifyAddress => _messageFactory
-                .CreateTextMessage("📍 Укажите адрес ДТП")
+            public IMessage SpecifyAddress => _messageFactory.CreateTextMessage()
+                .WithPlainText("📍 Укажите адрес ДТП")
                 .WithReplyKeyboard(new[]
                 {
                     new [] { CancelButton }
                 });
 
-            public IMessage SpecifyParticipants => _messageFactory
-                .CreateTextMessage("🛵 Укажите участника ДТП")
+            public IMessage SpecifyParticipants => _messageFactory.CreateTextMessage()
+                .WithPlainText("🛵 Укажите участника ДТП")
                 .WithReplyKeyboard(new[]
                 {
                     new [] { new KeyboardButton("Мотоцикл"), new KeyboardButton("Мопед") },
@@ -206,40 +206,41 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     new [] { CancelButton }
                 });
 
-            public IMessage AreThereVictims => _messageFactory
-                .CreateTextMessage("🤕 Есть пострадавшие?")
+            public IMessage AreThereVictims => _messageFactory.CreateTextMessage()
+                .WithPlainText("🤕 Есть пострадавшие?")
                 .WithReplyKeyboard(new[]
                 {
                     new [] { new KeyboardButton("Да"), new KeyboardButton("Нет") },
                     new [] { CancelButton }
                 });
 
-            public IMessage AskForContacts => _messageFactory
-                .CreateTextMessage("📞 Сообщить оператору Ваш номер телефона?\n\n\n" +
+            public IMessage AskForContacts => _messageFactory.CreateTextMessage()
+                .WithMarkdownText("📞 Сообщить оператору Ваш номер телефона?\n\n\n" +
                                    "💡 _Нажмите *да* чтобы автоматически отправить номер_")
-                .ParseAsMarkdown()
                 .WithReplyKeyboard(new[]
                 {
                     new [] { KeyboardButton.WithRequestContact("Да"), new KeyboardButton("Нет") },
                     new [] { CancelButton }
                 });
 
-            public IMessage ReportSummaryWithPrompt(IAccidentReportDialogState state) => _messageFactory
-                .CreateTextMessage("🚨 Вы собираетесь сообщить о ДТП\n\n" +
-                                   $" • *Адрес:* {state.Address}\n" +
-                                   $" • *Участники:* {state.Participants}\n" +
-                                   $" • *Есть жертвы:* {state.Victims}\n" +
-                                   $" • *Телефон:* {state.ReporterPhoneNumber}\n\n" +
-                                   "_Отправить?_")
-                .ParseAsMarkdown()
+            public IMessage ReportSummaryWithPrompt(IAccidentReportDialogState state) => _messageFactory.CreateTextMessage()
+                .WithInterpolatedMarkdownText(
+@$"🚨 Вы собираетесь сообщить о ДТП
+    
+ • *Адрес:* {state.Address}
+ • *Участники:* {state.Participants}
+ • *Есть жертвы:* {state.Victims}
+ • *Телефон:* {state.ReporterPhoneNumber}
+
+_Отправить?_", true)
                 .WithReplyKeyboard(new[]
                 {
                     new [] { new KeyboardButton("Да") },
                     new [] { CancelButton }
                 });
 
-            public IMessage SuccessfullySent => _messageFactory
-                .CreateTextMessage("✅ Успешно отправлено")
+            public IMessage SuccessfullySent => _messageFactory.CreateTextMessage()
+                .WithPlainText("✅ Успешно отправлено")
                 .WithClearedReplyKeyboard();
         }
     }

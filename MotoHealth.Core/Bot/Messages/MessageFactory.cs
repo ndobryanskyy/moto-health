@@ -2,12 +2,12 @@
 {
     internal interface IMessageFactory
     {
-        TextMessageBuilder CreateTextMessage(string text);
+        TextMessageBuilder CreateTextMessage();
     }
 
     internal sealed class MessageFactory : IMessageFactory
     {
-        public TextMessageBuilder CreateTextMessage(string text)
-            => new TextMessageBuilder(text);
+        public TextMessageBuilder CreateTextMessage()
+            => new TextMessageBuilder();
     }
 }
