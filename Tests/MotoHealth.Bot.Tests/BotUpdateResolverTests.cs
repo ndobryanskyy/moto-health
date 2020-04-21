@@ -15,9 +15,12 @@ namespace MotoHealth.Bot.Tests
     {
         private readonly Mock<IMapper> _mapperMock;
 
+        private readonly BotUpdateResolver _resolver;
+
         public BotUpdateResolverTests()
         {
             _mapperMock = new Mock<IMapper>(MockBehavior.Strict);
+            _resolver = new BotUpdateResolver(_mapperMock.Object);
         }
 
         [Theory]
@@ -35,46 +38,21 @@ namespace MotoHealth.Bot.Tests
                 .With(x => x.Text, "Test message.")
                 .Create();
 
-            var mappedUser = new TelegramUser();
-
-            _mapperMock
-                .Setup(x => x.Map<TelegramUser>(message.From))
-                .Returns(mappedUser);
-
-            var mappedGroup = new TelegramGroup();
-
-            _mapperMock
-                .Setup(x => x.Map<TelegramGroup>(message.Chat))
-                .Returns(mappedGroup);
-
             var update = autoFixture.BuildDefaultUpdate()
                 .With(x => x.Message, message)
                 .Create();
 
-            var resolver = CreateResolver();
+            var mappedTextMessageBotUpdate = new TextMessageBotUpdate();
 
-            var updateResolved = resolver.TryResolveSupportedUpdate(update, out var supportedUpdate);
+            _mapperMock
+                .Setup(x => x.Map<TextMessageBotUpdate>(update))
+                .Returns(mappedTextMessageBotUpdate);
+
+            var updateResolved = _resolver.TryResolveSupportedUpdate(update, out var supportedUpdate);
 
             updateResolved.Should().BeTrue();
 
-            var textMessageUpdate = supportedUpdate.Should().BeOfType<TextMessageBotUpdate>().Subject;
-
-            textMessageUpdate.UpdateId.Should().Be(update.Id);
-            textMessageUpdate.MessageId.Should().Be(message.MessageId);
-
-            textMessageUpdate.Text.Should().Be(message.Text);
-
-            textMessageUpdate.Chat.Id.Should().Be(message.Chat.Id);
-            textMessageUpdate.Chat.From.Should().BeSameAs(mappedUser);
-
-            if (messageInGroup)
-            {
-                textMessageUpdate.Chat.Group.Should().BeSameAs(mappedGroup);
-            }
-            else
-            {
-                textMessageUpdate.Chat.Group.Should().BeNull();
-            }
+            supportedUpdate.Should().BeSameAs(mappedTextMessageBotUpdate);
         }
 
         [Theory]
@@ -101,54 +79,27 @@ namespace MotoHealth.Bot.Tests
                 : autoFixture.BuildDefaultPrivateMessage();
 
             var message = messageBuilder
-                .With(x => x.Text, $"{sampleCommand}    a       b")
+                .With(x => x.Text, sampleCommand)
                 .With(x => x.Entities, messageEntities)
                 .Create();
-
-            var mappedUser = new TelegramUser();
-
-            _mapperMock
-                .Setup(x => x.Map<TelegramUser>(message.From))
-                .Returns(mappedUser);
-
-            var mappedGroup = new TelegramGroup();
-
-            _mapperMock
-                .Setup(x => x.Map<TelegramGroup>(message.Chat))
-                .Returns(mappedGroup);
 
             var update = autoFixture.BuildDefaultUpdate()
                 .With(x => x.Message, message)
                 .Create();
 
-            var resolver = CreateResolver();
+            var mappedCommandBotUpdate = new CommandMessageBotUpdate();
 
-            var updateResolved = resolver.TryResolveSupportedUpdate(update, out var supportedUpdate);
+            _mapperMock
+                .Setup(x => x.Map<CommandMessageBotUpdate>(update))
+                .Returns(mappedCommandBotUpdate);
+
+            var updateResolved = _resolver.TryResolveSupportedUpdate(update, out var supportedUpdate);
 
             updateResolved.Should().BeTrue();
 
-            var commandUpdate = supportedUpdate.Should().BeOfType<CommandBotUpdate>().Subject;
-
-            commandUpdate.UpdateId.Should().Be(update.Id);
-            commandUpdate.MessageId.Should().Be(message.MessageId);
-
-            commandUpdate.Command.Should().Be(sampleCommand);
-            commandUpdate.Arguments.Should().HaveCount(2).And.ContainInOrder("a", "b");
-
-            commandUpdate.Chat.Id.Should().Be(message.Chat.Id);
-            commandUpdate.Chat.From.Should().BeSameAs(mappedUser);
-
-            if (messageInGroup)
-            {
-                commandUpdate.Chat.Group.Should().BeSameAs(mappedGroup);
-            }
-            else
-            {
-                commandUpdate.Chat.Group.Should().BeNull();
-            }
+            supportedUpdate.Should().BeSameAs(mappedCommandBotUpdate);
         }
 
-        // TODO: Should be fixed later
         [Fact]
         public void Should_Resolve_TextMessage_Update_If_More_Than_One_MessageEntity_Present()
         {
@@ -182,22 +133,21 @@ namespace MotoHealth.Bot.Tests
                 .With(x => x.Entities, messageEntities)
                 .Create();
 
-            _mapperMock
-                .Setup(x => x.Map<TelegramUser>(message.From))
-                .Returns(new TelegramUser());
-
             var update = autoFixture.BuildDefaultUpdate()
                 .With(x => x.Message, message)
                 .Create();
 
-            var resolver = CreateResolver();
+            var mappedTextMessageBotUpdate = new TextMessageBotUpdate();
 
-            var updateResolved = resolver.TryResolveSupportedUpdate(update, out var supportedUpdate);
+            _mapperMock
+                .Setup(x => x.Map<TextMessageBotUpdate>(update))
+                .Returns(mappedTextMessageBotUpdate);
+
+            var updateResolved = _resolver.TryResolveSupportedUpdate(update, out var supportedUpdate);
 
             updateResolved.Should().BeTrue();
 
-            supportedUpdate.Should().BeOfType<TextMessageBotUpdate>()
-                .Which.Text.Should().Be(text);
+            supportedUpdate.Should().BeSameAs(mappedTextMessageBotUpdate);
         }
 
         [Theory]
@@ -215,55 +165,21 @@ namespace MotoHealth.Bot.Tests
                 .With(x => x.Contact)
                 .Create();
 
-            var mappedUser = new TelegramUser();
-
-            _mapperMock
-                .Setup(x => x.Map<TelegramUser>(message.From))
-                .Returns(mappedUser);
-
-            var mappedGroup = new TelegramGroup();
-
-            _mapperMock
-                .Setup(x => x.Map<TelegramGroup>(message.Chat))
-                .Returns(mappedGroup);
-
-            var mappedContact = new TelegramContact();
-
-            _mapperMock
-                .Setup(x => x.Map<TelegramContact>(message.Contact))
-                .Returns(mappedContact);
-
             var update = autoFixture.BuildDefaultUpdate()
                 .With(x => x.Message, message)
                 .Create();
 
-            var resolver = CreateResolver();
+            var mappedContactUpdate = new ContactMessageBotUpdate();
 
-            var updateResolved = resolver.TryResolveSupportedUpdate(update, out var supportedUpdate);
+            _mapperMock
+                .Setup(x => x.Map<ContactMessageBotUpdate>(update))
+                .Returns(mappedContactUpdate);
+
+            var updateResolved = _resolver.TryResolveSupportedUpdate(update, out var supportedUpdate);
 
             updateResolved.Should().BeTrue();
 
-            var contactUpdate = supportedUpdate.Should().BeOfType<ContactMessageBotUpdate>().Subject;
-
-            contactUpdate.UpdateId.Should().Be(update.Id);
-            contactUpdate.MessageId.Should().Be(message.MessageId);
-
-            contactUpdate.Contact.Should().BeSameAs(mappedContact);
-
-            contactUpdate.Chat.Id.Should().Be(message.Chat.Id);
-            contactUpdate.Chat.From.Should().BeSameAs(mappedUser);
-
-            if (messageInGroup)
-            {
-                contactUpdate.Chat.Group.Should().BeSameAs(mappedGroup);
-            }
-            else
-            {
-                contactUpdate.Chat.Group.Should().BeNull();
-            }
+            supportedUpdate.Should().BeSameAs(mappedContactUpdate);
         }
-
-        private BotUpdateResolver CreateResolver() =>
-            new BotUpdateResolver(_mapperMock.Object);
     }
 }

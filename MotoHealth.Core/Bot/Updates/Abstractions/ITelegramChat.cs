@@ -1,10 +1,12 @@
-﻿namespace MotoHealth.Core.Bot.Updates.Abstractions
+﻿using Telegram.Bot.Types.Enums;
+
+namespace MotoHealth.Core.Bot.Updates.Abstractions
 {
     public interface ITelegramChat
     {
         long Id { get; }
 
-        ITelegramUser From { get; }
+        ChatType Type { get; }
 
         ITelegramGroup? Group { get; }
     }

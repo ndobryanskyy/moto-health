@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -7,8 +6,7 @@ using MotoHealth.Core.Telegram;
 
 namespace MotoHealth.Bot.Filters
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public sealed class ValidBotTokenRequiredFilter : Attribute, IResourceFilter
+    internal sealed class ValidBotTokenRequiredFilter : IResourceFilter
     {
         private readonly ILogger<ValidBotTokenRequiredFilter> _logger;
         private readonly TelegramOptions _telegramOptions;

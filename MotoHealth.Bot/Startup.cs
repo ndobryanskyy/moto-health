@@ -47,10 +47,6 @@ namespace MotoHealth.Bot
 
             services.AddInfrastructure(new InfrastructureOptionsConfigurator
             {
-                ConfigureUpdatesQueue = updatesQueueOptions =>
-                {
-                    _configuration.Bind(Constants.UpdatesQueue.ConfigurationSectionName, updatesQueueOptions);
-                },
                 ConfigureChatStorage = chatsStorageOptions =>
                 {
                     chatsStorageOptions.StorageAccountConnectionString = _configuration.GetConnectionString(Constants.ChatsStorage.ConnectionStringName);

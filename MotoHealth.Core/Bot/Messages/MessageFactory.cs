@@ -1,13 +1,8 @@
 ﻿namespace MotoHealth.Core.Bot.Messages
 {
-    internal interface IMessageFactory
+    public static class MessageFactory
     {
-        TextMessageBuilder CreateTextMessage();
-    }
-
-    internal sealed class MessageFactory : IMessageFactory
-    {
-        public TextMessageBuilder CreateTextMessage()
+        public static TextMessageBuilder CreateTextMessage()
             => new TextMessageBuilder();
     }
 }

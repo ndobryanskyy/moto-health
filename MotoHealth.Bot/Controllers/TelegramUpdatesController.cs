@@ -10,21 +10,22 @@ using Telegram.Bot.Types;
 namespace MotoHealth.Bot.Controllers
 {
     [Route("updates")]
-    [TypeFilter(typeof(ValidBotTokenRequiredFilter), IsReusable =  true)]
+    [TypeFilter(typeof(ValidBotTokenRequiredFilter), IsReusable = false)]
+    [TypeFilter(typeof(IgnoreExceptionsFilter), IsReusable = false)]
     public sealed class TelegramUpdatesController : ControllerBase
     {
         private readonly ILogger<TelegramUpdatesController> _logger;
         private readonly IBotUpdateResolver _updateResolver;
-        private readonly IBotUpdatesQueue _updatesQueue;
+        private readonly IChatsFactory _chatsFactory;
 
         public TelegramUpdatesController(
             ILogger<TelegramUpdatesController> logger,
             IBotUpdateResolver updateResolver,
-            IBotUpdatesQueue updatesQueue)
+            IChatsFactory chatsFactory)
         {
             _logger = logger;
             _updateResolver = updateResolver;
-            _updatesQueue = updatesQueue;
+            _chatsFactory = chatsFactory;
         }
 
         [HttpPost]
@@ -34,8 +35,6 @@ namespace MotoHealth.Bot.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // TODO Dead letter the update
-
                 _logger.LogError($"Received incorrect update:\n{ModelState}");
                 return;
             }
@@ -46,7 +45,8 @@ namespace MotoHealth.Bot.Controllers
             {
                 _logger.LogInformation($"Update {update.Id} resolved to supported type: {update.Type}");
 
-                await _updatesQueue.EnqueueUpdateAsync(botUpdate, cancellationToken);
+                var chat = _chatsFactory.CreateChat(botUpdate.Chat.Id);
+                await chat.HandleUpdateAsync(botUpdate, cancellationToken);
             }
             else
             {

@@ -1,23 +1,14 @@
 ﻿using MotoHealth.Core.Bot.Updates.Abstractions;
+using Telegram.Bot.Types.Enums;
 
 namespace MotoHealth.Core.Bot.Updates
 {
     public sealed class TelegramChat : ITelegramChat
     {
-        public TelegramChat(
-            long id,
-            TelegramUser from,
-            TelegramGroup? group)
-        {
-            Id = id;
-            From = from;
-            Group = group;
-        }
+        public long Id { get; internal set; }
 
-        public long Id { get; }
+        public ChatType Type { get; internal set; }
 
-        public ITelegramUser From { get; }
-
-        public ITelegramGroup? Group { get; }
+        public ITelegramGroup? Group { get; internal set; }
     }
 }

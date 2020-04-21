@@ -9,8 +9,6 @@ namespace MotoHealth.Infrastructure.ChatStorage.Entities
     {
         public long AssociatedChatId { get; set; }
 
-        public int AssociatedUserId { get; set; }
-
         public bool UserSubscribed { get; set; }
 
         [IgnoreProperty]

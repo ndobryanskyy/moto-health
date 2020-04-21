@@ -12,7 +12,8 @@ namespace MotoHealth.Infrastructure.AccidentReporting
             CreateMap<AccidentReport, AccidentReportDto>()
                 .ForMember(
                     x => x.ReportedAtUtc, 
-                    x => x.MapFrom(x => Timestamp.FromDateTime(x.ReportedAtUtc)));
+                    opts => opts.MapFrom(x => Timestamp.FromDateTime(x.ReportedAtUtc))
+                );
         }
     }
 }

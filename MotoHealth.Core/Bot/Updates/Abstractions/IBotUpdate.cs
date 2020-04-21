@@ -4,6 +4,8 @@
     {
         int UpdateId { get; }
 
+        ITelegramUser Sender { get; }
+
         ITelegramChat Chat { get; }
     }
 }

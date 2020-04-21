@@ -5,7 +5,6 @@ using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Infrastructure.AccidentReporting;
 using MotoHealth.Infrastructure.ChatStorage;
 using MotoHealth.Infrastructure.ServiceBus;
-using MotoHealth.Infrastructure.UpdatesQueue;
 
 namespace MotoHealth.Infrastructure
 {
@@ -15,11 +14,6 @@ namespace MotoHealth.Infrastructure
             this IServiceCollection services,
             InfrastructureOptionsConfigurator configurator)
         {
-            if (configurator.ConfigureUpdatesQueue == null)
-            {
-                throw new InvalidOperationException($"{nameof(InfrastructureOptionsConfigurator.ConfigureUpdatesQueue)} must be set");
-            }
-
             if (configurator.ConfigureChatStorage == null)
             {
                 throw new InvalidOperationException($"{nameof(InfrastructureOptionsConfigurator.ConfigureChatStorage)} must be set");
@@ -30,7 +24,6 @@ namespace MotoHealth.Infrastructure
                 throw new InvalidOperationException($"{nameof(InfrastructureOptionsConfigurator.ConfigureAccidentsQueue)} must be set");
             }
 
-            services.Configure(configurator.ConfigureUpdatesQueue);
             services.Configure(configurator.ConfigureChatStorage);
             services.Configure(configurator.ConfigureAccidentsQueue);
 
@@ -41,12 +34,9 @@ namespace MotoHealth.Infrastructure
                 .AddSingleton<IChatStateInMemoryCache, ChatStateInMemoryCache>()
                 .AddSingleton<IChatStatesStore, AzureTableChatStatesStore>()
                 .AddSingleton<IServiceBusClientsFactory, ServiceBusClientsFactory>()
-                .AddSingleton<IBotUpdatesSerializer, BotUpdatesSerializer>()
-                .AddSingleton<IBotUpdatesQueue, ServiceBusUpdatesQueue>()
                 .AddSingleton<IAccidentsQueue, ServiceBusAccidentsQueue>();
 
             services.AddHostedService<AzureTablesInitializerHostedService>();
-            services.AddHostedService<UpdatesQueueHandlerBackgroundService>();
 
             return services;
         }

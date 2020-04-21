@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices.ComTypes;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -18,24 +17,25 @@ namespace MotoHealth.Bot.Tests
 
         private readonly Mock<ILogger<TelegramUpdatesController>> _loggerMock;
         private readonly Mock<IBotUpdateResolver> _botUpdateResolverMock;
-        private readonly Mock<IBotUpdatesQueue> _botUpdatesQueueMock;
+        private readonly Mock<IChatsFactory> _chatsFactoryMock;
+
         private readonly TelegramUpdatesController _controller;
 
         public TelegramUpdatesControllerTests()
         {
             _loggerMock = new Mock<ILogger<TelegramUpdatesController>>();
-            _botUpdateResolverMock = new Mock<IBotUpdateResolver>();
-            _botUpdatesQueueMock = new Mock<IBotUpdatesQueue>();
+            _botUpdateResolverMock = new Mock<IBotUpdateResolver>(MockBehavior.Strict);
+            _chatsFactoryMock = new Mock<IChatsFactory>(MockBehavior.Strict);
 
             _controller = new TelegramUpdatesController(
                 _loggerMock.Object,
                 _botUpdateResolverMock.Object,
-                _botUpdatesQueueMock.Object
+                _chatsFactoryMock.Object
             );
         }
 
         [Fact]
-        public async Task Should_Not_Add_Unsupported_Update_To_Queue()
+        public async Task Should_Not_Handle_Unsupported_Update()
         {
             IBotUpdate? resolvedUpdate;
 
@@ -47,25 +47,43 @@ namespace MotoHealth.Bot.Tests
 
             await _controller.ReceiveWebHookAsync(dummyUpdate, _cancellationToken);
 
-            _botUpdatesQueueMock
-                .Verify(x => x.EnqueueUpdateAsync(It.IsAny<IBotUpdate>(), It.IsAny<CancellationToken>()), Times.Never);
+            _chatsFactoryMock
+                .Verify(x => x.CreateChat(It.IsAny<long>()), Times.Never);
         }
 
         [Fact]
-        public async Task Should_Add_Supported_Update_To_Queue()
+        public async Task Should_Handle_Supported_Update()
         {
-            IBotUpdate? resolvedUpdate = null;
+            const long chatId = 123;
+
+            var telegramChatMock = new Mock<ITelegramChat>(MockBehavior.Strict);
+            telegramChatMock.SetupGet(x => x.Id).Returns(chatId);
+
+            var updateMock = new Mock<IBotUpdate>(MockBehavior.Strict);
+            updateMock.SetupGet(x => x.Chat).Returns(telegramChatMock.Object);
+
+            IBotUpdate resolvedUpdate = updateMock.Object;
 
             var dummyUpdate = new Update();
 
             _botUpdateResolverMock
-                .Setup(x => x.TryResolveSupportedUpdate(dummyUpdate, out resolvedUpdate))
-                .Returns(true);
+                .Setup(x => x.TryResolveSupportedUpdate(dummyUpdate, out resolvedUpdate!))
+                .Returns(true)
+                .Callback(() =>
+                {
+                    
+                });
+
+            var chatMock = new Mock<IChat>(MockBehavior.Strict);
+            chatMock
+                .Setup(x => x.HandleUpdateAsync(resolvedUpdate, _cancellationToken))
+                .Returns(Task.CompletedTask);
+
+            _chatsFactoryMock.Setup(x => x.CreateChat(chatId)).Returns(chatMock.Object);
 
             await _controller.ReceiveWebHookAsync(dummyUpdate, _cancellationToken);
 
-            _botUpdatesQueueMock
-                .Verify(x => x.EnqueueUpdateAsync(resolvedUpdate!, _cancellationToken), Times.Once);
+            chatMock.Verify(x => x.HandleUpdateAsync(resolvedUpdate, _cancellationToken), Times.Once);
         }
     }
 }

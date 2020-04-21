@@ -2,11 +2,6 @@
 {
     public static class Constants
     {
-        public static class UpdatesQueue
-        {
-            public const string ConfigurationSectionName = "UpdatesQueue";
-        }
-
         public static class AccidentsQueue
         {
             public const string ConnectionStringName = "AccidentsQueue";

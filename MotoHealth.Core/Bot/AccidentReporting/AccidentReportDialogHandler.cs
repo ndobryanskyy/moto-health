@@ -10,20 +10,17 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 {
     public interface IAccidentReportDialogHandler
     {
-        Task<bool> AdvanceDialogAsync(IBotUpdateContext context, IAccidentReportDialogState state, CancellationToken cancellationToken);
+        Task<bool> AdvanceDialogAsync(IChatUpdateContext context, IAccidentReportDialogState state, CancellationToken cancellationToken);
     }
 
     internal sealed class AccidentReportDialogHandler : IAccidentReportDialogHandler
     {
         private readonly IAccidentsQueue _accidentsQueue;
         private static readonly KeyboardButton CancelButton = new KeyboardButton("Отмена");
-        
-        private readonly Messages _messages;
 
-        public AccidentReportDialogHandler(IMessageFactory messageFactory, IAccidentsQueue accidentsQueue)
+        public AccidentReportDialogHandler(IAccidentsQueue accidentsQueue)
         {
             _accidentsQueue = accidentsQueue;
-            _messages = new Messages(messageFactory);
         }
 
         /// <summary>
@@ -34,7 +31,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
         /// <param name="cancellationToken"></param>
         /// <returns>True if dialog ended.</returns>
         public async Task<bool> AdvanceDialogAsync(
-            IBotUpdateContext context,
+            IChatUpdateContext context,
             IAccidentReportDialogState state,
             CancellationToken cancellationToken)
         {
@@ -45,7 +42,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             {
                 case 1:
                 {
-                    await context.SendMessageAsync(_messages.SpecifyAddress, cancellationToken);
+                    await context.SendMessageAsync(Messages.SpecifyAddress, cancellationToken);
                     break;
                 }
 
@@ -55,7 +52,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     {
                         state.Address = textMessage.Text;
 
-                        await context.SendMessageAsync(_messages.SpecifyParticipants, cancellationToken);
+                        await context.SendMessageAsync(Messages.SpecifyParticipants, cancellationToken);
                         break;
                     }
                     else
@@ -71,7 +68,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     {
                         state.Participants = textMessage.Text;
 
-                        await context.SendMessageAsync(_messages.AreThereVictims, cancellationToken);
+                        await context.SendMessageAsync(Messages.AreThereVictims, cancellationToken);
                         break;
                     }
                     else
@@ -87,7 +84,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     {
                         state.Victims = textMessage.Text;
 
-                        await context.SendMessageAsync(_messages.AskForContacts, cancellationToken);
+                        await context.SendMessageAsync(Messages.AskForContacts, cancellationToken);
                         break;
                     }
                     else
@@ -110,7 +107,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     {
                         state.ReporterPhoneNumber = phoneNumber;
 
-                        await context.SendMessageAsync(_messages.ReportSummaryWithPrompt(state), cancellationToken);
+                        await context.SendMessageAsync(Messages.ReportSummaryWithPrompt(state), cancellationToken);
                         break;
                     }
                     else
@@ -127,7 +124,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                         {
                             await AddReportToQueueAsync();
 
-                            await context.SendMessageAsync(_messages.SuccessfullySent, cancellationToken);
+                            await context.SendMessageAsync(Messages.SuccessfullySent, cancellationToken);
                             return true;
                         }
                         else
@@ -153,7 +150,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                 {
                     if (textUpdate.Text == CancelButton.Text)
                     {
-                        await context.SendMessageAsync(_messages.Canceled, cancellationToken);
+                        await context.SendMessageAsync(Messages.Canceled, cancellationToken);
                         return true;
                     }
                 }
@@ -165,7 +162,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             {
                 var report = new AccidentReport(
                     state.InstanceId,
-                    context.Update.Chat.From.Id,
+                    context.Update.Sender.Id,
                     DateTime.UtcNow, 
                     state.Address,
                     state.Participants,
@@ -177,27 +174,20 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             }
         }
 
-        private sealed class Messages
+        private static class Messages
         {
-            private readonly IMessageFactory _messageFactory;
-
-            public Messages(IMessageFactory messageFactory)
-            {
-                _messageFactory = messageFactory;
-            }
-
-            public IMessage Canceled => _messageFactory.CreateTextMessage()
+            public static readonly IMessage Canceled = MessageFactory.CreateTextMessage()
                 .WithPlainText("⛔ Отменено")
                 .WithClearedReplyKeyboard();
 
-            public IMessage SpecifyAddress => _messageFactory.CreateTextMessage()
+            public static readonly IMessage SpecifyAddress = MessageFactory.CreateTextMessage()
                 .WithPlainText("📍 Укажите адрес ДТП")
                 .WithReplyKeyboard(new[]
                 {
                     new [] { CancelButton }
                 });
 
-            public IMessage SpecifyParticipants => _messageFactory.CreateTextMessage()
+            public static readonly IMessage SpecifyParticipants = MessageFactory.CreateTextMessage()
                 .WithPlainText("🛵 Укажите участника ДТП")
                 .WithReplyKeyboard(new[]
                 {
@@ -206,7 +196,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     new [] { CancelButton }
                 });
 
-            public IMessage AreThereVictims => _messageFactory.CreateTextMessage()
+            public static readonly IMessage AreThereVictims = MessageFactory.CreateTextMessage()
                 .WithPlainText("🤕 Есть пострадавшие?")
                 .WithReplyKeyboard(new[]
                 {
@@ -214,7 +204,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     new [] { CancelButton }
                 });
 
-            public IMessage AskForContacts => _messageFactory.CreateTextMessage()
+            public static readonly IMessage AskForContacts = MessageFactory.CreateTextMessage()
                 .WithMarkdownText("📞 Сообщить оператору Ваш номер телефона?\n\n\n" +
                                    "💡 _Нажмите *да* чтобы автоматически отправить номер_")
                 .WithReplyKeyboard(new[]
@@ -223,7 +213,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     new [] { CancelButton }
                 });
 
-            public IMessage ReportSummaryWithPrompt(IAccidentReportDialogState state) => _messageFactory.CreateTextMessage()
+            public static IMessage ReportSummaryWithPrompt(IAccidentReportDialogState state) => MessageFactory.CreateTextMessage()
                 .WithInterpolatedMarkdownText(
 @$"🚨 Вы собираетесь сообщить о ДТП
     
@@ -239,7 +229,7 @@ _Отправить?_", true)
                     new [] { CancelButton }
                 });
 
-            public IMessage SuccessfullySent => _messageFactory.CreateTextMessage()
+            public static readonly IMessage SuccessfullySent = MessageFactory.CreateTextMessage()
                 .WithPlainText("✅ Успешно отправлено")
                 .WithClearedReplyKeyboard();
         }

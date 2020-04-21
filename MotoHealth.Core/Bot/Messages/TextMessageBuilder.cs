@@ -11,7 +11,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MotoHealth.Core.Bot.Messages
 {
-    internal sealed class TextMessageBuilder : IMessage
+    public sealed class TextMessageBuilder : IMessage
     {
         private string? _text;
         private ParseMode _parseMode = ParseMode.Default;

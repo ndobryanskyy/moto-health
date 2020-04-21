@@ -4,8 +4,8 @@ using MotoHealth.Core.Bot.Updates.Abstractions;
 
 namespace MotoHealth.Core.Bot.Abstractions
 {
-    public interface IBotUpdatesQueue
+    public interface IChat
     {
-        Task EnqueueUpdateAsync(IBotUpdate botUpdate, CancellationToken cancellationToken);
+        Task HandleUpdateAsync(IBotUpdate update, CancellationToken cancellationToken);
     }
 }
