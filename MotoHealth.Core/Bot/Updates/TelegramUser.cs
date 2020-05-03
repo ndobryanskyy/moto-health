@@ -2,13 +2,13 @@
 
 namespace MotoHealth.Core.Bot.Updates
 {
-    public sealed class TelegramUser : ITelegramUser
+    internal sealed class TelegramUser : ITelegramUser
     {
         public int Id { get; set; }
 
         public string? Username { get; set; }
 
-        public string? FirstName { get; set; }
+        public string FirstName { get; set; } = default!;
 
         public string? LastName { get; set; }
 

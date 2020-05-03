@@ -38,7 +38,7 @@ namespace MotoHealth.Core.Bot
             }
             else
             {
-                _logger.LogWarning($"Chat {chatId} already locked!");
+                _logger.LogInformation($"Chat {chatId} already locked!");
             }
 
 

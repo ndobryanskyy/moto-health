@@ -21,8 +21,9 @@ namespace MotoHealth.Infrastructure.ChatStorage.Entities
             AccidentReportDialog = new AccidentReportDialogState
             {
                 InstanceId = Guid.NewGuid().ToString("D"),
+                StartedAt = DateTimeOffset.UtcNow,
                 Version = version,
-                CurrentStep = 1
+                CurrentStep = 0
             };
 
             return AccidentReportDialog;
@@ -43,6 +44,8 @@ namespace MotoHealth.Infrastructure.ChatStorage.Entities
             public string InstanceId { get; set; } = string.Empty;
 
             public int CurrentStep { get; set; }
+
+            public DateTimeOffset StartedAt { get; set; }
 
             public string Address { get; set; } = string.Empty;
 

@@ -1,10 +1,12 @@
+using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging.Console;
 using MotoHealth.Core;
 using MotoHealth.Infrastructure;
 
@@ -21,11 +23,6 @@ namespace MotoHealth.Bot
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<ConsoleLoggerOptions>(options =>
-            {
-                options.TimestampFormat = "[HH:mm:ss.fff] ";
-            });
-
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddAutoMapper(new []
@@ -35,6 +32,8 @@ namespace MotoHealth.Bot
                 GetType().Assembly
             });
 
+            services.AddApp(_configuration);
+
             services.AddCore(new CoreOptionsConfigurator
             {
                 ConfigureTelegram = telegramOptions =>
@@ -42,8 +41,6 @@ namespace MotoHealth.Bot
                     _configuration.Bind(Constants.Telegram.ConfigurationSectionName, telegramOptions);
                 }
             });
-
-            services.AddApp();
 
             services.AddInfrastructure(new InfrastructureOptionsConfigurator
             {
@@ -69,6 +66,16 @@ namespace MotoHealth.Bot
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.Map("/", context =>
+                {
+                    var telemetry = context.Features.Get<RequestTelemetry>();
+                    telemetry.Name = "Always On Ping";
+
+                    context.Response.StatusCode = StatusCodes.Status200OK;
+                    
+                    return Task.CompletedTask;
+                });
+
                 endpoints.MapControllers();
             });
         }

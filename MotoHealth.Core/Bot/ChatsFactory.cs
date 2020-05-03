@@ -11,6 +11,7 @@ namespace MotoHealth.Core.Bot
         private readonly IChatStatesRepository _chatStatesRepository;
         private readonly IDefaultChatStateFactory _defaultChatStateFactory;
         private readonly IChatUpdateHandler _chatUpdateHandler;
+        private readonly IBotTelemetryService _botTelemetryService;
 
         public ChatsFactory(
             ILoggerFactory loggerFactory,
@@ -18,7 +19,8 @@ namespace MotoHealth.Core.Bot
             ITelegramBotClientFactory botClientFactory,
             IChatStatesRepository chatStatesRepository,
             IDefaultChatStateFactory defaultChatStateFactory,
-            IChatUpdateHandler chatUpdateHandler)
+            IChatUpdateHandler chatUpdateHandler,
+            IBotTelemetryService botTelemetryService)
         {
             _loggerFactory = loggerFactory;
             _chatsDoorman = chatsDoorman;
@@ -26,6 +28,7 @@ namespace MotoHealth.Core.Bot
             _chatStatesRepository = chatStatesRepository;
             _defaultChatStateFactory = defaultChatStateFactory;
             _chatUpdateHandler = chatUpdateHandler;
+            _botTelemetryService = botTelemetryService;
         }
 
         public IChat CreateChat(long chatId)
@@ -36,7 +39,8 @@ namespace MotoHealth.Core.Bot
                 _botClientFactory,
                 _chatStatesRepository,
                 _defaultChatStateFactory,
-                _chatUpdateHandler
+                _chatUpdateHandler,
+                _botTelemetryService
             );
     }
 }

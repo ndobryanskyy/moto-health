@@ -21,6 +21,7 @@ namespace MotoHealth.Core
             services.Configure(configurator.ConfigureTelegram);
 
             services
+                .AddSingleton<IBotUpdatesMapper, BotUpdatesMapper>()
                 .AddSingleton<ITelegramBotClientFactory, TelegramBotClientFactory>()
                 .AddTransient<IChatsFactory, ChatsFactory>()
                 .AddTransient<IChatStatesRepository, ChatStatesRepository>()

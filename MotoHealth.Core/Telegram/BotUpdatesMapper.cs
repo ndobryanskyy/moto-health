@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using AutoMapper;
 using MotoHealth.Core.Bot.Updates;
@@ -7,34 +6,32 @@ using MotoHealth.Core.Bot.Updates.Abstractions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace MotoHealth.Bot.Telegram
+namespace MotoHealth.Core.Telegram
 {
-    public interface IBotUpdateResolver
+    public interface IBotUpdatesMapper
     {
-        bool TryResolveSupportedUpdate(Update update, [NotNullWhen(true)] out IBotUpdate? supportedUpdate);
+        IBotUpdate MapTelegramUpdate(Update update);
     }
 
-    internal sealed class BotUpdateResolver : IBotUpdateResolver
+    internal sealed class BotUpdatesMapper : IBotUpdatesMapper
     {
         private readonly IMapper _mapper;
 
-        public BotUpdateResolver(IMapper mapper)
+        public BotUpdatesMapper(IMapper mapper)
         {
             _mapper = mapper;
         }
 
-        public bool TryResolveSupportedUpdate(Update update, out IBotUpdate? supportedUpdate)
+        public IBotUpdate MapTelegramUpdate(Update update)
         {
-            supportedUpdate = update switch
+            return update switch
             {
-                { Type: UpdateType.Message, Message: Message _ } => ResolveMessageBotUpdate(update),
-                _ => null
+                { Type: UpdateType.Message, Message: Message _ } => MapMessageBotUpdate(update),
+                _ => _mapper.Map<NotMappedBotUpdate>(update)
             };
-
-            return supportedUpdate != null;
         }
 
-        private IMessageBotUpdate? ResolveMessageBotUpdate(Update update)
+        private IMessageBotUpdate MapMessageBotUpdate(Update update)
         {
             var message = update.Message ?? throw new ArgumentException(nameof(update));
 
@@ -43,11 +40,11 @@ namespace MotoHealth.Bot.Telegram
                 { Type: MessageType.Contact, Contact: Contact _ } => _mapper.Map<ContactMessageBotUpdate>(update),
                 { Type: MessageType.Text } when HasOnlyOneCommandEntity(message) => _mapper.Map<CommandMessageBotUpdate>(update),
                 { Type: MessageType.Text } => _mapper.Map<TextMessageBotUpdate>(update),
-                _ => null
+                _ => _mapper.Map<NotMappedMessageBotUpdate>(update)
             };
         }
 
-        private bool HasOnlyOneCommandEntity(Message message)
+        private static bool HasOnlyOneCommandEntity(Message message)
         {
             var entities = message.Entities ?? new MessageEntity[0];
             var entityValues = message.EntityValues?.ToArray() ?? new string[0];

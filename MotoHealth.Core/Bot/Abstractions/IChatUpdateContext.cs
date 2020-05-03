@@ -8,7 +8,7 @@ namespace MotoHealth.Core.Bot.Abstractions
 {
     public interface IChatUpdateContext
     {
-        IBotUpdate Update { get; }
+        IChatUpdate Update { get; }
 
         Task SendMessageAsync(IMessage message, CancellationToken cancellationToken);
 

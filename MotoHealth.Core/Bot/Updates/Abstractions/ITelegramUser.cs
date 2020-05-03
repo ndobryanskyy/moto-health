@@ -6,7 +6,7 @@
 
         string? Username { get; }
 
-        string? FirstName { get; }
+        string FirstName { get; }
 
         string? LastName { get; }
 

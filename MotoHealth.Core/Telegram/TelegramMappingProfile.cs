@@ -36,6 +36,26 @@ namespace MotoHealth.Core.Telegram
                     x => x.Contact,
                     opts => opts.MapFrom(x => x.Message.Contact)
                 );
+
+            CreateMessageBotUpdateMap<NotMappedMessageBotUpdate>()
+                .ForMember(
+                    x => x.OriginalUpdate,
+                    opts => opts.MapFrom(x => x)
+                )
+                .ForMember(
+                    x => x.OriginalMessage,
+                    opts => opts.MapFrom(x => x.Message)
+                );
+
+            CreateMap<Update, NotMappedBotUpdate>()
+                .ForMember(
+                    x => x.UpdateId,
+                    opts => opts.MapFrom(x => x.Id)
+                )
+                .ForMember(
+                    x => x.OriginalUpdate,
+                    opts => opts.MapFrom(x => x)
+                );
         }
 
         private IMappingExpression<Update, TMessageBotUpdate> CreateMessageBotUpdateMap<TMessageBotUpdate>()

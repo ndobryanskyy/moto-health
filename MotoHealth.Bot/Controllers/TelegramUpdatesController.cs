@@ -3,8 +3,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Bot.Filters;
-using MotoHealth.Bot.Telegram;
+using MotoHealth.Core.Bot;
 using MotoHealth.Core.Bot.Abstractions;
+using MotoHealth.Core.Bot.Updates.Abstractions;
+using MotoHealth.Core.Telegram;
 using Telegram.Bot.Types;
 
 namespace MotoHealth.Bot.Controllers
@@ -15,17 +17,20 @@ namespace MotoHealth.Bot.Controllers
     public sealed class TelegramUpdatesController : ControllerBase
     {
         private readonly ILogger<TelegramUpdatesController> _logger;
-        private readonly IBotUpdateResolver _updateResolver;
+        private readonly IBotUpdatesMapper _updateMapper;
         private readonly IChatsFactory _chatsFactory;
+        private readonly IBotTelemetryService _botTelemetryService;
 
         public TelegramUpdatesController(
             ILogger<TelegramUpdatesController> logger,
-            IBotUpdateResolver updateResolver,
-            IChatsFactory chatsFactory)
+            IBotUpdatesMapper updateMapper,
+            IChatsFactory chatsFactory,
+            IBotTelemetryService botTelemetryService)
         {
             _logger = logger;
-            _updateResolver = updateResolver;
+            _updateMapper = updateMapper;
             _chatsFactory = chatsFactory;
+            _botTelemetryService = botTelemetryService;
         }
 
         [HttpPost]
@@ -35,22 +40,26 @@ namespace MotoHealth.Bot.Controllers
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogError($"Received incorrect update:\n{ModelState}");
+                _logger.LogWarning("Received invalid update");
+
                 return;
             }
 
             _logger.LogDebug($"Received telegram update: {update.Id}");
 
-            if (_updateResolver.TryResolveSupportedUpdate(update, out var botUpdate))
-            {
-                _logger.LogInformation($"Update {update.Id} resolved to supported type: {update.Type}");
+            var botUpdate = _updateMapper.MapTelegramUpdate(update);
 
-                var chat = _chatsFactory.CreateChat(botUpdate.Chat.Id);
-                await chat.HandleUpdateAsync(botUpdate, cancellationToken);
+            _botTelemetryService.OnUpdateMapped(botUpdate);
+
+            if (botUpdate is IChatUpdate chatUpdate)
+            {
+                var chat = _chatsFactory.CreateChat(chatUpdate.Chat.Id);
+                await chat.HandleUpdateAsync(chatUpdate, cancellationToken);
             }
             else
             {
-                _logger.LogInformation($"Skipping update {update.Id} of type {update.Type}");
+                _logger.LogInformation($"Skipping update {update.Id}");
+                _botTelemetryService.OnUpdateSkipped();
             }
         }
     }

@@ -2,25 +2,25 @@
 using AutoMapper;
 using FluentAssertions;
 using Moq;
-using MotoHealth.Bot.Telegram;
 using MotoHealth.Bot.Tests.Fixtures.Telegram;
 using MotoHealth.Core.Bot.Updates;
+using MotoHealth.Core.Telegram;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Xunit;
 
 namespace MotoHealth.Bot.Tests
 {
-    public sealed class BotUpdateResolverTests
+    public sealed class BotUpdatesMapperTests
     {
         private readonly Mock<IMapper> _mapperMock;
 
-        private readonly BotUpdateResolver _resolver;
+        private readonly BotUpdatesMapper _updatesMapper;
 
-        public BotUpdateResolverTests()
+        public BotUpdatesMapperTests()
         {
             _mapperMock = new Mock<IMapper>(MockBehavior.Strict);
-            _resolver = new BotUpdateResolver(_mapperMock.Object);
+            _updatesMapper = new BotUpdatesMapper(_mapperMock.Object);
         }
 
         [Theory]
@@ -42,17 +42,15 @@ namespace MotoHealth.Bot.Tests
                 .With(x => x.Message, message)
                 .Create();
 
-            var mappedTextMessageBotUpdate = new TextMessageBotUpdate();
+            var expectedMappedUpdate = new TextMessageBotUpdate();
 
             _mapperMock
                 .Setup(x => x.Map<TextMessageBotUpdate>(update))
-                .Returns(mappedTextMessageBotUpdate);
+                .Returns(expectedMappedUpdate);
 
-            var updateResolved = _resolver.TryResolveSupportedUpdate(update, out var supportedUpdate);
+            var mappedUpdate = _updatesMapper.MapTelegramUpdate(update);
 
-            updateResolved.Should().BeTrue();
-
-            supportedUpdate.Should().BeSameAs(mappedTextMessageBotUpdate);
+            mappedUpdate.Should().BeSameAs(expectedMappedUpdate);
         }
 
         [Theory]
@@ -87,17 +85,15 @@ namespace MotoHealth.Bot.Tests
                 .With(x => x.Message, message)
                 .Create();
 
-            var mappedCommandBotUpdate = new CommandMessageBotUpdate();
+            var expectedMappedUpdate = new CommandMessageBotUpdate();
 
             _mapperMock
                 .Setup(x => x.Map<CommandMessageBotUpdate>(update))
-                .Returns(mappedCommandBotUpdate);
+                .Returns(expectedMappedUpdate);
 
-            var updateResolved = _resolver.TryResolveSupportedUpdate(update, out var supportedUpdate);
+            var mappedUpdate = _updatesMapper.MapTelegramUpdate(update);
 
-            updateResolved.Should().BeTrue();
-
-            supportedUpdate.Should().BeSameAs(mappedCommandBotUpdate);
+            mappedUpdate.Should().BeSameAs(expectedMappedUpdate);
         }
 
         [Fact]
@@ -137,17 +133,15 @@ namespace MotoHealth.Bot.Tests
                 .With(x => x.Message, message)
                 .Create();
 
-            var mappedTextMessageBotUpdate = new TextMessageBotUpdate();
+            var expectedMappedUpdate = new TextMessageBotUpdate();
 
             _mapperMock
                 .Setup(x => x.Map<TextMessageBotUpdate>(update))
-                .Returns(mappedTextMessageBotUpdate);
+                .Returns(expectedMappedUpdate);
 
-            var updateResolved = _resolver.TryResolveSupportedUpdate(update, out var supportedUpdate);
+            var mappedUpdate = _updatesMapper.MapTelegramUpdate(update);
 
-            updateResolved.Should().BeTrue();
-
-            supportedUpdate.Should().BeSameAs(mappedTextMessageBotUpdate);
+            mappedUpdate.Should().BeSameAs(expectedMappedUpdate);
         }
 
         [Theory]
@@ -169,17 +163,59 @@ namespace MotoHealth.Bot.Tests
                 .With(x => x.Message, message)
                 .Create();
 
-            var mappedContactUpdate = new ContactMessageBotUpdate();
+            var expectedMappedUpdate = new ContactMessageBotUpdate();
 
             _mapperMock
                 .Setup(x => x.Map<ContactMessageBotUpdate>(update))
-                .Returns(mappedContactUpdate);
+                .Returns(expectedMappedUpdate);
 
-            var updateResolved = _resolver.TryResolveSupportedUpdate(update, out var supportedUpdate);
+            var mappedUpdate = _updatesMapper.MapTelegramUpdate(update);
 
-            updateResolved.Should().BeTrue();
+            mappedUpdate.Should().BeSameAs(expectedMappedUpdate);
+        }
 
-            supportedUpdate.Should().BeSameAs(mappedContactUpdate);
+        [Fact]
+        public void Should_Return_Update_Of_NotMapped_Type_If_No_Mapping_Exists()
+        {
+            var autoFixture = new Fixture();
+
+            var update = autoFixture.BuildDefaultUpdate()
+                .With(x => x.PreCheckoutQuery)
+                .Create();
+
+            var expectedMappedUpdate = new NotMappedBotUpdate();
+
+            _mapperMock
+                .Setup(x => x.Map<NotMappedBotUpdate>(update))
+                .Returns(expectedMappedUpdate);
+
+            var mappedUpdate = _updatesMapper.MapTelegramUpdate(update);
+
+            mappedUpdate.Should().BeSameAs(expectedMappedUpdate);
+        }
+
+        [Fact]
+        public void Should_Return_Update_Of_NotMappedMessage_Type_If_No_Mapping_For_Message_Type_Exists()
+        {
+            var autoFixture = new Fixture();
+
+            var message = autoFixture.BuildDefaultPrivateMessage()
+                .With(x => x.Audio)
+                .Create();
+
+            var update = autoFixture.BuildDefaultUpdate()
+                .With(x => x.Message, message)
+                .Create();
+
+            var expectedMappedUpdate = new NotMappedMessageBotUpdate();
+
+            _mapperMock
+                .Setup(x => x.Map<NotMappedMessageBotUpdate>(update))
+                .Returns(expectedMappedUpdate);
+
+            var mappedUpdate = _updatesMapper.MapTelegramUpdate(update);
+
+            mappedUpdate.Should().BeSameAs(expectedMappedUpdate);
         }
     }
 }

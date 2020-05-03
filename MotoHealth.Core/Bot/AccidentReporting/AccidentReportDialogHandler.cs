@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.Messages;
 using MotoHealth.Core.Bot.Updates.Abstractions;
@@ -15,12 +16,20 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
     internal sealed class AccidentReportDialogHandler : IAccidentReportDialogHandler
     {
+        private readonly ILogger<AccidentReportDialogHandler> _logger;
         private readonly IAccidentsQueue _accidentsQueue;
+        private readonly IBotTelemetryService _botTelemetry;
+
         private static readonly KeyboardButton CancelButton = new KeyboardButton("Отмена");
 
-        public AccidentReportDialogHandler(IAccidentsQueue accidentsQueue)
+        public AccidentReportDialogHandler(
+            ILogger<AccidentReportDialogHandler> logger,
+            IAccidentsQueue accidentsQueue, 
+            IBotTelemetryService botTelemetry)
         {
+            _logger = logger;
             _accidentsQueue = accidentsQueue;
+            _botTelemetry = botTelemetry;
         }
 
         /// <summary>
@@ -35,18 +44,25 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             IAccidentReportDialogState state,
             CancellationToken cancellationToken)
         {
+            var dialogTelemetry = _botTelemetry.GetTelemetryServiceForAccidentReporting(state);
+
             var cancelled = await TryHandleCancelButtonAsync();
-            if (cancelled) return true;
+            if (cancelled)
+            {
+                dialogTelemetry.OnCancelled();
+                
+                return true;
+            }
 
             switch (state.CurrentStep)
             {
-                case 1:
+                case 0:
                 {
                     await context.SendMessageAsync(Messages.SpecifyAddress, cancellationToken);
                     break;
                 }
 
-                case 2:
+                case 1:
                 {
                     if (context.Update is ITextMessageBotUpdate textMessage)
                     {
@@ -58,11 +74,13 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     else
                     {
                         // TODO handle wrong update type
+                        dialogTelemetry.OnUnexpectedReply();
+
                         return false;
                     }
                 }
 
-                case 3:
+                case 2:
                 {
                     if (context.Update is ITextMessageBotUpdate textMessage)
                     {
@@ -74,11 +92,13 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     else
                     {
                         // TODO handle wrong update type
+                        dialogTelemetry.OnUnexpectedReply();
+
                         return false;
                     }
                 }
 
-                case 4:
+                case 3:
                 {
                     if (context.Update is ITextMessageBotUpdate textMessage)
                     {
@@ -90,11 +110,14 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     else
                     {
                         // TODO handle wrong update type
+                        dialogTelemetry.OnUnexpectedReply();
+
+
                         return false;
                     }
                 }
 
-                case 5:
+                case 4:
                 {
                     var phoneNumber = context.Update switch
                     {
@@ -108,39 +131,55 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                         state.ReporterPhoneNumber = phoneNumber;
 
                         await context.SendMessageAsync(Messages.ReportSummaryWithPrompt(state), cancellationToken);
+
+                        if (context.Update is IContactMessageBotUpdate)
+                        {
+                            dialogTelemetry.OnPhoneNumberSharedAutomatically();
+                        }
+
                         break;
                     }
                     else
                     {
                         // TODO handle wrong update type
+                        dialogTelemetry.OnUnexpectedReply();
+
+
                         return false;
                     }
                 }
 
-                case 6:
+                case 5:
+                {
+                    if (context.Update is ITextMessageBotUpdate textMessage &&
+                        textMessage.Text.Trim().Equals("да", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        if (context.Update is ITextMessageBotUpdate textMessage &&
-                            textMessage.Text.Trim().Equals("да", StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            await AddReportToQueueAsync();
+                        await AddReportToQueueAsync();
 
-                            await context.SendMessageAsync(Messages.SuccessfullySent, cancellationToken);
-                            return true;
-                        }
-                        else
-                        {
-                            // TODO handle wrong update type and other negative answers
-                            return false;
-                        }
+                        await context.SendMessageAsync(Messages.SuccessfullySent, cancellationToken);
+
+                        dialogTelemetry.OnCompleted();
+
+                        return true;
                     }
+                    else
+                    {
+                        // TODO handle wrong update type and other negative answers
+                        dialogTelemetry.OnUnexpectedReply();
+
+                        return false;
+                    }
+                }
 
 
                 default:
-                    // TODO Log alert and finish the dialog
+                    _logger.LogError("Got unexpected step number");
                     return true;
             }
 
             state.CurrentStep++;
+
+            dialogTelemetry.OnNextStep();
 
             return false;
 

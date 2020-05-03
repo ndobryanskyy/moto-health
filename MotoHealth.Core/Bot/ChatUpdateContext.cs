@@ -14,7 +14,7 @@ namespace MotoHealth.Core.Bot
 
         private readonly ITelegramBotClient _client;
 
-        public ChatUpdateContext(IBotUpdate update, ITelegramBotClient client)
+        public ChatUpdateContext(IChatUpdate update, ITelegramBotClient client)
         {
             _client = client;
 
@@ -23,7 +23,7 @@ namespace MotoHealth.Core.Bot
             _chatId = Update.Chat.Id;
         }
 
-        public IBotUpdate Update { get; }
+        public IChatUpdate Update { get; }
 
         public async Task SendMessageAsync(IMessage message, CancellationToken cancellationToken)
         {

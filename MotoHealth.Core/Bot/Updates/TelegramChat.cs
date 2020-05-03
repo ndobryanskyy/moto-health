@@ -3,12 +3,12 @@ using Telegram.Bot.Types.Enums;
 
 namespace MotoHealth.Core.Bot.Updates
 {
-    public sealed class TelegramChat : ITelegramChat
+    internal sealed class TelegramChat : ITelegramChat
     {
-        public long Id { get; internal set; }
+        public long Id { get; set; }
 
-        public ChatType Type { get; internal set; }
+        public ChatType Type { get; set; }
 
-        public ITelegramGroup? Group { get; internal set; }
+        public ITelegramGroup? Group { get; set; }
     }
 }

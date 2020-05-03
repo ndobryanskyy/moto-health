@@ -24,6 +24,7 @@ namespace MotoHealth.Core.Bot
         private readonly IChatStatesRepository _chatStatesRepository;
         private readonly IDefaultChatStateFactory _defaultChatStateFactory;
         private readonly IChatUpdateHandler _chatUpdateHandler;
+        private readonly IBotTelemetryService _botTelemetryService;
 
         public Chat(
             long chatId,
@@ -32,7 +33,8 @@ namespace MotoHealth.Core.Bot
             ITelegramBotClientFactory botClientFactory,
             IChatStatesRepository chatStatesRepository,
             IDefaultChatStateFactory defaultChatStateFactory,
-            IChatUpdateHandler chatUpdateHandler)
+            IChatUpdateHandler chatUpdateHandler,
+            IBotTelemetryService botTelemetryService)
         {
             _chatId = chatId;
 
@@ -42,6 +44,7 @@ namespace MotoHealth.Core.Bot
             _chatStatesRepository = chatStatesRepository;
             _defaultChatStateFactory = defaultChatStateFactory;
             _chatUpdateHandler = chatUpdateHandler;
+            _botTelemetryService = botTelemetryService;
 
             if (_chatUpdateHandler is ChatUpdateHandlerBase baseHandler)
             {
@@ -49,28 +52,43 @@ namespace MotoHealth.Core.Bot
             }
         }
 
-        public async Task HandleUpdateAsync(IBotUpdate update, CancellationToken cancellationToken)
+        public async Task HandleUpdateAsync(IChatUpdate update, CancellationToken cancellationToken)
         {
-            if (update.Chat.Id != _chatId)
+            if (update is IBelongsToChat updateForChat)
             {
-                throw new ArgumentException($"Cannot handle update ({update.UpdateId}) from other chat {update.Chat.Id}", nameof(update));
+                if (updateForChat.Chat.Id != _chatId)
+                {
+                    throw new ArgumentException($"Cannot handle update from other chat {updateForChat.Chat.Id}", nameof(update));
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Update should belong to chat", nameof(update));
             }
 
             _logger.LogInformation($"Start handling update {update.UpdateId}");
 
             var updateContext = new ChatUpdateContext(update, _botClient);
 
+            var handledSuccessfully = false;
+
             try
             {
                 await _chatUpdateHandler.HandleUpdateAsync(updateContext, cancellationToken);
 
                 _logger.LogInformation($"Successfully finished handling update {update.UpdateId}");
+
+                handledSuccessfully = true;
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"Unhandled exception occured, while handling update {update.UpdateId}");
+                _logger.LogWarning(exception, $"Unhandled exception occured, while handling update {update.UpdateId}");
 
                 await TrySendSomethingWentWrongMessage(updateContext, cancellationToken);
+            }
+            finally
+            {
+                _botTelemetryService.OnUpdateHandled(handledSuccessfully);
             }
         }
 
@@ -83,14 +101,12 @@ namespace MotoHealth.Core.Bot
 
             if (state == null)
             {
-                _logger.LogInformation("No previous state found");
-
                 state = _defaultChatStateFactory.CreateDefaultState(_chatId);
                 state.UserSubscribed = true;
 
                 await _chatStatesRepository.AddAsync(state, cancellationToken);
 
-                _logger.LogInformation("New state created");
+                _botTelemetryService.OnNewChatStarted();
             }
 
             return state.Clone();
@@ -113,7 +129,7 @@ namespace MotoHealth.Core.Bot
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"Failed to send 'Something Went Wrong' message for update: {updateContext.Update.UpdateId}");
+                _logger.LogError(exception, "Failed to send 'Something Went Wrong' message");
             }
         }
     }

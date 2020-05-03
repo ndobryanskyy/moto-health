@@ -15,7 +15,7 @@ namespace MotoHealth.Bot.Filters
 
         public void OnException(ExceptionContext context)
         {
-            _logger.LogError(context.Exception, "Ignoring unhandled exception");
+            _logger.LogWarning(context.Exception, "Ignoring unhandled exception");
 
             context.Result = new OkResult();
             context.ExceptionHandled = true;

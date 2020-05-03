@@ -1,12 +1,12 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 
 namespace MotoHealth.Core.Bot.Updates
 {
-    public sealed class ContactMessageBotUpdate : MessageBotUpdateBase, IContactMessageBotUpdate
+    internal sealed class ContactMessageBotUpdate : MessageBotUpdateBase, IContactMessageBotUpdate
     {
-        public TelegramContact? Contact { get; internal set; }
+        [NotNull] public TelegramContact? Contact { get; set; }
 
-        ITelegramContact IContactMessageBotUpdate.Contact => Contact ?? throw new InvalidOperationException();
+        ITelegramContact IContactMessageBotUpdate.Contact => Contact;
     }
 }

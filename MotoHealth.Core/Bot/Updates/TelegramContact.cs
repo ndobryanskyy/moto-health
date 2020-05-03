@@ -2,7 +2,7 @@
 
 namespace MotoHealth.Core.Bot.Updates
 {
-    public sealed class TelegramContact : ITelegramContact
+    internal sealed class TelegramContact : ITelegramContact
     {
         public int UserId { get; set; }
 
