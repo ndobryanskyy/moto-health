@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MotoHealth.Core.Extensions;
+using MotoHealth.Telegram.Extensions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace MotoHealth.Core.Bot.Messages
+namespace MotoHealth.Telegram.Messages
 {
     public sealed class TextMessageBuilder : IMessage
     {

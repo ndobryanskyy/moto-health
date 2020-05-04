@@ -3,8 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Core.Bot.Abstractions;
-using MotoHealth.Core.Bot.Messages;
 using MotoHealth.Core.Bot.Updates.Abstractions;
+using MotoHealth.Telegram.Messages;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MotoHealth.Core.Bot.AccidentReporting
@@ -17,18 +17,18 @@ namespace MotoHealth.Core.Bot.AccidentReporting
     internal sealed class AccidentReportDialogHandler : IAccidentReportDialogHandler
     {
         private readonly ILogger<AccidentReportDialogHandler> _logger;
-        private readonly IAccidentsQueue _accidentsQueue;
+        private readonly IAccidentReportingService _accidentReportingService;
         private readonly IBotTelemetryService _botTelemetry;
 
         private static readonly KeyboardButton CancelButton = new KeyboardButton("Отмена");
 
         public AccidentReportDialogHandler(
             ILogger<AccidentReportDialogHandler> logger,
-            IAccidentsQueue accidentsQueue, 
+            IAccidentReportingService accidentReportingService, 
             IBotTelemetryService botTelemetry)
         {
             _logger = logger;
-            _accidentsQueue = accidentsQueue;
+            _accidentReportingService = accidentReportingService;
             _botTelemetry = botTelemetry;
         }
 
@@ -154,7 +154,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     if (context.Update is ITextMessageBotUpdate textMessage &&
                         textMessage.Text.Trim().Equals("да", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        await AddReportToQueueAsync();
+                        await ReportAccidentAsync();
 
                         await context.SendMessageAsync(Messages.SuccessfullySent, cancellationToken);
 
@@ -197,7 +197,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                 return false;
             }
 
-            async Task AddReportToQueueAsync()
+            async Task ReportAccidentAsync()
             {
                 var report = new AccidentReport(
                     state.InstanceId,
@@ -209,7 +209,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     state.ReporterPhoneNumber ?? "Нет"
                 );
 
-                await _accidentsQueue.EnqueueReportAsync(report, cancellationToken);
+                await _accidentReportingService.ReportAccidentAsync(report, cancellationToken);
             }
         }
 

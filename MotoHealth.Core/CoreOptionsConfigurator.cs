@@ -1,5 +1,5 @@
 ﻿using System;
-using MotoHealth.Core.Telegram;
+using MotoHealth.Telegram;
 
 namespace MotoHealth.Core
 {

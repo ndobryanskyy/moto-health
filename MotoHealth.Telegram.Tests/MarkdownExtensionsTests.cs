@@ -1,8 +1,8 @@
 ﻿using FluentAssertions;
-using MotoHealth.Core.Extensions;
+using MotoHealth.Telegram.Extensions;
 using Xunit;
 
-namespace MotoHealth.Bot.Tests
+namespace MotoHealth.Telegram.Tests
 {
     /// <summary>
     /// Escaping required as per documentation of Telegram. Refer too https://core.telegram.org/bots/api#markdownv2-style

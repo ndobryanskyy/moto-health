@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using MotoHealth.Core.Bot.Messages;
 using MotoHealth.Core.Bot.Updates.Abstractions;
+using MotoHealth.Telegram.Messages;
 using Telegram.Bot.Types.Enums;
 
 namespace MotoHealth.Core.Bot.Abstractions

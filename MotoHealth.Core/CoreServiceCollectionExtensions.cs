@@ -4,6 +4,7 @@ using MotoHealth.Core.Bot;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Core.Telegram;
+using MotoHealth.Telegram;
 
 namespace MotoHealth.Core
 {
@@ -18,11 +19,10 @@ namespace MotoHealth.Core
                 throw new InvalidOperationException($"{nameof(CoreOptionsConfigurator.ConfigureTelegram)} must be set");
             }
 
-            services.Configure(configurator.ConfigureTelegram);
+            services.AddTelegram(configurator.ConfigureTelegram);
 
             services
                 .AddSingleton<IBotUpdatesMapper, BotUpdatesMapper>()
-                .AddSingleton<ITelegramBotClientFactory, TelegramBotClientFactory>()
                 .AddTransient<IChatsFactory, ChatsFactory>()
                 .AddTransient<IChatStatesRepository, ChatStatesRepository>()
                 .AddSingleton<IChatsDoorman, ChatsDoorman>()

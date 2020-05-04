@@ -13,19 +13,19 @@ namespace MotoHealth.Bot.Telegram
     {
         private readonly ILogger<BotInitializerStartupJob> _logger;
         private readonly IMapper _mapper;
+        private readonly ITelegramBotClient _botClient;
         private readonly IBotCommandsRegistry _commandsRegistry;
-        private readonly ITelegramBotClient _telegramClient;
 
         public BotInitializerStartupJob(
             ILogger<BotInitializerStartupJob> logger, 
             IMapper mapper, 
-            ITelegramBotClientFactory clientFactory,
+            ITelegramBotClient botClient,
             IBotCommandsRegistry commandsRegistry)
         {
             _logger = logger;
             _mapper = mapper;
+            _botClient = botClient;
             _commandsRegistry = commandsRegistry;
-            _telegramClient = clientFactory.CreateClient();
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -34,7 +34,7 @@ namespace MotoHealth.Bot.Telegram
 
             var commands = _mapper.Map<BotCommand[]>(_commandsRegistry.PublicCommands);
 
-            await _telegramClient.SetMyCommandsAsync(commands, cancellationToken);
+            await _botClient.SetMyCommandsAsync(commands, cancellationToken);
 
             _logger.LogInformation("Finished bot initialization");
         }

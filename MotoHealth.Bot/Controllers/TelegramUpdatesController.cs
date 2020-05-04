@@ -45,9 +45,11 @@ namespace MotoHealth.Bot.Controllers
                 return;
             }
 
-            _logger.LogDebug($"Received telegram update: {update.Id}");
+            _logger.LogInformation($"Received telegram update: {update.Id}");
 
             var botUpdate = _updateMapper.MapTelegramUpdate(update);
+
+            _logger.LogInformation($"Mapped Telegram update: {update.Id}");
 
             _botTelemetryService.OnUpdateMapped(botUpdate);
 

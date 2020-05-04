@@ -1,4 +1,4 @@
-﻿namespace MotoHealth.Core.Bot.Messages
+﻿namespace MotoHealth.Telegram.Messages
 {
     public static class MessageFactory
     {

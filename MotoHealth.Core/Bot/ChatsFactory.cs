@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using MotoHealth.Core.Bot.Abstractions;
+using Telegram.Bot;
 
 namespace MotoHealth.Core.Bot
 {
@@ -7,7 +8,7 @@ namespace MotoHealth.Core.Bot
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly IChatsDoorman _chatsDoorman;
-        private readonly ITelegramBotClientFactory _botClientFactory;
+        private readonly ITelegramBotClient _botClient;
         private readonly IChatStatesRepository _chatStatesRepository;
         private readonly IDefaultChatStateFactory _defaultChatStateFactory;
         private readonly IChatUpdateHandler _chatUpdateHandler;
@@ -16,7 +17,7 @@ namespace MotoHealth.Core.Bot
         public ChatsFactory(
             ILoggerFactory loggerFactory,
             IChatsDoorman chatsDoorman,
-            ITelegramBotClientFactory botClientFactory,
+            ITelegramBotClient botClient,
             IChatStatesRepository chatStatesRepository,
             IDefaultChatStateFactory defaultChatStateFactory,
             IChatUpdateHandler chatUpdateHandler,
@@ -24,7 +25,7 @@ namespace MotoHealth.Core.Bot
         {
             _loggerFactory = loggerFactory;
             _chatsDoorman = chatsDoorman;
-            _botClientFactory = botClientFactory;
+            _botClient = botClient;
             _chatStatesRepository = chatStatesRepository;
             _defaultChatStateFactory = defaultChatStateFactory;
             _chatUpdateHandler = chatUpdateHandler;
@@ -36,7 +37,7 @@ namespace MotoHealth.Core.Bot
                 chatId, 
                 _loggerFactory,
                 _chatsDoorman,
-                _botClientFactory,
+                _botClient,
                 _chatStatesRepository,
                 _defaultChatStateFactory,
                 _chatUpdateHandler,

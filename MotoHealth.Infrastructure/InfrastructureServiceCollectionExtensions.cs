@@ -4,7 +4,6 @@ using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Infrastructure.AccidentReporting;
 using MotoHealth.Infrastructure.ChatStorage;
-using MotoHealth.Infrastructure.ServiceBus;
 
 namespace MotoHealth.Infrastructure
 {
@@ -19,13 +18,7 @@ namespace MotoHealth.Infrastructure
                 throw new InvalidOperationException($"{nameof(InfrastructureOptionsConfigurator.ConfigureChatStorage)} must be set");
             }
 
-            if (configurator.ConfigureAccidentsQueue == null)
-            {
-                throw new InvalidOperationException($"{nameof(InfrastructureOptionsConfigurator.ConfigureAccidentsQueue)} must be set");
-            }
-
             services.Configure(configurator.ConfigureChatStorage);
-            services.Configure(configurator.ConfigureAccidentsQueue);
 
             services
                 .AddSingleton<ICloudTablesProvider, CloudTablesProvider>()
@@ -33,8 +26,7 @@ namespace MotoHealth.Infrastructure
                 .AddSingleton<IDefaultChatStateFactory, DefaultChatStateFactory>()
                 .AddSingleton<IChatStateInMemoryCache, ChatStateInMemoryCache>()
                 .AddSingleton<IChatStatesStore, AzureTableChatStatesStore>()
-                .AddSingleton<IServiceBusClientsFactory, ServiceBusClientsFactory>()
-                .AddSingleton<IAccidentsQueue, ServiceBusAccidentsQueue>();
+                .AddSingleton<IAccidentReportingService, NoOpAccidentReportingService>();
 
             services.AddHostedService<AzureTablesInitializerHostedService>();
 

@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace MotoHealth.Core.Extensions
+namespace MotoHealth.Telegram.Extensions
 {
-    internal static class MarkdownExtensions
+    public static class MarkdownExtensions
     {
         private static readonly Regex ReservedCharacters = new Regex(@"[_*\][)(~`>#+=|}{.!\\-]", RegexOptions.Compiled);
 

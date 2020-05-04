@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Core.Bot.Abstractions;
-using MotoHealth.Core.Bot.Messages;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 using MotoHealth.Core.Extensions;
+using MotoHealth.Telegram.Messages;
 using Telegram.Bot;
 
 namespace MotoHealth.Core.Bot
@@ -30,7 +30,7 @@ namespace MotoHealth.Core.Bot
             long chatId,
             ILoggerFactory loggerFactory,
             IChatsDoorman chatsDoorman,
-            ITelegramBotClientFactory botClientFactory,
+            ITelegramBotClient botClient,
             IChatStatesRepository chatStatesRepository,
             IDefaultChatStateFactory defaultChatStateFactory,
             IChatUpdateHandler chatUpdateHandler,
@@ -40,7 +40,7 @@ namespace MotoHealth.Core.Bot
 
             _logger = loggerFactory.CreateLogger($"{nameof(Chat)}:{_chatId}");
             _chatsDoorman = chatsDoorman;
-            _botClient = botClientFactory.CreateClient();
+            _botClient = botClient;
             _chatStatesRepository = chatStatesRepository;
             _defaultChatStateFactory = defaultChatStateFactory;
             _chatUpdateHandler = chatUpdateHandler;

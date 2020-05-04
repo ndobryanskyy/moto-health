@@ -1,4 +1,4 @@
-﻿namespace MotoHealth.Core.Telegram
+﻿namespace MotoHealth.Telegram
 {
     public sealed class TelegramOptions
     {

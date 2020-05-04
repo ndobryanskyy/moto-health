@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace MotoHealth.Core.Bot.Messages
+namespace MotoHealth.Telegram.Messages
 {
     public interface IMessage
     {
