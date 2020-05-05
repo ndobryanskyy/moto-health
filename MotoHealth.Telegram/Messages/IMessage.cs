@@ -10,6 +10,6 @@ namespace MotoHealth.Telegram.Messages
         Task SendAsync(
             ChatId chatId, 
             ITelegramBotClient client, 
-            CancellationToken cancellationToken);
+            CancellationToken cancellationToken = default);
     }
 }

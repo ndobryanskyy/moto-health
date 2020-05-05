@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -6,64 +7,70 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using MotoHealth.Telegram.Messages;
 using Newtonsoft.Json;
-using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace MotoHealth.Functions.AdminBot
 {
     public sealed class TelegramUpdatesHandler
     {
         private readonly IBotTokenValidator _botTokenValidator;
-        private readonly ITelegramBotClient _botClient;
+        private readonly IAdminBot _adminBot;
+        private readonly ILogger<TelegramUpdatesHandler> _logger;
 
         private readonly JsonSerializer _newtonsoftSerializer = new JsonSerializer();
 
         public TelegramUpdatesHandler(
             IBotTokenValidator botTokenValidator,
-            ITelegramBotClient botClient)
+            IAdminBot adminBot,
+            ILogger<TelegramUpdatesHandler> logger)
         {
             _botTokenValidator = botTokenValidator;
-            _botClient = botClient;
+            _adminBot = adminBot;
+            _logger = logger;
         }
 
         [FunctionName("AdminBotUpdatesHandler")]
         public async Task<IActionResult> HandleUpdateAsync(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "updates")] HttpRequest request,
-            ILogger logger)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "updates")] HttpRequest request)
         {
             if (!_botTokenValidator.ValidateToken(request))
             {
                 return new NotFoundResult();
             }
 
-            try
+            if (TryDeserializeUpdate(request.Body, out var update))
             {
-                var update = DeserializeUpdate(request.Body);
-
-                if (update is { Type: UpdateType.Message, Message: { Type: MessageType.Text } message })
+                try
                 {
-                    await MessageFactory.CreateTextMessage()
-                        .WithPlainText($"Echo: {message.Text}")
-                        .SendAsync(message.Chat.Id, _botClient, request.HttpContext.RequestAborted);
+                    await _adminBot.HandleUpdateAsync(update);
                 }
-            }
-            catch (Exception exception)
-            {
-                logger.LogWarning(exception, "Error, while handling update");
+                catch (Exception exception)
+                {
+                    _logger.LogWarning(exception, $"Unhandled error, while handling update {update.Id}");
+                }
             }
 
             return new OkResult();
         }
 
-        private Update DeserializeUpdate(Stream body)
+        private bool TryDeserializeUpdate(Stream body, [NotNullWhen(true)] out Update? update)
         {
-            using var streamReader = new StreamReader(body);
-            using var jsonReader = new JsonTextReader(streamReader);
+            update = null;
 
-            return _newtonsoftSerializer.Deserialize<Update>(jsonReader);
+            try
+            {
+                using var streamReader = new StreamReader(body);
+                using var jsonReader = new JsonTextReader(streamReader);
+
+                update = _newtonsoftSerializer.Deserialize<Update>(jsonReader);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "Error, while deserializing update");
+                return false;
+            }
         }
     }
 }
