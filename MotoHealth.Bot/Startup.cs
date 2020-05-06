@@ -47,6 +47,10 @@ namespace MotoHealth.Bot
                 ConfigureChatStorage = chatsStorageOptions =>
                 {
                     chatsStorageOptions.StorageAccountConnectionString = _configuration.GetConnectionString(Constants.ChatsStorage.ConnectionStringName);
+                },
+                ConfigureEventGrid = eventGridOptions =>
+                {
+                    _configuration.Bind(Constants.AzureEventGrid.ConfigurationSectionName, eventGridOptions);
                 }
             });
         }

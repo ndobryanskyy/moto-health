@@ -258,7 +258,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
     
  • *Адрес:* {state.Address}
  • *Участники:* {state.Participants}
- • *Есть жертвы:* {state.Victims}
+ • *Есть пострадавшие:* {state.Victims}
  • *Телефон:* {state.ReporterPhoneNumber}
 
 _Отправить?_", true)

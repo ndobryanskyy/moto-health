@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Infrastructure.AccidentReporting;
+using MotoHealth.Infrastructure.AzureEventGrid;
 using MotoHealth.Infrastructure.ChatStorage;
 
 namespace MotoHealth.Infrastructure
@@ -20,13 +21,21 @@ namespace MotoHealth.Infrastructure
 
             services.Configure(configurator.ConfigureChatStorage);
 
+            if (configurator.ConfigureEventGrid == null)
+            {
+                throw new InvalidOperationException($"{nameof(InfrastructureOptionsConfigurator.ConfigureEventGrid)} must be set");
+            }
+
+            services.Configure(configurator.ConfigureEventGrid);
+
             services
                 .AddSingleton<ICloudTablesProvider, CloudTablesProvider>()
                 .AddSingleton<IAzureTablesInitializer, AzureTablesInitializer>()
                 .AddSingleton<IDefaultChatStateFactory, DefaultChatStateFactory>()
                 .AddSingleton<IChatStateInMemoryCache, ChatStateInMemoryCache>()
                 .AddSingleton<IChatStatesStore, AzureTableChatStatesStore>()
-                .AddSingleton<IAccidentReportingService, NoOpAccidentReportingService>();
+                .AddSingleton<IAzureEventGridPublisher, AzureEventGridPublisher>()
+                .AddSingleton<IAccidentReportingService, AzureEventGridAccidentReportingService>();
 
             services.AddHostedService<AzureTablesInitializerHostedService>();
 

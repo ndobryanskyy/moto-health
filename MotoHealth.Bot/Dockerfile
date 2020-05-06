@@ -11,6 +11,7 @@ COPY ["MotoHealth.Bot/MotoHealth.Bot.csproj", "MotoHealth.Bot/"]
 COPY ["MotoHealth.Core/MotoHealth.Core.csproj", "MotoHealth.Core/"]
 COPY ["MotoHealth.Telegram/MotoHealth.Telegram.csproj", "MotoHealth.Telegram/"]
 COPY ["MotoHealth.Infrastructure/MotoHealth.Infrastructure.csproj", "MotoHealth.Infrastructure/"]
+COPY ["MotoHealth.PubSub/MotoHealth.PubSub.csproj", "MotoHealth.PubSub/"]
 RUN dotnet restore "MotoHealth.Bot/MotoHealth.Bot.csproj"
 COPY . .
 WORKDIR "/src/MotoHealth.Bot"

@@ -2,9 +2,9 @@
 {
     public static class Constants
     {
-        public static class AccidentsQueue
+        public static class AzureEventGrid
         {
-            public const string ConnectionStringName = "AccidentsQueue";
+            public const string ConfigurationSectionName = "AzureEventGrid";
         }
 
         public static class Telegram

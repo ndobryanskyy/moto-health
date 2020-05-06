@@ -41,9 +41,9 @@ namespace MotoHealth.Functions.AdminBot
         {
             _logger.LogInformation($"Start handling update {update.Id}");
 
-            if (update is { Type: UpdateType.Message, Message: { Type: MessageType.Text } message })
+            if (update is { Type: UpdateType.Message, Message: { Type: MessageType.Text, Chat: var chat } message })
             {
-                var chatId = message.Chat.Id;
+                var chatId = chat.Id;
 
                 try
                 {
@@ -59,7 +59,7 @@ namespace MotoHealth.Functions.AdminBot
                                     return;
                                 }
 
-                                var newSubscription = await _accidentAlertingService.SubscribeChatAsync(chatId);
+                                var newSubscription = await _accidentAlertingService.SubscribeChatAsync(chat);
 
                                 var messageFeedback = newSubscription
                                     ? Messages.ChatSubscribedSuccessfully
@@ -75,7 +75,7 @@ namespace MotoHealth.Functions.AdminBot
                                     return;
                                 }
 
-                                await _accidentAlertingService.UnsubscribeChatAsync(chatId);
+                                await _accidentAlertingService.UnsubscribeChatAsync(chat);
 
                                 await Messages.ChatUnsubscribed.SendAsync(chatId, _botClient);
 

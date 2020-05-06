@@ -8,17 +8,17 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             string dialogReferenceId,
             int reporterTelegramUserId, 
             DateTime reportedAtUtc, 
-            string address, 
-            string participants, 
-            string victims, 
+            string accidentAddress, 
+            string accidentParticipants, 
+            string accidentVictims, 
             string reporterPhoneNumber)
         {
             DialogReferenceId = dialogReferenceId;
             ReporterTelegramUserId = reporterTelegramUserId;
             ReportedAtUtc = reportedAtUtc;
-            Address = address;
-            Participants = participants;
-            Victims = victims;
+            AccidentAddress = accidentAddress;
+            AccidentParticipants = accidentParticipants;
+            AccidentVictims = accidentVictims;
             ReporterPhoneNumber = reporterPhoneNumber;
         }
 
@@ -30,10 +30,10 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
         public DateTime ReportedAtUtc { get; }
 
-        public string Address { get; }
+        public string AccidentAddress { get; }
 
-        public string Participants { get; }
+        public string AccidentParticipants { get; }
 
-        public string Victims { get; }
+        public string AccidentVictims { get; }
     }
 }

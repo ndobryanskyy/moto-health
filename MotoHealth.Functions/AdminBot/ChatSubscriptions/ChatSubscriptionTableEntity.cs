@@ -17,6 +17,8 @@ namespace MotoHealth.Functions.AdminBot.ChatSubscriptions
             }
         }
 
+        public string ChatName { get; set; } = string.Empty;
+
         public string Topic
         {
             get => _topic;

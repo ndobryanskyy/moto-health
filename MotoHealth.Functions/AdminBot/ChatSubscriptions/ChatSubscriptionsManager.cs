@@ -5,16 +5,18 @@ using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.Cosmos.Table.Queryable;
 using Microsoft.Extensions.Configuration;
 using MotoHealth.Functions.Extensions;
+using MotoHealth.Telegram.Extensions;
+using Telegram.Bot.Types;
 
 namespace MotoHealth.Functions.AdminBot.ChatSubscriptions
 {
     public interface IChatSubscriptionsManager
     {
-        Task SubscribeChatToTopicAsync(long chatId, string topic);
+        Task SubscribeChatToTopicAsync(Chat chat, string topic);
 
-        Task UnsubscribeChatFromTopicAsync(long chatId, string topic);
+        Task UnsubscribeChatFromTopicAsync(Chat chat, string topic);
 
-        Task<bool> CheckIfChatIsSubscribedToTopicAsync(long chatId, string topic);
+        Task<bool> CheckIfChatIsSubscribedToTopicAsync(Chat chat, string topic);
 
         Task<IReadOnlyCollection<IChatSubscription>> GetTopicSubscriptions(string topic);
     }
@@ -35,13 +37,14 @@ namespace MotoHealth.Functions.AdminBot.ChatSubscriptions
             _tableClient = client.GetTableReference(TableName);
         }
 
-        public async Task SubscribeChatToTopicAsync(long chatId, string topic)
+        public async Task SubscribeChatToTopicAsync(Chat chat, string topic)
         {
             await EnsureTableExistsAsync();
 
             var subscription = new ChatSubscriptionTableEntity
             {
-                ChatId = chatId,
+                ChatId = chat.Id,
+                ChatName = chat.GetFriendlyName(),
                 Topic = topic,
                 IsEnabled = true
             };
@@ -51,13 +54,13 @@ namespace MotoHealth.Functions.AdminBot.ChatSubscriptions
             await _tableClient.ExecuteAsync(operation);
         }
 
-        public async Task UnsubscribeChatFromTopicAsync(long chatId, string topic)
+        public async Task UnsubscribeChatFromTopicAsync(Chat chat, string topic)
         {
             await EnsureTableExistsAsync();
 
             var subscription = new ChatSubscriptionTableEntity
             {
-                ChatId = chatId,
+                ChatId = chat.Id,
                 Topic = topic,
                 IsEnabled = false,
                 ETag = "*"
@@ -68,11 +71,11 @@ namespace MotoHealth.Functions.AdminBot.ChatSubscriptions
             await _tableClient.ExecuteAsync(operation);
         }
 
-        public async Task<bool> CheckIfChatIsSubscribedToTopicAsync(long chatId, string topic)
+        public async Task<bool> CheckIfChatIsSubscribedToTopicAsync(Chat chat, string topic)
         {
             await EnsureTableExistsAsync();
 
-            var operation = TableOperation.Retrieve<ChatSubscriptionTableEntity>(topic, chatId.ToString());
+            var operation = TableOperation.Retrieve<ChatSubscriptionTableEntity>(topic, chat.Id.ToString());
 
             var operationResult = await _tableClient.ExecuteAsync(operation);
 
