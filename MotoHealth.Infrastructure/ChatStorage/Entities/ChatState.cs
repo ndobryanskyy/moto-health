@@ -20,7 +20,8 @@ namespace MotoHealth.Infrastructure.ChatStorage.Entities
         {
             AccidentReportDialog = new AccidentReportDialogState
             {
-                InstanceId = Guid.NewGuid().ToString("D"),
+                InstanceId = Guid.NewGuid().ToString(),
+                ReportId = Guid.NewGuid().ToString(),
                 StartedAt = DateTimeOffset.UtcNow,
                 Version = version,
                 CurrentStep = 0
@@ -39,6 +40,8 @@ namespace MotoHealth.Infrastructure.ChatStorage.Entities
 
         public class AccidentReportDialogState : IAccidentReportDialogState
         {
+            public string ReportId { get; set; } = string.Empty;
+
             public int Version { get; set; }
 
             public string InstanceId { get; set; } = string.Empty;

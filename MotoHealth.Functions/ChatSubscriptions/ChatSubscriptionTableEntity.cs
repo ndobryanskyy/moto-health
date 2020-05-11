@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.Cosmos.Table;
 
-namespace MotoHealth.Functions.AdminBot.ChatSubscriptions
+namespace MotoHealth.Functions.ChatSubscriptions
 {
-    public sealed class ChatSubscriptionTableEntity : TableEntity, IChatSubscription
+    public sealed class ChatSubscriptionTableEntity : TableEntity
     {
         private long _chatId;
         private string _topic = string.Empty;

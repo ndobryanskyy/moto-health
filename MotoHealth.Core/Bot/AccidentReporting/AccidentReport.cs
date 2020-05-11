@@ -5,7 +5,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
     public sealed class AccidentReport
     {
         public AccidentReport(
-            string dialogReferenceId,
+            string id,
             int reporterTelegramUserId, 
             DateTime reportedAtUtc, 
             string accidentAddress, 
@@ -13,7 +13,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             string accidentVictims, 
             string reporterPhoneNumber)
         {
-            DialogReferenceId = dialogReferenceId;
+            Id = id;
             ReporterTelegramUserId = reporterTelegramUserId;
             ReportedAtUtc = reportedAtUtc;
             AccidentAddress = accidentAddress;
@@ -22,7 +22,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             ReporterPhoneNumber = reporterPhoneNumber;
         }
 
-        public string DialogReferenceId { get; }
+        public string Id { get; }
 
         public int ReporterTelegramUserId { get; }
 

@@ -1,14 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.Cosmos.Table.Queryable;
-using Microsoft.Extensions.Configuration;
 using MotoHealth.Functions.Extensions;
 using MotoHealth.Telegram.Extensions;
 using Telegram.Bot.Types;
 
-namespace MotoHealth.Functions.AdminBot.ChatSubscriptions
+namespace MotoHealth.Functions.ChatSubscriptions
 {
     public interface IChatSubscriptionsManager
     {
@@ -18,23 +16,18 @@ namespace MotoHealth.Functions.AdminBot.ChatSubscriptions
 
         Task<bool> CheckIfChatIsSubscribedToTopicAsync(Chat chat, string topic);
 
-        Task<IReadOnlyCollection<IChatSubscription>> GetTopicSubscriptions(string topic);
+        Task<ChatSubscription[]> GetTopicSubscriptions(string topic);
     }
 
     public sealed class ChatSubscriptionsManager : IChatSubscriptionsManager
     {
-        private const string TableName = "ChatSubscriptions";
-        
-        private readonly CloudTable _tableClient;
+        private readonly CloudTable _subscriptionsTable;
 
         private bool _isTableInitialized;
 
-        public ChatSubscriptionsManager(IConfiguration configuration)
+        public ChatSubscriptionsManager(ICloudTablesProvider tables)
         {
-            var storageAccount = CloudStorageAccount.Parse(configuration.GetConnectionString("StorageAccount"));
-            var client = storageAccount.CreateCloudTableClient();
-
-            _tableClient = client.GetTableReference(TableName);
+            _subscriptionsTable = tables.ChatSubscriptions;
         }
 
         public async Task SubscribeChatToTopicAsync(Chat chat, string topic)
@@ -51,7 +44,7 @@ namespace MotoHealth.Functions.AdminBot.ChatSubscriptions
 
             var operation = TableOperation.InsertOrMerge(subscription);
 
-            await _tableClient.ExecuteAsync(operation);
+            await _subscriptionsTable.ExecuteAsync(operation);
         }
 
         public async Task UnsubscribeChatFromTopicAsync(Chat chat, string topic)
@@ -68,7 +61,7 @@ namespace MotoHealth.Functions.AdminBot.ChatSubscriptions
 
             var operation = TableOperation.Merge(subscription);
 
-            await _tableClient.ExecuteAsync(operation);
+            await _subscriptionsTable.ExecuteAsync(operation);
         }
 
         public async Task<bool> CheckIfChatIsSubscribedToTopicAsync(Chat chat, string topic)
@@ -77,7 +70,7 @@ namespace MotoHealth.Functions.AdminBot.ChatSubscriptions
 
             var operation = TableOperation.Retrieve<ChatSubscriptionTableEntity>(topic, chat.Id.ToString());
 
-            var operationResult = await _tableClient.ExecuteAsync(operation);
+            var operationResult = await _subscriptionsTable.ExecuteAsync(operation);
 
             if (operationResult.Result is ChatSubscriptionTableEntity subscription)
             {
@@ -87,23 +80,26 @@ namespace MotoHealth.Functions.AdminBot.ChatSubscriptions
             return false;
         }
 
-        public async Task<IReadOnlyCollection<IChatSubscription>> GetTopicSubscriptions(string topic)
+        public async Task<ChatSubscription[]> GetTopicSubscriptions(string topic)
         {
             await EnsureTableExistsAsync();
 
-            var subscriptions = await _tableClient.CreateQuery<ChatSubscriptionTableEntity>()
+            var subscriptions = await _subscriptionsTable.CreateQuery<ChatSubscriptionTableEntity>()
                 .Where(x => x.PartitionKey == topic && x.IsEnabled)
+                .Select(x => x.ChatId)
                 .AsTableQuery()
                 .ToListAsync();
 
-            return subscriptions;
+            return subscriptions
+                .Select(x => new ChatSubscription(x))
+                .ToArray();
         }
 
         private async ValueTask EnsureTableExistsAsync()
         {
             if (_isTableInitialized) return;
 
-            await _tableClient.CreateIfNotExistsAsync();
+            await _subscriptionsTable.CreateIfNotExistsAsync();
             
             _isTableInitialized = true;
         }

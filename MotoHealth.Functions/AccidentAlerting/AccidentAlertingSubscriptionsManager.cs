@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using MotoHealth.Functions.AdminBot.ChatSubscriptions;
+using MotoHealth.Functions.ChatSubscriptions;
 using Telegram.Bot.Types;
 
-namespace MotoHealth.Functions.AdminBot
+namespace MotoHealth.Functions.AccidentAlerting
 {
-    public interface IAccidentAlertingService
+    public interface IAccidentAlertingSubscriptionsManager
     {
         /// <summary>
         /// Subscribes chat to the accidents topic
@@ -14,17 +14,19 @@ namespace MotoHealth.Functions.AdminBot
         Task<bool> SubscribeChatAsync(Chat chat);
 
         Task UnsubscribeChatAsync(Chat chat);
+
+        Task<ChatSubscription[]> GetSubscribedChatsAsync();
     }
 
-    internal sealed class AccidentAlertingService : IAccidentAlertingService
+    internal sealed class AccidentAlertingSubscriptionsManager : IAccidentAlertingSubscriptionsManager
     {
         private const string SubscriptionTopic = "Accidents";
 
-        private readonly ILogger<AccidentAlertingService> _logger;
+        private readonly ILogger<AccidentAlertingSubscriptionsManager> _logger;
         private readonly IChatSubscriptionsManager _chatSubscriptionsManager;
 
-        public AccidentAlertingService(
-            ILogger<AccidentAlertingService> logger,
+        public AccidentAlertingSubscriptionsManager(
+            ILogger<AccidentAlertingSubscriptionsManager> logger,
             IChatSubscriptionsManager chatSubscriptionsManager)
         {
             _logger = logger;
@@ -63,6 +65,11 @@ namespace MotoHealth.Functions.AdminBot
             await _chatSubscriptionsManager.UnsubscribeChatFromTopicAsync(chat, SubscriptionTopic);
 
             _logger.LogInformation($"Chat {chat.Id} now unsubscribed");
+        }
+
+        public async Task<ChatSubscription[]> GetSubscribedChatsAsync()
+        {
+            return await _chatSubscriptionsManager.GetTopicSubscriptions(SubscriptionTopic);
         }
     }
 }

@@ -1,9 +1,12 @@
-﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MotoHealth.Functions.AccidentAlerting;
 using MotoHealth.Functions.AdminBot;
-using MotoHealth.Functions.AdminBot.Authorization;
-using MotoHealth.Functions.AdminBot.ChatSubscriptions;
+using MotoHealth.Functions.Authorization;
+using MotoHealth.Functions.ChatSubscriptions;
 using MotoHealth.Telegram;
 using AzureFunctionsStartup = Microsoft.Azure.Functions.Extensions.DependencyInjection.FunctionsStartup;
 
@@ -15,6 +18,7 @@ namespace MotoHealth.Functions
     {
         private const string TelegramConfigurationSection = "Telegram";
         private const string SubscriptionSecretConfigurationKey = "SubscriptionSecret";
+        private const string StorageAccountConfigurationKey = "StorageAccount";
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
@@ -33,11 +37,22 @@ namespace MotoHealth.Functions
             builder.Services.AddTelegram();
 
             builder.Services
+                .AddSingleton(CreateSharedTableClient)
+                .AddSingleton<ICloudTablesProvider, CloudTablesProvider>()
                 .AddSingleton<IBotTokenValidator, BotTokenValidator>()
-                .AddSingleton<IAccidentAlertingService, AccidentAlertingService>()
+                .AddSingleton<IAccidentAlertingSubscriptionsManager, AccidentAlertingSubscriptionsManager>()
+                .AddSingleton<IAccidentRecordingService, AccidentRecordingService>()
                 .AddSingleton<IChatSubscriptionsManager, ChatSubscriptionsManager>()
                 .AddSingleton<IAdminBot, AdminBot.AdminBot>()
                 .AddSingleton<IAuthorizationService, AuthorizationService>();
+        }
+
+        private static CloudTableClient CreateSharedTableClient(IServiceProvider container)
+        {
+            var configuration = container.GetRequiredService<IConfiguration>();
+
+            var storageAccount = CloudStorageAccount.Parse(configuration.GetConnectionString(StorageAccountConfigurationKey));
+            return storageAccount.CreateCloudTableClient();
         }
     }
 }

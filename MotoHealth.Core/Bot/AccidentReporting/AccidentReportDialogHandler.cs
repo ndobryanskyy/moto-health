@@ -200,7 +200,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             async Task ReportAccidentAsync()
             {
                 var report = new AccidentReport(
-                    state.InstanceId,
+                    state.ReportId,
                     context.Update.Sender.Id,
                     DateTime.UtcNow, 
                     state.Address,
@@ -257,11 +257,11 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 @$"🚨 Вы собираетесь сообщить о ДТП
     
  • *Адрес:* {state.Address}
- • *Участники:* {state.Participants}
- • *Есть пострадавшие:* {state.Victims}
+ • *Участник:* {state.Participants}
+ • *Пострадавшие:* {state.Victims}
  • *Телефон:* {state.ReporterPhoneNumber}
 
-_Отправить?_", true)
+_Отправить?_")
                 .WithReplyKeyboard(new[]
                 {
                     new [] { new KeyboardButton("Да") },

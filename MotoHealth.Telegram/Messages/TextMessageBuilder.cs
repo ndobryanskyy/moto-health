@@ -35,23 +35,16 @@ namespace MotoHealth.Telegram.Messages
             return this;
         }
 
-        public TextMessageBuilder WithInterpolatedMarkdownText(FormattableString text, bool escapeInterpolatedValues)
+        public TextMessageBuilder WithInterpolatedMarkdownText(FormattableString text)
         {
             _parseMode = ParseMode.MarkdownV2;
 
-            if (escapeInterpolatedValues)
-            {
-                var escapedParameters = text.GetArguments()
-                    .Select(x => x?.ToString()?.EscapeForMarkdown())
-                    .ToArray();
+            var escapedParameters = text.GetArguments()
+                .Select(x => x?.ToString()?.EscapeForMarkdown())
+                .ToArray();
 
-                // ReSharper disable once CoVariantArrayConversion - read-only usage.
-                _text = string.Format(text.Format, escapedParameters);
-            }
-            else
-            {
-                _text = text.ToString();
-            }
+            // ReSharper disable once CoVariantArrayConversion - read-only usage.
+            _text = string.Format(text.Format, escapedParameters);
 
             return this;
         }

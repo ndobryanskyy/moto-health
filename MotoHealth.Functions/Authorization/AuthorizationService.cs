@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace MotoHealth.Functions.AdminBot.Authorization
+namespace MotoHealth.Functions.Authorization
 {
     public interface IAuthorizationService
     {

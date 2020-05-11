@@ -30,7 +30,7 @@ namespace MotoHealth.Functions.AdminBot
             _logger = logger;
         }
 
-        [FunctionName("AdminBotUpdatesHandler")]
+        [FunctionName(FunctionNames.AdminBotUpdatesHandler)]
         public async Task<IActionResult> HandleUpdateAsync(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "updates")] HttpRequest request)
         {
@@ -47,7 +47,7 @@ namespace MotoHealth.Functions.AdminBot
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogWarning(exception, $"Unhandled error, while handling update {update.Id}");
+                    _logger.LogError(exception, $"Unhandled error, while handling update {update.Id}");
                 }
             }
 

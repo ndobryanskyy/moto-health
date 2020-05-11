@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace MotoHealth.PubSub.EventData
 {
@@ -6,18 +7,25 @@ namespace MotoHealth.PubSub.EventData
     {
         public const string Version = "1";
 
-        public string DialogReferenceId { get; set; } = default!;
+        [JsonProperty(Required = Required.Always)]
+        public string ReportId { get; set; } = default!;
 
+        [JsonProperty(Required = Required.Always)]
         public int ReporterTelegramUserId { get; set; }
 
+        [JsonProperty(Required = Required.Always)]
         public string ReporterPhoneNumber { get; set; } = default!;
 
+        [JsonProperty(Required = Required.Always)]
         public DateTime ReportedAtUtc { get; set; }
 
+        [JsonProperty(Required = Required.Always)]
         public string AccidentAddress { get; set; } = default!;
 
+        [JsonProperty(Required = Required.Always)]
         public string AccidentParticipants { get; set; } = default!;
 
+        [JsonProperty(Required = Required.Always)]
         public string AccidentVictims { get; set; } = default!;
     }
 }

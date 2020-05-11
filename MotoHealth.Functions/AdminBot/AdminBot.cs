@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using MotoHealth.Functions.AdminBot.Authorization;
+using MotoHealth.Functions.AccidentAlerting;
+using MotoHealth.Functions.Authorization;
 using MotoHealth.Telegram.Extensions;
 using MotoHealth.Telegram.Messages;
 using Telegram.Bot;
@@ -23,18 +24,18 @@ namespace MotoHealth.Functions.AdminBot
         private readonly ILogger<AdminBot> _logger;
         private readonly ITelegramBotClient _botClient;
         private readonly IAuthorizationService _authorizationService;
-        private readonly IAccidentAlertingService _accidentAlertingService;
+        private readonly IAccidentAlertingSubscriptionsManager _accidentAlertingSubscriptionsManager;
 
         public AdminBot(
             ILogger<AdminBot> logger,
             ITelegramBotClient botClient,
             IAuthorizationService authorizationService,
-            IAccidentAlertingService accidentAlertingService)
+            IAccidentAlertingSubscriptionsManager accidentAlertingSubscriptionsManager)
         {
             _logger = logger;
             _botClient = botClient;
             _authorizationService = authorizationService;
-            _accidentAlertingService = accidentAlertingService;
+            _accidentAlertingSubscriptionsManager = accidentAlertingSubscriptionsManager;
         }
 
         public async Task HandleUpdateAsync(Update update)
@@ -59,7 +60,7 @@ namespace MotoHealth.Functions.AdminBot
                                     return;
                                 }
 
-                                var newSubscription = await _accidentAlertingService.SubscribeChatAsync(chat);
+                                var newSubscription = await _accidentAlertingSubscriptionsManager.SubscribeChatAsync(chat);
 
                                 var messageFeedback = newSubscription
                                     ? Messages.ChatSubscribedSuccessfully
@@ -75,7 +76,7 @@ namespace MotoHealth.Functions.AdminBot
                                     return;
                                 }
 
-                                await _accidentAlertingService.UnsubscribeChatAsync(chat);
+                                await _accidentAlertingSubscriptionsManager.UnsubscribeChatAsync(chat);
 
                                 await Messages.ChatUnsubscribed.SendAsync(chatId, _botClient);
 

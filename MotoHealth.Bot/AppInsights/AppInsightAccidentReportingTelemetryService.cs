@@ -90,6 +90,7 @@ namespace MotoHealth.Bot.AppInsights
         {
             properties ??= new TelemetryProperties();
 
+            properties.TryAdd("Report Id", _dialogState.ReportId);
             properties.TryAdd("Dialog InstanceId", _dialogState.InstanceId);
             properties.TryAdd("Dialog Version", _dialogState.Version.ToString());
 

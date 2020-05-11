@@ -4,6 +4,8 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 {
     public interface IAccidentReportDialogState : IWaterfallDialogState
     {
+        public string ReportId { get; }
+
         public DateTimeOffset StartedAt { get; }
 
         public string Address { get; set; }

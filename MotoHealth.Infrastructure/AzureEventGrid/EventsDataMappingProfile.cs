@@ -8,7 +8,11 @@ namespace MotoHealth.Infrastructure.AzureEventGrid
     {
         public EventsDataMappingProfile()
         {
-            CreateMap<AccidentReport, AccidentReportedEventData>();
+            CreateMap<AccidentReport, AccidentReportedEventData>()
+                .ForMember(
+                    x => x.ReportId,
+                    opts => opts.MapFrom(x => x.Id)
+                );
         }
     }
 }

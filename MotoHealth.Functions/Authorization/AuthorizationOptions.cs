@@ -1,4 +1,4 @@
-﻿namespace MotoHealth.Functions.AdminBot.Authorization
+﻿namespace MotoHealth.Functions.Authorization
 {
     internal sealed class AuthorizationOptions
     {

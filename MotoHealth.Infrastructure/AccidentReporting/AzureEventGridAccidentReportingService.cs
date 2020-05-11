@@ -29,12 +29,14 @@ namespace MotoHealth.Infrastructure.AccidentReporting
 
         public async Task ReportAccidentAsync(AccidentReport report, CancellationToken cancellationToken)
         {
-            _logger.LogDebug($"Publishing report dated {report.ReportedAtUtc:g} from {report.DialogReferenceId}");
+            _logger.LogInformation($"Publishing report {report.Id}");
+
+            var eventId = report.Id;
 
             var eventGridEvent = new EventGridEvent
             {
-                Id = report.DialogReferenceId,
-                Subject = report.DialogReferenceId,
+                Id = eventId,
+                Subject = eventId,
                 EventType = EventTypes.AccidentReported,
                 EventTime = DateTime.UtcNow,
                 Data = _mapper.Map<AccidentReportedEventData>(report),
@@ -43,7 +45,7 @@ namespace MotoHealth.Infrastructure.AccidentReporting
 
             await _publisher.PublishEventAsync(eventGridEvent, cancellationToken);
 
-            _logger.LogInformation($"Report dated {report.ReportedAtUtc:g} from {report.DialogReferenceId} dialog was published successfully");
+            _logger.LogInformation($"Successfully published report {report.Id}");
         }
     }
 }
