@@ -10,17 +10,23 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
 {
     public static class AccidentAlertingWorkflow
     {
+        private static readonly RetryOptions GetChatSubscriptionsActivityRetryOptions = new RetryOptions(TimeSpan.FromSeconds(5), 10)
+        {
+            BackoffCoefficient = 2,
+            MaxRetryInterval = TimeSpan.FromMinutes(1),
+            RetryTimeout = TimeSpan.FromMinutes(15)
+        };
+
         private static readonly RetryOptions AlertChatActivityRetryOptions = new RetryOptions(TimeSpan.FromSeconds(20), 5)
         {
             BackoffCoefficient = 2,
             MaxRetryInterval = TimeSpan.FromMinutes(1)
         };
 
-        private static readonly RetryOptions GetChatSubscriptionsActivityRetryOptions = new RetryOptions(TimeSpan.FromSeconds(5), 10)
+        private static readonly RetryOptions RecordAccidentActivityRetryOptions = new RetryOptions(TimeSpan.FromSeconds(30), 5)
         {
             BackoffCoefficient = 2,
-            MaxRetryInterval = TimeSpan.FromMinutes(1),
-            RetryTimeout = TimeSpan.FromMinutes(15)
+            MaxRetryInterval = TimeSpan.FromMinutes(5),
         };
 
         [FunctionName(FunctionNames.AccidentAlerting.Workflow)]
@@ -37,22 +43,40 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
 
             foreach (var subscription in subscriptions)
             {
-                var alertOutput = await AlertChatAsync(context, subscription, accidentReport, logger);
-                if (alertOutput.AlertSent)
+                var alertActivityInput = new AlertChatActivityInput
+                {
+                    ChatId = subscription.ChatId,
+                    AccidentReport = accidentReport
+                };
+
+                var alertActivityOutput = await AlertChatAsync(context, alertActivityInput, logger);
+
+                if (alertActivityOutput.AlertSent)
                 {
                     chatsAlerted++;
                 }
             }
 
-            if (chatsAlerted == 0)
+            var anyChatAlerted = chatsAlerted > 0;
+            
+            if (anyChatAlerted)
+            {
+                logger.LogInformation($"{chatsAlerted}/{subscriptions.Length} chats were alerted about report {accidentReport.ReportId}");
+            }
+            else
             {
                 logger.LogError($"No chats were alerted about report {accidentReport.ReportId}!");
                 // TODO think of restarting again
             }
-            else
+
+            var recordActivityInput = new RecordAccidentActivityInput
             {
-                logger.LogInformation($"{chatsAlerted}/{subscriptions.Length} chats were alerted about report {accidentReport.ReportId}");
-            }
+                AccidentReport = accidentReport,
+                AnyChatAlerted = anyChatAlerted,
+                ReportHandledAtUtc = context.CurrentUtcDateTime
+            };
+
+            await RecordAccidentAsync(context, recordActivityInput, logger);
         }
 
         private static async Task<ChatSubscription[]> GetChatSubscriptionsAsync(IDurableOrchestrationContext context)
@@ -66,18 +90,9 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
 
         private static async Task<AlertChatActivityOutput> AlertChatAsync(
             IDurableOrchestrationContext context,
-            ChatSubscription chatSubscription,
-            AccidentReportedEventData accidentReport,
+            AlertChatActivityInput input,
             ILogger logger)
         {
-            var chatId = chatSubscription.ChatId;
-
-            var input = new AlertChatActivityInput
-            {
-                ChatId = chatId,
-                AccidentReport = accidentReport
-            };
-
             try
             {
                 var output = await context.CallActivityWithRetryAsync<AlertChatActivityOutput>(
@@ -90,12 +105,31 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             }
             catch (FunctionFailedException exception)
             {
-                logger.LogError(exception, $"Failed to alert chat {chatId}");
+                logger.LogError(exception, $"Failed to alert chat {input.ChatId}");
 
                 return new AlertChatActivityOutput
                 {
                     AlertSent = false
                 };
+            }
+        }
+
+        private static async Task RecordAccidentAsync(
+            IDurableOrchestrationContext context,
+            RecordAccidentActivityInput input,
+            ILogger logger)
+        {
+            try
+            {
+                await context.CallActivityWithRetryAsync(
+                    FunctionNames.AccidentAlerting.RecordAccidentActivity,
+                    RecordAccidentActivityRetryOptions,
+                    input
+                );
+            }
+            catch (FunctionFailedException exception)
+            {
+                logger.LogError(exception, $"Failed to record accident {input.AccidentReport.ReportId}");
             }
         }
     }

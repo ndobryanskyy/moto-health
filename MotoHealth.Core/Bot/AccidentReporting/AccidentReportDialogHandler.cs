@@ -84,7 +84,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                 {
                     if (context.Update is ITextMessageBotUpdate textMessage)
                     {
-                        state.Participants = textMessage.Text;
+                        state.Participant = textMessage.Text;
 
                         await context.SendMessageAsync(Messages.AreThereVictims, cancellationToken);
                         break;
@@ -204,7 +204,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     context.Update.Sender.Id,
                     DateTime.UtcNow, 
                     state.Address,
-                    state.Participants,
+                    state.Participant,
                     state.Victims,
                     state.ReporterPhoneNumber ?? "Нет"
                 );
@@ -257,7 +257,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 @$"🚨 Вы собираетесь сообщить о ДТП
     
  • *Адрес:* {state.Address}
- • *Участник:* {state.Participants}
+ • *Участник:* {state.Participant}
  • *Пострадавшие:* {state.Victims}
  • *Телефон:* {state.ReporterPhoneNumber}
 

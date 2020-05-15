@@ -70,7 +70,7 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
  _Получено: {reportedAt}_
 
  *Адрес:* {accidentReport.AccidentAddress}
- *Участник:* {accidentReport.AccidentParticipants}
+ *Участник:* {accidentReport.AccidentParticipant}
  *Пострадавшие:* {accidentReport.AccidentVictims}
  *Телефон сообщившего:* {accidentReport.ReporterPhoneNumber}
 

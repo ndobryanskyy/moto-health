@@ -23,7 +23,7 @@ namespace MotoHealth.PubSub.EventData
         public string AccidentAddress { get; set; } = default!;
 
         [JsonProperty(Required = Required.Always)]
-        public string AccidentParticipants { get; set; } = default!;
+        public string AccidentParticipant { get; set; } = default!;
 
         [JsonProperty(Required = Required.Always)]
         public string AccidentVictims { get; set; } = default!;

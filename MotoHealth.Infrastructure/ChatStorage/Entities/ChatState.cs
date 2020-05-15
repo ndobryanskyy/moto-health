@@ -52,7 +52,7 @@ namespace MotoHealth.Infrastructure.ChatStorage.Entities
 
             public string Address { get; set; } = string.Empty;
 
-            public string Participants { get; set; } = string.Empty;
+            public string Participant { get; set; } = string.Empty;
 
             public string Victims { get; set; } = string.Empty;
             

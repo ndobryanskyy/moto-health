@@ -9,7 +9,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             int reporterTelegramUserId, 
             DateTime reportedAtUtc, 
             string accidentAddress, 
-            string accidentParticipants, 
+            string accidentParticipant, 
             string accidentVictims, 
             string reporterPhoneNumber)
         {
@@ -17,7 +17,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             ReporterTelegramUserId = reporterTelegramUserId;
             ReportedAtUtc = reportedAtUtc;
             AccidentAddress = accidentAddress;
-            AccidentParticipants = accidentParticipants;
+            AccidentParticipant = accidentParticipant;
             AccidentVictims = accidentVictims;
             ReporterPhoneNumber = reporterPhoneNumber;
         }
@@ -32,7 +32,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
         public string AccidentAddress { get; }
 
-        public string AccidentParticipants { get; }
+        public string AccidentParticipant { get; }
 
         public string AccidentVictims { get; }
     }

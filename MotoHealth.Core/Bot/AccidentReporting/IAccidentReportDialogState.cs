@@ -10,7 +10,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
         public string Address { get; set; }
 
-        public string Participants { get; set; }
+        public string Participant { get; set; }
 
         public string Victims { get; set; }
 
