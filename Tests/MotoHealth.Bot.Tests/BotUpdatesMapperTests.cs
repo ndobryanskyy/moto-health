@@ -174,6 +174,36 @@ namespace MotoHealth.Bot.Tests
             mappedUpdate.Should().BeSameAs(expectedMappedUpdate);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Should_Resolve_Location_Update(bool messageInGroup)
+        {
+            var autoFixture = new Fixture();
+
+            var messageBuilder = messageInGroup
+                ? autoFixture.BuildDefaultGroupMessage()
+                : autoFixture.BuildDefaultPrivateMessage();
+
+            var message = messageBuilder
+                .With(x => x.Location)
+                .Create();
+
+            var update = autoFixture.BuildDefaultUpdate()
+                .With(x => x.Message, message)
+                .Create();
+
+            var expectedMappedUpdate = new LocationMessageBotUpdate();
+
+            _mapperMock
+                .Setup(x => x.Map<LocationMessageBotUpdate>(update))
+                .Returns(expectedMappedUpdate);
+
+            var mappedUpdate = _updatesMapper.MapTelegramUpdate(update);
+
+            mappedUpdate.Should().BeSameAs(expectedMappedUpdate);
+        }
+
         [Fact]
         public void Should_Return_Update_Of_NotMapped_Type_If_No_Mapping_Exists()
         {

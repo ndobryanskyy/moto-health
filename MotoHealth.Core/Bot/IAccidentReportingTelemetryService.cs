@@ -10,6 +10,8 @@
 
         void OnPhoneNumberSharedAutomatically();
 
+        void OnLocationSentAutomatically();
+
         void OnCancelled();
 
         void OnCompleted();

@@ -35,6 +35,7 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             try
             {
                 await alert.SendAsync(chatId, _botClient);
+
                 _logger.LogInformation($"Successfully alerted chat {chatId} about report {reportId}");
 
                 return new AlertChatActivityOutput
@@ -59,22 +60,42 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
 
         private static IMessage CreateAccidentAlert(AccidentReportedEventData accidentReport)
         {
-            var reportedAt = TimeZoneInfo.ConvertTimeFromUtc(accidentReport.ReportedAtUtc, UkraineTimezone)
+            var compositeMessage = MessageFactory.CreateCompositeMessage();
+
+            var reportDateTimeFormatted = TimeZoneInfo.ConvertTimeFromUtc(accidentReport.ReportedAtUtc, UkraineTimezone)
                 .ToString("dd/MM - HH:mm:ss");
 
-            return MessageFactory.CreateTextMessage()
+            var locationSpecified = accidentReport.AccidentLocation != null;
+
+            var address = accidentReport.AccidentAddress ?? (locationSpecified ? "Геопозиция" : "Не указан");
+
+            var alert = MessageFactory.CreateTextMessage()
                 .WithInterpolatedMarkdownText(
 @$"🚨🚨🚨🚨🚨🚨🚨
 
  *СООБЩЕНИЕ О ДТП*
- _Получено: {reportedAt}_
+ _Номер:_ *{accidentReport.ReportId}*
+ _Получено: {reportDateTimeFormatted}_
 
- *Адрес:* {accidentReport.AccidentAddress}
+ *Адрес:* {address}
  *Участник:* {accidentReport.AccidentParticipant}
  *Пострадавшие:* {accidentReport.AccidentVictims}
  *Телефон сообщившего:* {accidentReport.ReporterPhoneNumber}
 
 🚨🚨🚨🚨🚨🚨🚨");
+
+            compositeMessage.AddMessage(alert);
+
+            if (locationSpecified)
+            {
+                var location = MessageFactory.CreateVenueMessage()
+                    .WithLocation(accidentReport.AccidentLocation!.Latitude, accidentReport.AccidentLocation.Longitude)
+                    .WithTitle($"ДТП {accidentReport.ReportId}");
+
+                compositeMessage.AddMessage(location);
+            }
+
+            return compositeMessage;
         }
     }
 }

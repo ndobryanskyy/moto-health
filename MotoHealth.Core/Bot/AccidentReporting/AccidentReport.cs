@@ -1,39 +1,46 @@
 ﻿using System;
+using MotoHealth.Core.Bot.Abstractions;
 
 namespace MotoHealth.Core.Bot.AccidentReporting
 {
     public sealed class AccidentReport
     {
-        public AccidentReport(
-            string id,
-            int reporterTelegramUserId, 
-            DateTime reportedAtUtc, 
-            string accidentAddress, 
-            string accidentParticipant, 
-            string accidentVictims, 
-            string reporterPhoneNumber)
+        private AccidentReport()
         {
-            Id = id;
-            ReporterTelegramUserId = reporterTelegramUserId;
-            ReportedAtUtc = reportedAtUtc;
-            AccidentAddress = accidentAddress;
-            AccidentParticipant = accidentParticipant;
-            AccidentVictims = accidentVictims;
-            ReporterPhoneNumber = reporterPhoneNumber;
         }
 
-        public string Id { get; }
+        public string Id { get; set; } = default!;
 
-        public int ReporterTelegramUserId { get; }
+        public int ReporterTelegramUserId { get; set; }
 
-        public string ReporterPhoneNumber { get; }
+        public DateTime ReportedAtUtc { get; set; }
 
-        public DateTime ReportedAtUtc { get; }
+        public string ReporterPhoneNumber { get; set; } = default!;
 
-        public string AccidentAddress { get; }
+        public string? AccidentAddress { get; set; }
 
-        public string AccidentParticipant { get; }
+        public IMapLocation? AccidentLocation { get; set; }
 
-        public string AccidentVictims { get; }
+        public string AccidentParticipant { get; set; } = default!;
+
+        public string AccidentVictims { get; set; } = default!;
+
+        public static AccidentReport CreateFromDialogState(IAccidentReportDialogState dialogState)
+        {
+            if (dialogState.Address == null && dialogState.Location == null)
+            {
+                throw new InvalidOperationException("Address and location should not be null at the same time");
+            }
+
+            return new AccidentReport
+            {
+                Id = dialogState.ReportId,
+                ReporterPhoneNumber = dialogState.ReporterPhoneNumber,
+                AccidentAddress = dialogState.Address,
+                AccidentLocation = dialogState.Location,
+                AccidentParticipant = dialogState.Participant,
+                AccidentVictims = dialogState.Victims
+            };
+        }
     }
 }

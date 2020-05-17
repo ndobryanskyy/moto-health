@@ -31,10 +31,20 @@ namespace MotoHealth.Core.Telegram
                     opts => opts.MapFrom(x => x.Message.EntityValues.FirstOrDefault() ?? string.Empty)
                 );
 
-            CreateMessageBotUpdateMap<ContactMessageBotUpdate>().
-                ForMember(
+            CreateMessageBotUpdateMap<ContactMessageBotUpdate>()
+                .ForMember(
                     x => x.Contact,
                     opts => opts.MapFrom(x => x.Message.Contact)
+                );
+
+            CreateMessageBotUpdateMap<LocationMessageBotUpdate>()
+                .ForMember(
+                    x => x.Latitude,
+                    opts => opts.MapFrom(x => x.Message.Location.Latitude)
+                )
+                .ForMember(
+                    x => x.Longitude,
+                    opts => opts.MapFrom(x => x.Message.Location.Longitude)
                 );
 
             CreateMessageBotUpdateMap<NotMappedMessageBotUpdate>()

@@ -14,7 +14,9 @@ namespace MotoHealth.Functions.AccidentAlerting
 
         public string ReporterPhoneNumber { get; set; } = default!;
 
-        public string AccidentAddress { get; set; } = default!;
+        public string? AccidentAddress { get; set; }
+
+        public MapLocation? AccidentLocation { get; set; }
 
         public string AccidentParticipant { get; set; } = default!;
 
@@ -37,6 +39,7 @@ namespace MotoHealth.Functions.AccidentAlerting
                 ReporterTelegramUserId = eventData.ReporterTelegramUserId,
                 ReporterPhoneNumber = eventData.ReporterPhoneNumber,
                 AccidentAddress = eventData.AccidentAddress,
+                AccidentLocation = eventData.AccidentLocation,
                 AccidentParticipant = eventData.AccidentParticipant,
                 AccidentVictims = eventData.AccidentVictims,
                 ReportedAtUtc = eventData.ReportedAtUtc,

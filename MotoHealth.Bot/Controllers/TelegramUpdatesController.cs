@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MotoHealth.Bot.AppInsights;
 using MotoHealth.Bot.Filters;
 using MotoHealth.Core.Bot;
 using MotoHealth.Core.Bot.Abstractions;
@@ -49,7 +50,7 @@ namespace MotoHealth.Bot.Controllers
 
             var botUpdate = _updateMapper.MapTelegramUpdate(update);
 
-            _logger.LogInformation($"Mapped Telegram update: {update.Id}");
+            _logger.LogInformation($"Mapped Telegram update: {update.Id} to {botUpdate.GetUpdateTypeNameForTelemetry()}");
 
             _botTelemetryService.OnUpdateMapped(botUpdate);
 

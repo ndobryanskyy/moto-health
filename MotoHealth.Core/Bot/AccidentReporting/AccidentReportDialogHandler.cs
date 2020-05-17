@@ -64,10 +64,23 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
                 case 1:
                 {
+                    var updateHandled = false;
+
                     if (context.Update is ITextMessageBotUpdate textMessage)
                     {
                         state.Address = textMessage.Text;
+                        updateHandled = true;
+                    } 
+                    else if (context.Update is IMapLocation location)
+                    {
+                        dialogTelemetry.OnLocationSentAutomatically();
 
+                        state.Location = location;
+                        updateHandled = true;
+                    }
+
+                    if (updateHandled)
+                    {
                         await context.SendMessageAsync(Messages.SpecifyParticipants, cancellationToken);
                         break;
                     }
@@ -112,7 +125,6 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                         // TODO handle wrong update type
                         dialogTelemetry.OnUnexpectedReply();
 
-
                         return false;
                     }
                 }
@@ -143,7 +155,6 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     {
                         // TODO handle wrong update type
                         dialogTelemetry.OnUnexpectedReply();
-
 
                         return false;
                     }
@@ -199,15 +210,10 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
             async Task ReportAccidentAsync()
             {
-                var report = new AccidentReport(
-                    state.ReportId,
-                    context.Update.Sender.Id,
-                    DateTime.UtcNow, 
-                    state.Address,
-                    state.Participant,
-                    state.Victims,
-                    state.ReporterPhoneNumber ?? "Нет"
-                );
+                var report = AccidentReport.CreateFromDialogState(state);
+
+                report.ReporterTelegramUserId = context.Update.Sender.Id;
+                report.ReportedAtUtc = DateTime.UtcNow;
 
                 await _accidentReportingService.ReportAccidentAsync(report, cancellationToken);
             }
@@ -219,12 +225,20 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                 .WithPlainText("⛔ Отменено")
                 .WithClearedReplyKeyboard();
 
-            public static readonly IMessage SpecifyAddress = MessageFactory.CreateTextMessage()
-                .WithPlainText("📍 Укажите адрес ДТП")
+            private static readonly IMessage SpecifyAddressPrompt = MessageFactory.CreateTextMessage()
+                .WithPlainText("📍 Укажите адрес ДТП");
+
+            private static readonly IMessage SpecifyAddressHint = MessageFactory.CreateTextMessage()
+                .WithMarkdownText("💡 Нажмите *Мое местоположение*, чтобы автоматически отправить место на карте, гды Вы сейчас находитесь")
                 .WithReplyKeyboard(new[]
                 {
+                    new [] { KeyboardButton.WithRequestLocation("Мое местоположение") },
                     new [] { CancelButton }
                 });
+
+            public static readonly IMessage SpecifyAddress = MessageFactory.CreateCompositeMessage()
+                .AddMessage(SpecifyAddressPrompt)
+                .AddMessage(SpecifyAddressHint);
 
             public static readonly IMessage SpecifyParticipants = MessageFactory.CreateTextMessage()
                 .WithPlainText("🛵 Укажите участника ДТП")
@@ -243,20 +257,26 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     new [] { CancelButton }
                 });
 
-            public static readonly IMessage AskForContacts = MessageFactory.CreateTextMessage()
-                .WithMarkdownText("📞 Сообщить оператору Ваш номер телефона?\n\n\n" +
-                                   "💡 _Нажмите *да* чтобы автоматически отправить номер_")
+            private static readonly IMessage AskForContactsPrompt = MessageFactory.CreateTextMessage()
+                .WithPlainText("📞 Сообщить оператору Ваш номер телефона?");
+
+            private static readonly IMessage AskForContactsHint = MessageFactory.CreateTextMessage()
+                .WithMarkdownText("💡 Нажмите *Да* чтобы автоматически отправить номер")
                 .WithReplyKeyboard(new[]
                 {
                     new [] { KeyboardButton.WithRequestContact("Да"), new KeyboardButton("Нет") },
                     new [] { CancelButton }
                 });
 
+            public static readonly IMessage AskForContacts = MessageFactory.CreateCompositeMessage()
+                .AddMessage(AskForContactsPrompt)
+                .AddMessage(AskForContactsHint);
+
             public static IMessage ReportSummaryWithPrompt(IAccidentReportDialogState state) => MessageFactory.CreateTextMessage()
                 .WithInterpolatedMarkdownText(
 @$"🚨 Вы собираетесь сообщить о ДТП
     
- • *Адрес:* {state.Address}
+ • *Адрес:* {state.Address ?? "Геопозиция"}
  • *Участник:* {state.Participant}
  • *Пострадавшие:* {state.Victims}
  • *Телефон:* {state.ReporterPhoneNumber}

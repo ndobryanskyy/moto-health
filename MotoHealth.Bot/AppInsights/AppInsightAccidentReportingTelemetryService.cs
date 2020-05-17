@@ -61,6 +61,11 @@ namespace MotoHealth.Bot.AppInsights
             Track("Phone Was Shared Automatically");
         }
 
+        public void OnLocationSentAutomatically()
+        {
+            Track("Location Was Sent Automatically");
+        }
+
         public void OnCancelled()
         {
             var metrics = new TelemetryMetrics

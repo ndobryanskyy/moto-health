@@ -19,8 +19,9 @@ namespace MotoHealth.PubSub.EventData
         [JsonProperty(Required = Required.Always)]
         public DateTime ReportedAtUtc { get; set; }
 
-        [JsonProperty(Required = Required.Always)]
-        public string AccidentAddress { get; set; } = default!;
+        public string? AccidentAddress { get; set; }
+
+        public MapLocation? AccidentLocation { get; set; }
 
         [JsonProperty(Required = Required.Always)]
         public string AccidentParticipant { get; set; } = default!;
