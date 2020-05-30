@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Core.Bot.Abstractions;
+using MotoHealth.Core.Bot.AccidentReporting.Exceptions;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 using MotoHealth.Telegram.Messages;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -21,6 +23,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
         private readonly IBotTelemetryService _botTelemetry;
 
         private static readonly KeyboardButton CancelButton = new KeyboardButton("Отмена");
+        private static readonly KeyboardButton SkipButton = new KeyboardButton("Пропустить");
 
         public AccidentReportDialogHandler(
             ILogger<AccidentReportDialogHandler> logger,
@@ -44,192 +47,201 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             IAccidentReportDialogState state,
             CancellationToken cancellationToken)
         {
+            async Task SendMessageAsync(IMessage message)
+            {
+                await context.SendMessageAsync(message, cancellationToken);
+            }
+
+            var update = context.Update;
             var dialogTelemetry = _botTelemetry.GetTelemetryServiceForAccidentReporting(state);
 
-            var cancelled = await TryHandleCancelButtonAsync();
+            var cancelled = CheckIfCancelled();
             if (cancelled)
             {
                 dialogTelemetry.OnCancelled();
-                
+
+                await SendMessageAsync(Messages.Cancelled);
+
                 return true;
             }
 
-            switch (state.CurrentStep)
+            try
             {
-                case 0:
+                var dialogCompleted = await HandleStepAsync();
+
+                if (!dialogCompleted)
                 {
-                    await context.SendMessageAsync(Messages.SpecifyAddress, cancellationToken);
-                    break;
+                    state.CurrentStep++;
+                    dialogTelemetry.OnNextStep();
+                }
+                else
+                {
+                    dialogTelemetry.OnCompleted();
                 }
 
-                case 1:
-                {
-                    var updateHandled = false;
-
-                    if (context.Update is ITextMessageBotUpdate textMessage)
-                    {
-                        state.Address = textMessage.Text;
-                        updateHandled = true;
-                    } 
-                    else if (context.Update is IMapLocation location)
-                    {
-                        dialogTelemetry.OnLocationSentAutomatically();
-
-                        state.Location = location;
-                        updateHandled = true;
-                    }
-
-                    if (updateHandled)
-                    {
-                        await context.SendMessageAsync(Messages.SpecifyParticipants, cancellationToken);
-                        break;
-                    }
-                    else
-                    {
-                        // TODO handle wrong update type
-                        dialogTelemetry.OnUnexpectedReply();
-
-                        return false;
-                    }
-                }
-
-                case 2:
-                {
-                    if (context.Update is ITextMessageBotUpdate textMessage)
-                    {
-                        state.Participant = textMessage.Text;
-
-                        await context.SendMessageAsync(Messages.AreThereVictims, cancellationToken);
-                        break;
-                    }
-                    else
-                    {
-                        // TODO handle wrong update type
-                        dialogTelemetry.OnUnexpectedReply();
-
-                        return false;
-                    }
-                }
-
-                case 3:
-                {
-                    if (context.Update is ITextMessageBotUpdate textMessage)
-                    {
-                        state.Victims = textMessage.Text;
-
-                        await context.SendMessageAsync(Messages.AskForContacts, cancellationToken);
-                        break;
-                    }
-                    else
-                    {
-                        // TODO handle wrong update type
-                        dialogTelemetry.OnUnexpectedReply();
-
-                        return false;
-                    }
-                }
-
-                case 4:
-                {
-                    var phoneNumber = context.Update switch
-                    {
-                        IContactMessageBotUpdate contactUpdate => contactUpdate.Contact.PhoneNumber,
-                        ITextMessageBotUpdate textUpdate => textUpdate.Text,
-                        _ => null
-                    };
-
-                    if (phoneNumber != null)
-                    {
-                        state.ReporterPhoneNumber = phoneNumber;
-
-                        await context.SendMessageAsync(Messages.ReportSummaryWithPrompt(state), cancellationToken);
-
-                        if (context.Update is IContactMessageBotUpdate)
-                        {
-                            dialogTelemetry.OnPhoneNumberSharedAutomatically();
-                        }
-
-                        break;
-                    }
-                    else
-                    {
-                        // TODO handle wrong update type
-                        dialogTelemetry.OnUnexpectedReply();
-
-                        return false;
-                    }
-                }
-
-                case 5:
-                {
-                    if (context.Update is ITextMessageBotUpdate textMessage &&
-                        textMessage.Text.Trim().Equals("да", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        await ReportAccidentAsync();
-
-                        await context.SendMessageAsync(Messages.SuccessfullySent, cancellationToken);
-
-                        dialogTelemetry.OnCompleted();
-
-                        return true;
-                    }
-                    else
-                    {
-                        // TODO handle wrong update type and other negative answers
-                        dialogTelemetry.OnUnexpectedReply();
-
-                        return false;
-                    }
-                }
-
-
-                default:
-                    _logger.LogError("Got unexpected step number");
-                    return true;
+                return dialogCompleted;
             }
-
-            state.CurrentStep++;
-
-            dialogTelemetry.OnNextStep();
-
-            return false;
-
-            async Task<bool> TryHandleCancelButtonAsync()
+            catch (UnexpectedReplyTypeException)
             {
-                if (context.Update is ITextMessageBotUpdate textUpdate)
-                {
-                    if (textUpdate.Text == CancelButton.Text)
-                    {
-                        await context.SendMessageAsync(Messages.Canceled, cancellationToken);
-                        return true;
-                    }
-                }
+                dialogTelemetry.OnUnexpectedReply();
 
                 return false;
             }
+            catch (ReplyValidationException replyValidationException)
+            {
+                dialogTelemetry.OnReplyValidationFailed();
+
+                await SendMessageAsync(replyValidationException.UserFriendlyErrorMessage);
+
+                return false;
+            }
+
+            async Task<bool> HandleStepAsync()
+            {
+                switch (state.CurrentStep)
+                {
+                    case 0:
+                        {
+                            await SendMessageAsync(Messages.SpecifyAddress);
+                            break;
+                        }
+
+                    case 1:
+                        {
+                            if (update is IMapLocation location)
+                            {
+                                dialogTelemetry.OnLocationSentAutomatically();
+
+                                state.Location = location;
+                            }
+                            else if (update is ITextMessageBotUpdate { Text: var text })
+                            {
+                                EnsureMaxLengthNotExceeded(text, 100);
+                                state.Address = text;
+                            }
+                            else
+                            {
+                                throw new UnexpectedReplyTypeException();
+                            }
+
+                            await SendMessageAsync(Messages.SpecifyParticipants);
+                            break;
+                        }
+
+                    case 2:
+                        {
+                            if (update is ITextMessageBotUpdate { Text: var text })
+                            {
+                                EnsureMaxLengthNotExceeded(text, 100);
+                                state.Participant = text;
+
+                                await SendMessageAsync(Messages.AreThereVictims);
+                                break;
+                            }
+                            
+                            throw new UnexpectedReplyTypeException();
+                        }
+
+                    case 3:
+                        {
+                            if (update is ITextMessageBotUpdate { Text: var text })
+                            {
+                                EnsureMaxLengthNotExceeded(text, 100);
+                                state.Victims = text;
+
+                                await SendMessageAsync(Messages.AskForContacts);
+                                break;
+                            }
+
+                            throw new UnexpectedReplyTypeException();
+                        }
+
+                    case 4:
+                        {
+                            if (update is IContactMessageBotUpdate { Contact: { PhoneNumber: var phoneNumber } })
+                            {
+                                dialogTelemetry.OnPhoneNumberSharedAutomatically();
+
+                                state.ReporterPhoneNumber = phoneNumber;
+                            }
+                            else if (update is ITextMessageBotUpdate { Text: var text })
+                            {
+                                EnsureMaxLengthNotExceeded(text, 50);
+                                state.ReporterPhoneNumber = text.Trim().Equals(SkipButton.Text, StringComparison.InvariantCultureIgnoreCase) 
+                                    ? "Не указан"
+                                    : text;
+                            }
+                            else
+                            {
+                                throw new UnexpectedReplyTypeException();
+                            }
+
+                            await SendMessageAsync(Messages.ReportSummary(state));
+                            break;
+                        }
+
+                    case 5:
+                        {
+                            if (update is ITextMessageBotUpdate textMessage)
+                            {
+                                if (textMessage.Text.Trim().Equals("да", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    await ReportAccidentAsync();
+                                    await SendMessageAsync(Messages.SuccessfullySent);
+
+                                    return true;
+                                }
+                                else
+                                {
+                                    throw new ReplyValidationException(Messages.ConfirmationExpected);
+                                }
+                            }
+
+                            throw new UnexpectedReplyTypeException();
+                        }
+
+
+                    default:
+                        _logger.LogError("Got unexpected step number");
+                        return true;
+                }
+
+                return false;
+            } 
+
+            bool CheckIfCancelled() => update is ITextMessageBotUpdate { Text: var text } &&
+                                       text.Trim().Equals(CancelButton.Text, StringComparison.InvariantCultureIgnoreCase);
 
             async Task ReportAccidentAsync()
             {
                 var report = AccidentReport.CreateFromDialogState(state);
 
-                report.ReporterTelegramUserId = context.Update.Sender.Id;
+                report.ReporterTelegramUserId = update.Sender.Id;
                 report.ReportedAtUtc = DateTime.UtcNow;
 
                 await _accidentReportingService.ReportAccidentAsync(report, cancellationToken);
             }
         }
 
+        private static void EnsureMaxLengthNotExceeded(string text, int maxLength)
+        {
+            if (text.Length > maxLength)
+            {
+                throw new ReplyValidationException(Messages.ReplyMaxLengthExceeded(maxLength));
+            }
+        }
+
         private static class Messages
         {
-            public static readonly IMessage Canceled = MessageFactory.CreateTextMessage()
+            public static readonly IMessage Cancelled = MessageFactory.CreateTextMessage()
                 .WithPlainText("⛔ Отменено")
                 .WithClearedReplyKeyboard();
 
             private static readonly IMessage SpecifyAddressPrompt = MessageFactory.CreateTextMessage()
-                .WithPlainText("📍 Укажите адрес ДТП");
+                .WithPlainText("📍 Адрес ДТП");
 
             private static readonly IMessage SpecifyAddressHint = MessageFactory.CreateTextMessage()
-                .WithMarkdownText("💡 Нажмите *Мое местоположение*, чтобы автоматически отправить место на карте, гды Вы сейчас находитесь")
+                .WithMarkdownText("Нажмите *Мое местоположение*, чтобы автоматически отправить место на карте, гды вы сейчас находитесь, либо введите адрес вручную")
                 .WithReplyKeyboard(new[]
                 {
                     new [] { KeyboardButton.WithRequestLocation("Мое местоположение") },
@@ -241,7 +253,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                 .AddMessage(SpecifyAddressHint);
 
             public static readonly IMessage SpecifyParticipants = MessageFactory.CreateTextMessage()
-                .WithPlainText("🛵 Укажите участника ДТП")
+                .WithPlainText("🛵 Участник ДТП")
                 .WithReplyKeyboard(new[]
                 {
                     new [] { new KeyboardButton("Мотоцикл"), new KeyboardButton("Мопед") },
@@ -258,13 +270,13 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                 });
 
             private static readonly IMessage AskForContactsPrompt = MessageFactory.CreateTextMessage()
-                .WithPlainText("📞 Сообщить оператору Ваш номер телефона?");
+                .WithPlainText("📞 Номер для обратной связи");
 
             private static readonly IMessage AskForContactsHint = MessageFactory.CreateTextMessage()
-                .WithMarkdownText("💡 Нажмите *Да* чтобы автоматически отправить номер")
+                .WithMarkdownText("Нажмите *Мой номер*, чтобы автоматически отправить свой, либо введите вручную")
                 .WithReplyKeyboard(new[]
                 {
-                    new [] { KeyboardButton.WithRequestContact("Да"), new KeyboardButton("Нет") },
+                    new [] { KeyboardButton.WithRequestContact("Мой номер"), SkipButton },
                     new [] { CancelButton }
                 });
 
@@ -272,7 +284,13 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                 .AddMessage(AskForContactsPrompt)
                 .AddMessage(AskForContactsHint);
 
-            public static IMessage ReportSummaryWithPrompt(IAccidentReportDialogState state) => MessageFactory.CreateTextMessage()
+            private static readonly IEnumerable<IEnumerable<KeyboardButton>> SummaryReplyKeyboard = new[]
+            {
+                new[] { new KeyboardButton("Да") },
+                new[] { CancelButton }
+            };
+
+            public static IMessage ReportSummary(IAccidentReportDialogState state) => MessageFactory.CreateTextMessage()
                 .WithInterpolatedMarkdownText(
 @$"🚨 Вы собираетесь сообщить о ДТП
     
@@ -282,15 +300,19 @@ namespace MotoHealth.Core.Bot.AccidentReporting
  • *Телефон:* {state.ReporterPhoneNumber}
 
 _Отправить?_")
-                .WithReplyKeyboard(new[]
-                {
-                    new [] { new KeyboardButton("Да") },
-                    new [] { CancelButton }
-                });
+                .WithReplyKeyboard(SummaryReplyKeyboard);
+
+            public static readonly IMessage ConfirmationExpected = MessageFactory.CreateTextMessage()
+                .WithMarkdownText("🤔 Не совсем понял Вас\n\n" +
+                                  "Нажмите *Да*, чтобы сообщить о ДТП или *Отмена*, чтобы звершить без отправки")
+                .WithReplyKeyboard(SummaryReplyKeyboard);
 
             public static readonly IMessage SuccessfullySent = MessageFactory.CreateTextMessage()
                 .WithPlainText("✅ Успешно отправлено")
                 .WithClearedReplyKeyboard();
+
+            public static IMessage ReplyMaxLengthExceeded(int maxLength) => MessageFactory.CreateTextMessage()
+                .WithMarkdownText($"😮 Максимальная длина ответа \\- *{maxLength}* символов, пожалуйста сократите сообщение");
         }
     }
 }

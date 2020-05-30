@@ -56,6 +56,15 @@ namespace MotoHealth.Bot.AppInsights
             Track("Unexpected Reply", diagnosticProperties);
         }
 
+        public void OnReplyValidationFailed()
+        {
+            var diagnosticProperties = _botUpdate.ExtractDiagnosticProperties();
+
+            diagnosticProperties.Add("Failed Step", _dialogState.CurrentStep.ToString());
+
+            Track("Reply Validation Failure", diagnosticProperties);
+        }
+
         public void OnPhoneNumberSharedAutomatically()
         {
             Track("Phone Was Shared Automatically");

@@ -123,7 +123,7 @@ namespace MotoHealth.Functions.AdminBot
 
             public static readonly IMessage SomethingWentWrong = MessageFactory
                 .CreateTextMessage()
-                .WithPlainText("😥 Извините, но что-то пошло не так\n\nПопробуйте ещё раз, если проблема не пройдет, сообщите о ней, пожалуйста, @ndobryanskyy");
+                .WithPlainText("😥 Извините, что-то пошло не так\n\nПопробуйте ещё раз, если проблема не пройдет, сообщите о ней, пожалуйста, @ndobryanskyy");
 
             public static readonly IMessage ChatUnsubscribed = MessageFactory.CreateTextMessage()
                 .WithPlainText("⛔ Этот чат отписан от обновлений");

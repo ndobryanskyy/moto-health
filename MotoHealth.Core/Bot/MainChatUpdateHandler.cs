@@ -129,7 +129,7 @@ namespace MotoHealth.Core.Bot
                 .WithPlainText("...");
 
             public static readonly IMessage PleaseTryLater = MessageFactory.CreateTextMessage()
-                .WithPlainText("😥 Извините, но что-то пошло не так\n\nПопробуйте ещё раз через пару секунд");
+                .WithPlainText("😥 Извините, что-то пошло не так\n\nПопробуйте ещё раз через пару секунд");
         }
     }
 }

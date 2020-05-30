@@ -8,6 +8,8 @@
 
         void OnUnexpectedReply();
 
+        void OnReplyValidationFailed();
+
         void OnPhoneNumberSharedAutomatically();
 
         void OnLocationSentAutomatically();
