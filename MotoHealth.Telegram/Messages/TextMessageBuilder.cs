@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MotoHealth.Telegram.Extensions;
-using Telegram.Bot;
+using Telegram.Bot.Requests;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -66,7 +66,7 @@ namespace MotoHealth.Telegram.Messages
             return this;
         }
 
-        public async Task SendAsync(ChatId chatId, ITelegramBotClient client, CancellationToken cancellationToken)
+        public async Task SendAsync(ChatId chatId, ITelegramClient client, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(_text))
             {
@@ -74,7 +74,15 @@ namespace MotoHealth.Telegram.Messages
                 throw new InvalidOperationException("Cannot send text message with empty text");
             }
 
-            await client.SendTextMessageAsync(chatId, _text, _parseMode, replyMarkup: _replyMarkup, cancellationToken: cancellationToken);
+            var request = new SendMessageRequest(chatId, _text)
+            {
+                DisableNotification = false,
+                DisableWebPagePreview = false,
+                ParseMode = _parseMode,
+                ReplyMarkup = _replyMarkup
+            };
+
+            await client.SendTextMessageAsync(request, cancellationToken);
         }
     }
 }

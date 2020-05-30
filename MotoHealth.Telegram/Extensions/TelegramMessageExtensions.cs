@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -22,8 +23,9 @@ namespace MotoHealth.Telegram.Extensions
 
             if (hasExactlyOneCommand)
             {
+                var commandTokens = entityValues.First().Split('@', StringSplitOptions.RemoveEmptyEntries);
                 var commandArguments = message.Text.Substring(firstMessageEntity!.Length).Trim();
-                command = (entityValues.First(), commandArguments);
+                command = (commandTokens[0], commandArguments);
             }
 
             return hasExactlyOneCommand;

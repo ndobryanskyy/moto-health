@@ -5,8 +5,8 @@ using Microsoft.Extensions.Logging;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 using MotoHealth.Core.Extensions;
+using MotoHealth.Telegram;
 using MotoHealth.Telegram.Messages;
-using Telegram.Bot;
 
 namespace MotoHealth.Core.Bot
 {
@@ -20,7 +20,7 @@ namespace MotoHealth.Core.Bot
 
         private readonly ILogger _logger;
         private readonly IChatsDoorman _chatsDoorman;
-        private readonly ITelegramBotClient _botClient;
+        private readonly ITelegramClient _telegramClient;
         private readonly IChatStatesRepository _chatStatesRepository;
         private readonly IDefaultChatStateFactory _defaultChatStateFactory;
         private readonly IChatUpdateHandler _chatUpdateHandler;
@@ -30,7 +30,7 @@ namespace MotoHealth.Core.Bot
             long chatId,
             ILoggerFactory loggerFactory,
             IChatsDoorman chatsDoorman,
-            ITelegramBotClient botClient,
+            ITelegramClient telegramClient,
             IChatStatesRepository chatStatesRepository,
             IDefaultChatStateFactory defaultChatStateFactory,
             IChatUpdateHandler chatUpdateHandler,
@@ -40,7 +40,7 @@ namespace MotoHealth.Core.Bot
 
             _logger = loggerFactory.CreateLogger($"{nameof(Chat)}:{_chatId}");
             _chatsDoorman = chatsDoorman;
-            _botClient = botClient;
+            _telegramClient = telegramClient;
             _chatStatesRepository = chatStatesRepository;
             _defaultChatStateFactory = defaultChatStateFactory;
             _chatUpdateHandler = chatUpdateHandler;
@@ -68,7 +68,7 @@ namespace MotoHealth.Core.Bot
 
             _logger.LogInformation($"Start handling update {update.UpdateId}");
 
-            var updateContext = new ChatUpdateContext(update, _botClient);
+            var updateContext = new ChatUpdateContext(update, _telegramClient);
 
             var handledSuccessfully = false;
 

@@ -1,12 +1,25 @@
 ﻿using System;
+using System.Net;
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Telegram.Bot;
+using Polly;
+using Polly.Extensions.Http;
 
 namespace MotoHealth.Telegram
 {
     public static class TelegramServiceCollectionExtensions
     {
+        private static readonly Random Jitter = new Random();
+
+        private static readonly IAsyncPolicy<HttpResponseMessage> ClientRetryPolicy = HttpPolicyExtensions
+            .HandleTransientHttpError()
+            .OrResult(result => result.StatusCode == HttpStatusCode.TooManyRequests)
+            .WaitAndRetryAsync(2, attempt =>
+            {
+                var milliseconds = (attempt * 500) + Jitter.Next(0, 200);
+                return TimeSpan.FromMilliseconds(milliseconds);
+            });
+
         public static IServiceCollection AddTelegram(this IServiceCollection services)
         {
             return AddCoreServices(services);
@@ -22,17 +35,12 @@ namespace MotoHealth.Telegram
 
         private static IServiceCollection AddCoreServices(IServiceCollection services)
         {
-            return services
-                .AddSingleton<ITelegramBotClientFactory, TelegramBotClientFactory>()
-                .AddSingleton(CreateSharedTelegramClient);
-        }
+            services
+                .AddHttpClient<ITelegramClient, TelegramClient>()
+                .SetHandlerLifetime(TimeSpan.FromMinutes(10))
+                .AddPolicyHandler(ClientRetryPolicy);
 
-        private static ITelegramBotClient CreateSharedTelegramClient(IServiceProvider services)
-        {
-            var factory = services.GetRequiredService<ITelegramBotClientFactory>();
-            var options = services.GetRequiredService<IOptions<TelegramOptions>>();
-
-            return factory.CreateClient(options.Value);
+            return services;
         }
     }
 }

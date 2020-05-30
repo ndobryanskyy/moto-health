@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace MotoHealth.Telegram.Messages
@@ -9,7 +8,7 @@ namespace MotoHealth.Telegram.Messages
     {
         Task SendAsync(
             ChatId chatId, 
-            ITelegramBotClient client, 
+            ITelegramClient client, 
             CancellationToken cancellationToken = default);
     }
 }

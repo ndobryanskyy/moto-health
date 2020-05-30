@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Functions.AccidentAlerting;
 using MotoHealth.Functions.Authorization;
+using MotoHealth.Telegram;
 using MotoHealth.Telegram.Extensions;
 using MotoHealth.Telegram.Messages;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -22,18 +22,18 @@ namespace MotoHealth.Functions.AdminBot
         private const string UnsubscribeCommand = "/unsubscribe";
 
         private readonly ILogger<AdminBot> _logger;
-        private readonly ITelegramBotClient _botClient;
+        private readonly ITelegramClient _telegramClient;
         private readonly IAuthorizationService _authorizationService;
         private readonly IAccidentAlertingSubscriptionsManager _accidentAlertingSubscriptionsManager;
 
         public AdminBot(
             ILogger<AdminBot> logger,
-            ITelegramBotClient botClient,
+            ITelegramClient telegramClient,
             IAuthorizationService authorizationService,
             IAccidentAlertingSubscriptionsManager accidentAlertingSubscriptionsManager)
         {
             _logger = logger;
-            _botClient = botClient;
+            _telegramClient = telegramClient;
             _authorizationService = authorizationService;
             _accidentAlertingSubscriptionsManager = accidentAlertingSubscriptionsManager;
         }
@@ -66,7 +66,7 @@ namespace MotoHealth.Functions.AdminBot
                                     ? Messages.ChatSubscribedSuccessfully
                                     : Messages.ChatAlreadySubscribed;
 
-                                await messageFeedback.SendAsync(chatId, _botClient);
+                                await messageFeedback.SendAsync(chatId, _telegramClient);
 
                                 break;
 
@@ -78,7 +78,7 @@ namespace MotoHealth.Functions.AdminBot
 
                                 await _accidentAlertingSubscriptionsManager.UnsubscribeChatAsync(chat);
 
-                                await Messages.ChatUnsubscribed.SendAsync(chatId, _botClient);
+                                await Messages.ChatUnsubscribed.SendAsync(chatId, _telegramClient);
 
                                 break;
 
@@ -100,7 +100,7 @@ namespace MotoHealth.Functions.AdminBot
                 {
                     _logger.LogWarning(exception, $"Error occured while handling update {update.Id}");
 
-                    await Messages.SomethingWentWrong.SendAsync(chatId, _botClient);
+                    await Messages.SomethingWentWrong.SendAsync(chatId, _telegramClient);
                 }
                 finally
                 {

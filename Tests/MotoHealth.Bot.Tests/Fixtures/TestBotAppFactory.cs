@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using MotoHealth.Infrastructure.ChatStorage;
-using Telegram.Bot;
+using MotoHealth.Telegram;
 
 namespace MotoHealth.Bot.Tests.Fixtures
 {
@@ -21,7 +21,7 @@ namespace MotoHealth.Bot.Tests.Fixtures
             builder.ConfigureTestServices(services =>
             {
                 services.AddSingleton(azureTablesInitializerMock.Object);
-                services.AddSingleton(Mock.Of<ITelegramBotClient>());
+                services.AddSingleton(Mock.Of<ITelegramClient>());
             });
         }
 

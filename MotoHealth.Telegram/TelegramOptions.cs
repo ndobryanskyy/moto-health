@@ -8,7 +8,7 @@ namespace MotoHealth.Telegram
 
         public string BotSecret { get; set; } = string.Empty;
 
-        public int RequestTimeoutInSeconds { get; set; } = 30;
+        public int RequestTimeoutInSeconds { get; set; } = 15;
 
         public string BotToken => $"{BotId}:{BotSecret}";
 

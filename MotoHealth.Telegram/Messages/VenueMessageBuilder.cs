@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Telegram.Bot;
+using Telegram.Bot.Requests;
 using Telegram.Bot.Types;
 
 namespace MotoHealth.Telegram.Messages
@@ -37,7 +37,7 @@ namespace MotoHealth.Telegram.Messages
 
         public async Task SendAsync(
             ChatId chatId, 
-            ITelegramBotClient client, 
+            ITelegramClient client, 
             CancellationToken cancellationToken)
         {
             if (!_latitude.HasValue || !_longitude.HasValue)
@@ -46,7 +46,13 @@ namespace MotoHealth.Telegram.Messages
                 throw new InvalidOperationException("Location must be set");
             }
 
-            await client.SendVenueAsync(chatId, (float)_latitude.Value, (float)_longitude.Value, _title, _address, cancellationToken: cancellationToken);
+            var request = new SendVenueRequest(
+                chatId, 
+                (float)_latitude.Value, (float)_longitude.Value, 
+                _title, _address
+            );
+
+            await client.SendVenueMessageAsync(request, cancellationToken);
         }
     }
 }

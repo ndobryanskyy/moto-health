@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using MotoHealth.PubSub.EventData;
+using MotoHealth.Telegram;
+using MotoHealth.Telegram.Exceptions;
 using MotoHealth.Telegram.Messages;
-using Telegram.Bot;
-using Telegram.Bot.Exceptions;
 
 namespace MotoHealth.Functions.AccidentAlerting.Workflow
 {
@@ -16,12 +15,12 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
         private static readonly TimeZoneInfo UkraineTimezone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
 
         private readonly ILogger<AlertChatActivity> _logger;
-        private readonly ITelegramBotClient _botClient;
+        private readonly ITelegramClient _telegramClient;
 
-        public AlertChatActivity(ILogger<AlertChatActivity> logger, ITelegramBotClient botClient)
+        public AlertChatActivity(ILogger<AlertChatActivity> logger, ITelegramClient telegramClient)
         {
             _logger = logger;
-            _botClient = botClient;
+            _telegramClient = telegramClient;
         }
 
         [FunctionName(FunctionNames.AccidentAlerting.AlertChatActivity)]
@@ -34,7 +33,7 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
 
             try
             {
-                await alert.SendAsync(chatId, _botClient);
+                await alert.SendAsync(chatId, _telegramClient);
 
                 _logger.LogInformation($"Successfully alerted chat {chatId} about report {reportId}");
 
@@ -43,11 +42,11 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
                     AlertSent = true
                 };
             }
-            catch (ApiRequestException exception) when (exception.ErrorCode == StatusCodes.Status403Forbidden)
+            catch (TelegramApiException exception) when (exception.Type == TelegramApiError.Forbidden)
             {
                 _logger.LogWarning(exception, $"Skipped alerting chat {chatId} about report {reportId}");
             }
-            catch (ApiRequestException exception) when (exception.ErrorCode == StatusCodes.Status400BadRequest)
+            catch (TelegramApiException exception) when (exception.Type == TelegramApiError.BadRequest)
             {
                 _logger.LogError(exception, $"Unexpected client error, while alerting {chatId} about report {reportId}");
             }

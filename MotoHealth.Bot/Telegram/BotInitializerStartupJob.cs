@@ -4,7 +4,8 @@ using AutoMapper;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Core.Bot.Abstractions;
-using Telegram.Bot;
+using MotoHealth.Telegram;
+using Telegram.Bot.Requests;
 using Telegram.Bot.Types;
 
 namespace MotoHealth.Bot.Telegram
@@ -13,18 +14,18 @@ namespace MotoHealth.Bot.Telegram
     {
         private readonly ILogger<BotInitializerStartupJob> _logger;
         private readonly IMapper _mapper;
-        private readonly ITelegramBotClient _botClient;
+        private readonly ITelegramClient _telegramClient;
         private readonly IBotCommandsRegistry _commandsRegistry;
 
         public BotInitializerStartupJob(
             ILogger<BotInitializerStartupJob> logger, 
             IMapper mapper, 
-            ITelegramBotClient botClient,
+            ITelegramClient telegramClient,
             IBotCommandsRegistry commandsRegistry)
         {
             _logger = logger;
             _mapper = mapper;
-            _botClient = botClient;
+            _telegramClient = telegramClient;
             _commandsRegistry = commandsRegistry;
         }
 
@@ -33,8 +34,9 @@ namespace MotoHealth.Bot.Telegram
             _logger.LogInformation("Starting bot initialization");
 
             var commands = _mapper.Map<BotCommand[]>(_commandsRegistry.PublicCommands);
-
-            await _botClient.SetMyCommandsAsync(commands, cancellationToken);
+            
+            var request = new SetMyCommandsRequest(commands);
+            await _telegramClient.SetBotCommandsAsync(request, cancellationToken);
 
             _logger.LogInformation("Finished bot initialization");
         }
