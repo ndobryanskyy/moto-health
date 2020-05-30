@@ -2,7 +2,7 @@
 
 namespace MotoHealth.Core.Bot.Updates
 {
-    internal sealed class CommandMessageBotUpdate : MessageBotUpdateBase, ICommandBotUpdate
+    internal sealed class CommandMessageBotUpdate : MessageBotUpdateBase, ICommandMessageBotUpdate
     {
         public string Command { get; set; } = default!;
     }

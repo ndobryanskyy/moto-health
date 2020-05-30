@@ -49,7 +49,7 @@ namespace MotoHealth.Core.Bot
                     {
                         await HandleAccidentReportDialog(context, state, accidentReportDialog, cancellationToken);
                     }
-                    else if (update is ICommandBotUpdate commandBotUpdate)
+                    else if (update is ICommandMessageBotUpdate commandBotUpdate)
                     {
                         await HandleCommandAsync(context, state, commandBotUpdate, cancellationToken);
                     }
@@ -72,10 +72,14 @@ namespace MotoHealth.Core.Bot
         private async Task HandleCommandAsync(
             IChatUpdateContext context, 
             IChatState state, 
-            ICommandBotUpdate commandBotUpdate, 
+            ICommandMessageBotUpdate commandMessage, 
             CancellationToken cancellationToken)
         {
-            if (_commands.ReportAccident.Matches(commandBotUpdate))
+            if (_commands.Start.Matches(commandMessage))
+            {
+                await context.SendMessageAsync(Messages.Start, cancellationToken);
+            }
+            else if (_commands.ReportAccident.Matches(commandMessage))
             {
                 var dialogState = state.StartAccidentReportingDialog(1);
 
@@ -85,7 +89,7 @@ namespace MotoHealth.Core.Bot
 
                 await HandleAccidentReportDialog(context, state, dialogState, cancellationToken);
             }
-            else if (_commands.About.Matches(commandBotUpdate))
+            else if (_commands.About.Matches(commandMessage))
             {
                 await context.SendMessageAsync(Messages.MotoHealthInfo, cancellationToken);
 
@@ -118,6 +122,9 @@ namespace MotoHealth.Core.Bot
 
         private static class Messages
         {
+            public static readonly IMessage Start = MessageFactory.CreateTextMessage()
+                .WithPlainText("📌 Чтобы не забыть про бота в экстренной ситуации, закрепите себе этот диалог");
+
             public static readonly IMessage MotoHealthInfo = MessageFactory.CreateTextMessage()
                 .WithMarkdownText(
                     "Moto Health Odessa\n\n" +
@@ -129,7 +136,7 @@ namespace MotoHealth.Core.Bot
                 .WithPlainText("...");
 
             public static readonly IMessage PleaseTryLater = MessageFactory.CreateTextMessage()
-                .WithPlainText("😥 Извините, что-то пошло не так\n\nПопробуйте ещё раз через пару секунд");
+                .WithPlainText("😥 Ой, что-то пошло не так\n\nПопробуйте ещё раз через пару секунд");
         }
     }
 }

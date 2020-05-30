@@ -24,7 +24,7 @@ namespace MotoHealth.Bot.AppInsights
 
                     break;
 
-                case ICommandBotUpdate commandBotUpdate:
+                case ICommandMessageBotUpdate commandBotUpdate:
                     properties.Add(TelemetryProperties.WellKnown.Command, commandBotUpdate.Command);
 
                     break;

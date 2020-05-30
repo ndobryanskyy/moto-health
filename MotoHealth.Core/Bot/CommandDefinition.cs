@@ -20,7 +20,7 @@ namespace MotoHealth.Core.Bot
 
         public string? Description { get; }
 
-        public bool Matches(ICommandBotUpdate commandUpdate) 
-            => commandUpdate.Command == Command;
+        public bool Matches(ICommandMessageBotUpdate commandMessage) 
+            => commandMessage.Command == Command;
     }
 }

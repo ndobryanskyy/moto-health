@@ -22,9 +22,6 @@ namespace MotoHealth.Core.Bot.AccidentReporting
         private readonly IAccidentReportingService _accidentReportingService;
         private readonly IBotTelemetryService _botTelemetry;
 
-        private static readonly KeyboardButton CancelButton = new KeyboardButton("Отмена");
-        private static readonly KeyboardButton SkipButton = new KeyboardButton("Пропустить");
-
         public AccidentReportDialogHandler(
             ILogger<AccidentReportDialogHandler> logger,
             IAccidentReportingService accidentReportingService, 
@@ -167,7 +164,8 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                             else if (update is ITextMessageBotUpdate { Text: var text })
                             {
                                 EnsureMaxLengthNotExceeded(text, 50);
-                                state.ReporterPhoneNumber = text.Trim().Equals(SkipButton.Text, StringComparison.InvariantCultureIgnoreCase) 
+
+                                state.ReporterPhoneNumber = text.Trim().Equals(Messages.SkipButton.Text, StringComparison.InvariantCultureIgnoreCase) 
                                     ? "Не указан"
                                     : text;
                             }
@@ -184,7 +182,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                         {
                             if (update is ITextMessageBotUpdate textMessage)
                             {
-                                if (textMessage.Text.Trim().Equals("да", StringComparison.InvariantCultureIgnoreCase))
+                                if (textMessage.Text.Trim().Equals(Messages.SubmitButton.Text, StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     await ReportAccidentAsync();
                                     await SendMessageAsync(Messages.SuccessfullySent);
@@ -210,7 +208,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             } 
 
             bool CheckIfCancelled() => update is ITextMessageBotUpdate { Text: var text } &&
-                                       text.Trim().Equals(CancelButton.Text, StringComparison.InvariantCultureIgnoreCase);
+                                       text.Trim().Equals(Messages.CancelButton.Text, StringComparison.InvariantCultureIgnoreCase);
 
             async Task ReportAccidentAsync()
             {
@@ -233,6 +231,12 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
         private static class Messages
         {
+            public static readonly KeyboardButton CancelButton = new KeyboardButton("Отмена");
+            public static readonly KeyboardButton ShareNumber = KeyboardButton.WithRequestContact("Мой номер");
+            public static readonly KeyboardButton ShareCurrentLocation = KeyboardButton.WithRequestLocation("Мое местоположение");
+            public static readonly KeyboardButton SkipButton = new KeyboardButton("Пропустить");
+            public static readonly KeyboardButton SubmitButton = new KeyboardButton("Отправить");
+
             public static readonly IMessage Cancelled = MessageFactory.CreateTextMessage()
                 .WithPlainText("⛔ Отменено")
                 .WithClearedReplyKeyboard();
@@ -241,10 +245,10 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                 .WithPlainText("📍 Адрес ДТП");
 
             private static readonly IMessage SpecifyAddressHint = MessageFactory.CreateTextMessage()
-                .WithMarkdownText("Нажмите *Мое местоположение*, чтобы автоматически отправить место на карте, гды вы сейчас находитесь, либо введите адрес вручную")
+                .WithMarkdownText($"Нажмите *{ShareCurrentLocation.Text}*, чтобы автоматически отправить место на карте, где сейчас находитесь, либо напишите вручную")
                 .WithReplyKeyboard(new[]
                 {
-                    new [] { KeyboardButton.WithRequestLocation("Мое местоположение") },
+                    new [] { ShareCurrentLocation },
                     new [] { CancelButton }
                 });
 
@@ -273,10 +277,10 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                 .WithPlainText("📞 Номер для обратной связи");
 
             private static readonly IMessage AskForContactsHint = MessageFactory.CreateTextMessage()
-                .WithMarkdownText("Нажмите *Мой номер*, чтобы автоматически отправить свой, либо введите вручную")
+                .WithMarkdownText($"Нажмите *{ShareNumber.Text}*, чтобы автоматически отправить свой номер телефона, либо напишите другой вручную")
                 .WithReplyKeyboard(new[]
                 {
-                    new [] { KeyboardButton.WithRequestContact("Мой номер"), SkipButton },
+                    new [] { ShareNumber, SkipButton },
                     new [] { CancelButton }
                 });
 
@@ -286,25 +290,23 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
             private static readonly IEnumerable<IEnumerable<KeyboardButton>> SummaryReplyKeyboard = new[]
             {
-                new[] { new KeyboardButton("Да") },
+                new[] { SubmitButton },
                 new[] { CancelButton }
             };
 
             public static IMessage ReportSummary(IAccidentReportDialogState state) => MessageFactory.CreateTextMessage()
                 .WithInterpolatedMarkdownText(
-@$"🚨 Вы собираетесь сообщить о ДТП
+@$"🚨 Сообщение о ДТП
     
  • *Адрес:* {state.Address ?? "Геопозиция"}
  • *Участник:* {state.Participant}
  • *Пострадавшие:* {state.Victims}
- • *Телефон:* {state.ReporterPhoneNumber}
-
-_Отправить?_")
+ • *Телефон:* {state.ReporterPhoneNumber}")
                 .WithReplyKeyboard(SummaryReplyKeyboard);
 
             public static readonly IMessage ConfirmationExpected = MessageFactory.CreateTextMessage()
-                .WithMarkdownText("🤔 Не совсем понял Вас\n\n" +
-                                  "Нажмите *Да*, чтобы сообщить о ДТП или *Отмена*, чтобы звершить без отправки")
+                .WithMarkdownText("🤔 Не совсем понял вас\n\n" +
+                                  $"Нажмите *{SubmitButton.Text}*, чтобы сообщить о ДТП или *{CancelButton.Text}*, чтобы завершить без отправки")
                 .WithReplyKeyboard(SummaryReplyKeyboard);
 
             public static readonly IMessage SuccessfullySent = MessageFactory.CreateTextMessage()
@@ -312,7 +314,7 @@ _Отправить?_")
                 .WithClearedReplyKeyboard();
 
             public static IMessage ReplyMaxLengthExceeded(int maxLength) => MessageFactory.CreateTextMessage()
-                .WithMarkdownText($"😮 Максимальная длина ответа \\- *{maxLength}* символов, пожалуйста сократите сообщение");
+                .WithMarkdownText($"😮 Максимальная длина ответа \\- *{maxLength}* символов, пожалуйста, сократите сообщение");
         }
     }
 }

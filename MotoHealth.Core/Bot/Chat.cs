@@ -14,7 +14,7 @@ namespace MotoHealth.Core.Bot
     {
         private static readonly IMessage SomethingWentWrongMessage = MessageFactory
             .CreateTextMessage()
-            .WithPlainText("😥 Извините, что-то пошло не так\n\nПопробуйте ещё раз, если проблема не пройдет, сообщите о ней, пожалуйста, @ndobryanskyy");
+            .WithPlainText("😥 Ой, что-то пошло не так\n\nПопробуйте ещё раз, если проблема не пройдет, сообщите о ней, пожалуйста, @ndobryanskyy");
 
         private readonly long _chatId;
 

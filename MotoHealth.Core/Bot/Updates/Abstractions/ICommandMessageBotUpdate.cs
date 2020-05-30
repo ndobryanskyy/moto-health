@@ -1,6 +1,6 @@
 ﻿namespace MotoHealth.Core.Bot.Updates.Abstractions
 {
-    public interface ICommandBotUpdate : IMessageBotUpdate
+    public interface ICommandMessageBotUpdate : IMessageBotUpdate
     {
         string Command { get; }
     }
