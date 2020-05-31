@@ -20,5 +20,10 @@
         {
             public const string ConnectionStringName = "ChatsStorageAccount";
         }
+
+        public static class ApplicationInsights
+        {
+            public const string AlwaysOnPingSyntheticSource = "Always On Ping";
+        }
     }
 }

@@ -69,7 +69,7 @@ namespace MotoHealth.Bot
                 endpoints.Map("/", context =>
                 {
                     var telemetry = context.Features.Get<RequestTelemetry>();
-                    telemetry.Name = "Always On Ping";
+                    telemetry.Context.Operation.SyntheticSource = Constants.ApplicationInsights.AlwaysOnPingSyntheticSource;
 
                     context.Response.StatusCode = StatusCodes.Status200OK;
                     

@@ -32,6 +32,7 @@ namespace MotoHealth.Bot
                 services.RemoveAll<ITelemetryInitializer>();
 
                 services
+                    .AddApplicationInsightsTelemetryProcessor<AlwaysOnPingFilteringTelemetryProcessor>()
                     .AddSingleton<ITelemetryInitializer, DomainNameRoleInstanceTelemetryInitializer>()
                     .AddSingleton<ITelemetryInitializer, AzureAppServiceRoleNameFromHostNameHeaderInitializer>()
                     .AddSingleton<ITelemetryInitializer, ComponentVersionTelemetryInitializer>()
