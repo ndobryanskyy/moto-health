@@ -140,7 +140,7 @@ namespace MotoHealth.Core.Bot
                 );
 
             private static readonly IMessage NothingToSayHint = MessageFactory.CreateTextMessage()
-                .WithMarkdownText("Попробуйте выбрать команду в меню *\\[ / \\]* внизу");
+                .WithMarkdownText("Пожалуйста, выберите команду в меню *\\[ / \\]* внизу");
 
             public static readonly IMessage NothingToSay = MessageFactory.CreateCompositeMessage()
                 .AddMessage(CommonMessages.NotQuiteGetIt)
