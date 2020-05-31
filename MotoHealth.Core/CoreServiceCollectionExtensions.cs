@@ -28,7 +28,8 @@ namespace MotoHealth.Core
                 .AddSingleton<IChatsDoorman, ChatsDoorman>()
                 .AddSingleton<IBotCommandsRegistry, BotCommandsRegistry>()
                 .AddTransient<IChatUpdateHandler, MainChatUpdateHandler>()
-                .AddTransient<IAccidentReportDialogHandler, AccidentReportDialogHandler>();
+                .AddTransient<IAccidentReportDialogHandler, AccidentReportDialogHandler>()
+                .AddSingleton<IPhoneNumberParser, PhoneNumberParser>();
 
             return services;
         }

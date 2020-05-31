@@ -122,18 +122,29 @@ namespace MotoHealth.Core.Bot
 
         private static class Messages
         {
-            public static readonly IMessage Start = MessageFactory.CreateTextMessage()
-                .WithPlainText("📌 Чтобы не забыть про бота в экстренной ситуации, закрепите себе этот диалог");
+            private static readonly IMessage StartCommandsHint = MessageFactory.CreateTextMessage()
+                .WithMarkdownText("Нажмите /dtp чтобы получить помощь, если вы стали участником или свидетелем ДТП\n\nЭта и другие команды также доступны в меню *\\[ / \\]* внизу");
+
+            private static readonly IMessage StartPinHint = MessageFactory.CreateTextMessage()
+                .WithPlainText("📌 Чтобы не забыть про бота в экстренной ситуации, можете закрепите себе этот диалог");
+
+            public static readonly IMessage Start = MessageFactory.CreateCompositeMessage()
+                .AddMessage(StartCommandsHint)
+                .AddMessage(StartPinHint);
 
             public static readonly IMessage MotoHealthInfo = MessageFactory.CreateTextMessage()
                 .WithMarkdownText(
-                    "Moto Health Odessa\n\n" +
+                    "Moto Health\n\n" +
                     "*Телефон:* \\+380960543434\n" +
                     "*Сайт:* [mh\\.od\\.ua](http://www.mh.od.ua)"
                 );
 
-            public static readonly IMessage NothingToSay = MessageFactory.CreateTextMessage()
-                .WithPlainText("...");
+            private static readonly IMessage NothingToSayHint = MessageFactory.CreateTextMessage()
+                .WithMarkdownText("Попробуйте выбрать команду в меню *\\[ / \\]* внизу");
+
+            public static readonly IMessage NothingToSay = MessageFactory.CreateCompositeMessage()
+                .AddMessage(CommonMessages.NotQuiteGetIt)
+                .AddMessage(NothingToSayHint);
 
             public static readonly IMessage PleaseTryLater = MessageFactory.CreateTextMessage()
                 .WithPlainText("😥 Ой, что-то пошло не так\n\nПопробуйте ещё раз через пару секунд");
