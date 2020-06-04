@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MotoHealth.Core.Bot;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
+using MotoHealth.Core.Bot.Commands;
 using MotoHealth.Core.Telegram;
 using MotoHealth.Telegram;
 
@@ -23,10 +24,14 @@ namespace MotoHealth.Core
 
             services
                 .AddSingleton<IBotUpdatesMapper, BotUpdatesMapper>()
+                .AddSingleton<IAdminHandlerMessages, AdminHandlerMessages>()
+                .AddSingleton<IMainChatMessages, MainChatMessages>()
+                .AddSingleton<IAccidentReportDialogMessages, AccidentReportDialogMessages>()
                 .AddTransient<IChatsFactory, ChatsFactory>()
                 .AddTransient<IChatStatesRepository, ChatStatesRepository>()
                 .AddSingleton<IChatsDoorman, ChatsDoorman>()
                 .AddSingleton<IBotCommandsRegistry, BotCommandsRegistry>()
+                .AddTransient<IAdminCommandsHandler, AdminCommandsHandler>()
                 .AddTransient<IChatUpdateHandler, MainChatUpdateHandler>()
                 .AddTransient<IAccidentReportDialogHandler, AccidentReportDialogHandler>()
                 .AddSingleton<IPhoneNumberParser, PhoneNumberParser>();

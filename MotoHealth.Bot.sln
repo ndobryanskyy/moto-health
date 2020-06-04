@@ -24,7 +24,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Telegram", "Moto
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Telegram.Tests", "MotoHealth.Telegram.Tests\MotoHealth.Telegram.Tests.csproj", "{C802E28D-4084-4A10-AD5F-547459D287D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotoHealth.PubSub", "MotoHealth.PubSub\MotoHealth.PubSub.csproj", "{5E2B5585-CAF6-4C31-ACF0-7A404987E4DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.PubSub", "MotoHealth.PubSub\MotoHealth.PubSub.csproj", "{5E2B5585-CAF6-4C31-ACF0-7A404987E4DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

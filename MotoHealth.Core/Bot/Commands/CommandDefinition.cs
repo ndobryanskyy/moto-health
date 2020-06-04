@@ -1,7 +1,7 @@
 ﻿using System;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 
-namespace MotoHealth.Core.Bot
+namespace MotoHealth.Core.Bot.Commands
 {
     public class CommandDefinition
     {

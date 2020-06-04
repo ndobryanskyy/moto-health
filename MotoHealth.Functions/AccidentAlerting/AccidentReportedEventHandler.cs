@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
@@ -8,17 +7,20 @@ using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Extensions.Logging;
 using MotoHealth.PubSub;
 using MotoHealth.PubSub.EventData;
-using Newtonsoft.Json.Linq;
 
 namespace MotoHealth.Functions.AccidentAlerting
 {
     public sealed class AccidentReportedEventHandler
     {
         private readonly ILogger<AccidentReportedEventHandler> _logger;
+        private readonly IEventGridEventDataParser _dataParser;
 
-        public AccidentReportedEventHandler(ILogger<AccidentReportedEventHandler> logger)
+        public AccidentReportedEventHandler(
+            ILogger<AccidentReportedEventHandler> logger,
+            IEventGridEventDataParser dataParser)
         {
             _logger = logger;
+            _dataParser = dataParser;
         }
         
         [FunctionName(FunctionNames.AccidentReportedEventHandler)]
@@ -34,7 +36,7 @@ namespace MotoHealth.Functions.AccidentAlerting
 
             _logger.LogInformation($"Start handling {eventGridEvent.Id}");
 
-            if (TryParseEventData(eventGridEvent, out var eventData))
+            if (_dataParser.TryParseEventData<AccidentReportedEventData>(eventGridEvent, out var eventData))
             {
                 try
                 {
@@ -50,31 +52,6 @@ namespace MotoHealth.Functions.AccidentAlerting
             {
                 _logger.LogError($"Failed to handle {eventGridEvent.Id}");
             }
-        }
-
-        private bool TryParseEventData(EventGridEvent eventGridEvent, [NotNullWhen(true)] out AccidentReportedEventData? eventData)
-        {
-            eventData = null;
-
-            if (eventGridEvent.Data is JObject jObject)
-            {
-                try
-                {
-                    eventData = jObject.ToObject<AccidentReportedEventData>();
-
-                    return true;
-                }
-                catch (Exception exception)
-                {
-                    _logger.LogError(exception, $"Failed to parse event data of {eventGridEvent.Id}");
-                }
-            }
-            else
-            {
-                _logger.LogError($"Event data of {eventGridEvent.Id} is not of {nameof(JObject)} type");
-            }
-
-            return false;
         }
     }
 }

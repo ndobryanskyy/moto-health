@@ -4,6 +4,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Http;
 using MotoHealth.Core.Bot;
+using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 
@@ -114,6 +115,20 @@ namespace MotoHealth.Bot.AppInsights
             var diagnosticProperties = BotUpdate!.ExtractDiagnosticProperties();
 
             _telemetryClient.TrackEvent("Bot Has Nothing to Say", diagnosticProperties.AsDictionary());
+        }
+
+        public void OnChatSubscribedToAccidentAlerting()
+        {
+            EnsureBotUpdateIsPresent();
+
+            _telemetryClient.TrackEvent("Subscribed to Accident Alerting");
+        }
+
+        public void OnChatUnsubscribedFromAccidentAlerting()
+        {
+            EnsureBotUpdateIsPresent();
+
+            _telemetryClient.TrackEvent("Unsubscribed from Accident Alerting");
         }
 
         public IAccidentReportingTelemetryService GetTelemetryServiceForAccidentReporting(

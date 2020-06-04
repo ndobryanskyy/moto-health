@@ -8,7 +8,7 @@ namespace MotoHealth.Bot.AppInsights
     {
         private ITelemetryProcessor Next { get; }
 
-        // next will point to the next TelemetryProcessor in the chain.
+        // Next will point to the next TelemetryProcessor in the chain.
         public AlwaysOnPingFilteringTelemetryProcessor(ITelemetryProcessor next)
         {
             Next = next;

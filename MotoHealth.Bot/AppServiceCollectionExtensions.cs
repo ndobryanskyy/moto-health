@@ -5,8 +5,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MotoHealth.Bot.AppInsights;
+using MotoHealth.Bot.Authorization;
 using MotoHealth.Bot.Telegram;
-using MotoHealth.Core.Bot;
+using MotoHealth.Core.Bot.Abstractions;
 
 namespace MotoHealth.Bot
 {
@@ -17,6 +18,7 @@ namespace MotoHealth.Bot
             ConfigureAppInsights();
 
             services
+                .AddSingleton<IAuthorizationSecretsService, AuthorizationSecretsService>()
                 .AddSingleton<IBotUpdateAccessor, BotUpdateAccessor>()
                 .AddScoped<IBotTelemetryService, AppInsightBotTelemetryService>();
                 

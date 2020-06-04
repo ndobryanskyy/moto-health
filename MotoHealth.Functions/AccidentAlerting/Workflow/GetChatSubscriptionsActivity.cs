@@ -7,17 +7,17 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
 {
     public sealed class GetChatSubscriptionsActivity
     {
-        private readonly IAccidentAlertingSubscriptionsManager _accidentAlertingSubscriptionsManager;
+        private readonly IAccidentAlertingSubscriptionsService _subscriptionsService;
 
-        public GetChatSubscriptionsActivity(IAccidentAlertingSubscriptionsManager accidentAlertingSubscriptionsManager)
+        public GetChatSubscriptionsActivity(IAccidentAlertingSubscriptionsService subscriptionsService)
         {
-            _accidentAlertingSubscriptionsManager = accidentAlertingSubscriptionsManager;
+            _subscriptionsService = subscriptionsService;
         }
 
         [FunctionName(FunctionNames.AccidentAlerting.GetChatSubscriptionsActivity)]
         public async Task<ChatSubscription[]> RunAsync([ActivityTrigger] IDurableActivityContext context)
         {
-            return await _accidentAlertingSubscriptionsManager.GetSubscribedChatsAsync();
+            return await _subscriptionsService.GetAllChatSubscriptionsAsync();
         }
     }
 }

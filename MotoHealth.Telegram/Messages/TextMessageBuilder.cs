@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MotoHealth.Telegram.Extensions;
 using Telegram.Bot.Requests;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -16,6 +14,7 @@ namespace MotoHealth.Telegram.Messages
         private string? _text;
         private ParseMode _parseMode = ParseMode.Default;
         private IReplyMarkup? _replyMarkup;
+        private bool _disableWebPagePreview;
 
         public TextMessageBuilder WithPlainText(string text)
         {
@@ -26,25 +25,11 @@ namespace MotoHealth.Telegram.Messages
             return this;
         }
 
-        public TextMessageBuilder WithMarkdownText(string text)
+        public TextMessageBuilder WithHtml(string escapedHtml)
         {
-            _parseMode = ParseMode.MarkdownV2;
+            _parseMode = ParseMode.Html;
 
-            _text = text;
-
-            return this;
-        }
-
-        public TextMessageBuilder WithInterpolatedMarkdownText(FormattableString text)
-        {
-            _parseMode = ParseMode.MarkdownV2;
-
-            var escapedParameters = text.GetArguments()
-                .Select(x => x?.ToString()?.EscapeForMarkdown())
-                .ToArray();
-
-            // ReSharper disable once CoVariantArrayConversion - read-only usage.
-            _text = string.Format(text.Format, escapedParameters);
+            _text = escapedHtml;
 
             return this;
         }
@@ -66,7 +51,14 @@ namespace MotoHealth.Telegram.Messages
             return this;
         }
 
-        public async Task SendAsync(ChatId chatId, ITelegramClient client, CancellationToken cancellationToken)
+        public TextMessageBuilder WithDisabledWebPagePreview()
+        {
+            _disableWebPagePreview = true;
+
+            return this;
+        }
+
+        async Task IMessage.SendAsync(ChatId chatId, ITelegramClient client, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(_text))
             {
@@ -77,7 +69,7 @@ namespace MotoHealth.Telegram.Messages
             var request = new SendMessageRequest(chatId, _text)
             {
                 DisableNotification = false,
-                DisableWebPagePreview = false,
+                DisableWebPagePreview = _disableWebPagePreview,
                 ParseMode = _parseMode,
                 ReplyMarkup = _replyMarkup
             };

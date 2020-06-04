@@ -1,6 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using AutoMapper;
-using MotoHealth.Core.Bot;
+using MotoHealth.Core.Bot.Commands;
 using MotoHealth.Core.Bot.Updates;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 using Telegram.Bot.Types;
@@ -28,7 +29,11 @@ namespace MotoHealth.Core.Telegram
             CreateMessageBotUpdateMap<CommandMessageBotUpdate>()
                 .ForMember(
                     x => x.Command,
-                    opts => opts.MapFrom(x => x.Message.EntityValues.FirstOrDefault() ?? string.Empty)
+                    opts => opts.MapFrom(x => x.Message.EntityValues.First().Split("@", StringSplitOptions.RemoveEmptyEntries).First())
+                )
+                .ForMember(
+                    x => x.Arguments,
+                    opts => opts.MapFrom(x => x.Message.Text.Substring(x.Message.Entities.First().Length).Trim())
                 );
 
             CreateMessageBotUpdateMap<ContactMessageBotUpdate>()

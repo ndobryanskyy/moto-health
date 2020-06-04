@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MotoHealth.Bot.Authorization;
 using MotoHealth.Core;
 using MotoHealth.Infrastructure;
 
@@ -30,6 +31,11 @@ namespace MotoHealth.Bot
                 CoreApplicationPartMarker.Assembly,
                 InfrastructureApplicationPartMarker.Assembly,
                 GetType().Assembly
+            });
+
+            services.Configure<AuthorizationSecretsOptions>(options =>
+            {
+                _configuration.Bind(Constants.Authorization.SecretsConfigurationSectionName, options);
             });
 
             services.AddApp(_configuration);

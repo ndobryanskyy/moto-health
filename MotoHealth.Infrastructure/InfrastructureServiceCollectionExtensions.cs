@@ -5,6 +5,7 @@ using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Infrastructure.AccidentReporting;
 using MotoHealth.Infrastructure.AzureEventGrid;
 using MotoHealth.Infrastructure.ChatStorage;
+using MotoHealth.Infrastructure.ChatSubscriptions;
 
 namespace MotoHealth.Infrastructure
 {
@@ -35,6 +36,7 @@ namespace MotoHealth.Infrastructure
                 .AddSingleton<IChatStateInMemoryCache, ChatStateInMemoryCache>()
                 .AddSingleton<IChatStatesStore, AzureTableChatStatesStore>()
                 .AddSingleton<IAzureEventGridPublisher, AzureEventGridPublisher>()
+                .AddSingleton<IChatSubscriptionsService, AzureEventGridChatSubscriptionsService>()
                 .AddSingleton<IAccidentReportingService, AzureEventGridAccidentReportingService>();
 
             services.AddHostedService<AzureTablesInitializerHostedService>();

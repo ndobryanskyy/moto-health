@@ -25,5 +25,10 @@
         {
             public const string AlwaysOnPingSyntheticSource = "Always On Ping";
         }
+
+        public static class Authorization
+        {
+            public const string SecretsConfigurationSectionName = "Secrets";
+        }
     }
 }

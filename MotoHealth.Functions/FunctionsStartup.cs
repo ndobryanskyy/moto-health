@@ -4,8 +4,6 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MotoHealth.Functions.AccidentAlerting;
-using MotoHealth.Functions.AdminBot;
-using MotoHealth.Functions.Authorization;
 using MotoHealth.Functions.ChatSubscriptions;
 using MotoHealth.Telegram;
 using AzureFunctionsStartup = Microsoft.Azure.Functions.Extensions.DependencyInjection.FunctionsStartup;
@@ -17,7 +15,6 @@ namespace MotoHealth.Functions
     public sealed class FunctionsStartup : AzureFunctionsStartup
     {
         private const string TelegramConfigurationSection = "Telegram";
-        private const string SubscriptionSecretConfigurationKey = "SubscriptionSecret";
         private const string StorageAccountConfigurationKey = "StorageAccount";
 
         public override void Configure(IFunctionsHostBuilder builder)
@@ -28,23 +25,15 @@ namespace MotoHealth.Functions
                     configuration.GetSection(TelegramConfigurationSection).Bind(telegramOptions);
                 });
 
-            builder.Services.AddOptions<AuthorizationOptions>()
-                .Configure<IConfiguration>((authorizationOptions, configuration) =>
-                {
-                    authorizationOptions.SubscriptionSecret = configuration.GetValue<string>(SubscriptionSecretConfigurationKey);
-                });
-
             builder.Services.AddTelegram();
 
             builder.Services
                 .AddSingleton(CreateSharedTableClient)
+                .AddSingleton<IEventGridEventDataParser, EventGridEventDataParser>()
                 .AddSingleton<ICloudTablesProvider, CloudTablesProvider>()
-                .AddSingleton<IBotTokenValidator, BotTokenValidator>()
-                .AddSingleton<IAccidentAlertingSubscriptionsManager, AccidentAlertingSubscriptionsManager>()
+                .AddSingleton<IAccidentAlertingSubscriptionsService, AccidentAlertingSubscriptionsService>()
                 .AddSingleton<IAccidentRecordingService, AccidentRecordingService>()
-                .AddSingleton<IChatSubscriptionsManager, ChatSubscriptionsManager>()
-                .AddSingleton<IAdminBot, AdminBot.AdminBot>()
-                .AddSingleton<IAuthorizationService, AuthorizationService>();
+                .AddSingleton<IChatSubscriptionsEventsStore, ChatSubscriptionsEventsStore>();
         }
 
         private static CloudTableClient CreateSharedTableClient(IServiceProvider container)

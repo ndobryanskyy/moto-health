@@ -1,21 +1,17 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MotoHealth.Core.Bot.Abstractions;
 
-namespace MotoHealth.Functions.Authorization
+namespace MotoHealth.Bot.Authorization
 {
-    public interface IAuthorizationService
+    internal sealed class AuthorizationSecretsService : IAuthorizationSecretsService
     {
-        bool VerifySubscriptionSecret(string secret);
-    }
-
-    internal sealed class AuthorizationService : IAuthorizationService
-    {
-        private readonly ILogger<AuthorizationService> _logger;
+        private readonly ILogger<AuthorizationSecretsService> _logger;
         private readonly string _subscriptionSecret;
 
-        public AuthorizationService(
-            ILogger<AuthorizationService> logger,
-            IOptions<AuthorizationOptions> options)
+        public AuthorizationSecretsService(
+            ILogger<AuthorizationSecretsService> logger,
+            IOptions<AuthorizationSecretsOptions> options)
         {
             _logger = logger;
             _subscriptionSecret = options.Value.SubscriptionSecret;

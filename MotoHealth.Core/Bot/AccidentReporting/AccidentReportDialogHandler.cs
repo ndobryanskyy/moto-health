@@ -6,7 +6,6 @@ using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting.Exceptions;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 using MotoHealth.Telegram.Messages;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MotoHealth.Core.Bot.AccidentReporting
 {
@@ -26,13 +25,18 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             ILogger<AccidentReportDialogHandler> logger,
             IAccidentReportingService accidentReportingService, 
             IBotTelemetryService botTelemetry,
-            IPhoneNumberParser phoneNumberParser)
+            IPhoneNumberParser phoneNumberParser,
+            IAccidentReportDialogMessages messages)
         {
             _logger = logger;
             _accidentReportingService = accidentReportingService;
             _botTelemetry = botTelemetry;
             _phoneNumberParser = phoneNumberParser;
+
+            Messages = messages;
         }
+
+        private IAccidentReportDialogMessages Messages { get; }
 
         /// <summary>
         /// Advances dialog with specified context and state
@@ -41,10 +45,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
         /// <param name="state"></param>
         /// <param name="cancellationToken"></param>
         /// <returns>True if dialog ended.</returns>
-        public async Task<bool> AdvanceDialogAsync(
-            IChatUpdateContext context,
-            IAccidentReportDialogState state,
-            CancellationToken cancellationToken)
+        public async Task<bool> AdvanceDialogAsync(IChatUpdateContext context, IAccidentReportDialogState state, CancellationToken cancellationToken)
         {
             async Task SendMessageAsync(IMessage message)
             {
@@ -226,109 +227,13 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             }
         }
 
-        private static void EnsureMaxLengthNotExceeded(string text, int maxLength)
+        // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Local Assertion method
+        private void EnsureMaxLengthNotExceeded(string text, int maxLength)
         {
             if (text.Length > maxLength)
             {
                 throw new ReplyValidationException(Messages.ReplyMaxLengthExceededError(maxLength));
             }
-        }
-
-        private static class Messages
-        {
-            public static readonly KeyboardButton CancelButton = new KeyboardButton("Отмена");
-            public static readonly KeyboardButton ShareNumber = KeyboardButton.WithRequestContact("Мой номер");
-            public static readonly KeyboardButton ShareCurrentLocation = KeyboardButton.WithRequestLocation("Мое местоположение");
-            public static readonly KeyboardButton SubmitButton = new KeyboardButton("Отправить");
-
-            public static readonly IMessage Cancelled = MessageFactory.CreateTextMessage()
-                .WithPlainText("⛔ Отменено")
-                .WithClearedReplyKeyboard();
-
-            private static readonly IMessage SpecifyAddressPrompt = MessageFactory.CreateTextMessage()
-                .WithPlainText("📍 Адрес ДТП");
-
-            private static readonly IMessage SpecifyAddressHint = MessageFactory.CreateTextMessage()
-                .WithMarkdownText($"Нажмите *{ShareCurrentLocation.Text}*, чтобы автоматически отправить место на карте, где сейчас находитесь \\(*Геолокация* на устройстве должна быть включена\\), либо напишите вручную")
-                .WithReplyKeyboard(new[]
-                {
-                    new [] { ShareCurrentLocation },
-                    new [] { CancelButton }
-                });
-
-            public static readonly IMessage SpecifyAddress = MessageFactory.CreateCompositeMessage()
-                .AddMessage(SpecifyAddressPrompt)
-                .AddMessage(SpecifyAddressHint);
-
-            public static readonly IMessage SpecifyParticipants = MessageFactory.CreateTextMessage()
-                .WithPlainText("🛵 Участник ДТП")
-                .WithReplyKeyboard(new[]
-                {
-                    new [] { new KeyboardButton("Мотоцикл") },
-                    new [] { new KeyboardButton("Мопед"), new KeyboardButton("Велосипед") },
-                    new [] { CancelButton }
-                });
-
-            public static readonly IMessage AreThereVictims = MessageFactory.CreateTextMessage()
-                .WithPlainText("🤕 Есть пострадавшие?")
-                .WithReplyKeyboard(new[]
-                {
-                    new [] { new KeyboardButton("Да"), new KeyboardButton("Нет") },
-                    new [] { CancelButton }
-                });
-
-            private static readonly IMessage AskForContactsPrompt = MessageFactory.CreateTextMessage()
-                .WithPlainText("📞 Номер для обратной связи");
-
-            private static readonly IMessage AskForContactsHint = MessageFactory.CreateTextMessage()
-                .WithMarkdownText($"Нажмите *{ShareNumber.Text}*, чтобы автоматически отправить свой номер телефона, либо напишите другой вручную")
-                .WithReplyKeyboard(new[]
-                {
-                    new [] { ShareNumber },
-                    new [] { CancelButton }
-                });
-
-            private static readonly IMessage PhoneNumberNotRecognizedErrorHint = MessageFactory.CreateTextMessage()
-                .WithMarkdownText("Попробуйте написать телефон как _0671234567_ или _380501234567_");
-
-            public static readonly IMessage InvalidPhoneNumberError = MessageFactory.CreateCompositeMessage()
-                .AddMessage(CommonMessages.NotQuiteGetIt)
-                .AddMessage(PhoneNumberNotRecognizedErrorHint);
-
-            public static readonly IMessage AskForContacts = MessageFactory.CreateCompositeMessage()
-                .AddMessage(AskForContactsPrompt)
-                .AddMessage(AskForContactsHint);
-
-            private static readonly ReplyKeyboard ReportSummaryKeyboard = new ReplyKeyboard
-            {
-                new[] { SubmitButton },
-                new[] { CancelButton }
-            };
-
-            public static IMessage ReportSummary(IAccidentReportDialogState state) => MessageFactory.CreateTextMessage()
-                .WithInterpolatedMarkdownText(
-@$"🚨 Сообщение о ДТП
-    
-• *Адрес:* {state.Address ?? "Геопозиция"}
-• *Участник:* {state.Participant}
-• *Пострадавшие:* {state.Victims}
-• *Телефон:* {state.ReporterPhoneNumber}")
-                .WithReplyKeyboard(ReportSummaryKeyboard);
-
-            private static readonly IMessage SubmitConfirmationExpectedErrorHint = MessageFactory.CreateTextMessage()
-                .WithMarkdownText($"Нажмите *{SubmitButton.Text}*, чтобы сообщить о ДТП или *{CancelButton.Text}*, чтобы завершить без отправки")
-                .WithReplyKeyboard(ReportSummaryKeyboard);
-
-            public static readonly IMessage SubmitConfirmationExpectedError = MessageFactory.CreateCompositeMessage()
-                .AddMessage(CommonMessages.NotQuiteGetIt)
-                .AddMessage(SubmitConfirmationExpectedErrorHint);
-
-            public static readonly IMessage SuccessfullySent = MessageFactory.CreateTextMessage()
-                .WithPlainText("✅ Успешно отправлено, ожидайте звонка на указанный вами номер")
-                .WithClearedReplyKeyboard();
-
-            public static IMessage ReplyMaxLengthExceededError(int maxLength) => MessageFactory.CreateTextMessage()
-                .WithMarkdownText($"😮 Максимальная длина ответа \\- *{maxLength}* символов, пожалуйста, сократите сообщение");
         }
     }
 }

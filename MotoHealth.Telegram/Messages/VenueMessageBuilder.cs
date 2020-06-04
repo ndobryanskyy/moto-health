@@ -35,7 +35,7 @@ namespace MotoHealth.Telegram.Messages
             return this;
         }
 
-        public async Task SendAsync(
+        async Task IMessage.SendAsync(
             ChatId chatId, 
             ITelegramClient client, 
             CancellationToken cancellationToken)

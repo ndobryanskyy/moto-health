@@ -40,6 +40,11 @@ namespace MotoHealth.Bot.AppInsights
 
                         telemetryWithProperties.Properties["Chat Id"] = chat.Id.ToString();
                         telemetryWithProperties.Properties["Chat Type"] = chat.Type.ToString();
+
+                        if (chat.Group != null)
+                        {
+                            telemetryWithProperties.Properties["Group Title"] = chat.Group.Title;
+                        }
                     }
                 }
             }

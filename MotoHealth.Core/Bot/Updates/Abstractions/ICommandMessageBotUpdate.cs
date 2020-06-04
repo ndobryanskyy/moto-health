@@ -3,5 +3,7 @@
     public interface ICommandMessageBotUpdate : IMessageBotUpdate
     {
         string Command { get; }
+
+        string Arguments { get; }
     }
 }

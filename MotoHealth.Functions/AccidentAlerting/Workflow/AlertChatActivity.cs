@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using MotoHealth.PubSub.EventData;
 using MotoHealth.Telegram;
 using MotoHealth.Telegram.Exceptions;
+using MotoHealth.Telegram.Extensions;
 using MotoHealth.Telegram.Messages;
 
 namespace MotoHealth.Functions.AccidentAlerting.Workflow
@@ -59,42 +60,34 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
 
         private static IMessage CreateAccidentAlert(AccidentReportedEventData accidentReport)
         {
-            var compositeMessage = MessageFactory.CreateCompositeMessage();
+            var reportedAtLocalTime = TimeZoneInfo.ConvertTimeFromUtc(accidentReport.ReportedAtUtc, UkraineTimezone);
 
-            var reportDateTimeFormatted = TimeZoneInfo.ConvertTimeFromUtc(accidentReport.ReportedAtUtc, UkraineTimezone)
-                .ToString("dd/MM - HH:mm:ss");
+            var accidentLocation = accidentReport.AccidentLocation;
+            var address = accidentLocation != null
+                ? @$"<a href=""{BuildGoogleMapsLink(accidentLocation)}"">Геопозиция</a>"
+                : accidentReport.AccidentAddress?.HtmlEscaped() ?? "Не указан";
 
-            var locationSpecified = accidentReport.AccidentLocation != null;
+            const string alertBorder = "🚨🚨🚨🚨🚨🚨🚨🚨🚨";
 
-            var address = accidentReport.AccidentAddress ?? (locationSpecified ? "Геопозиция" : "Не указан");
+            return MessageFactory.CreateTextMessage().WithHtml(
+                $"{alertBorder}\n\n" +
+                "<b>СООБЩЕНИЕ О ДТП</b>\n\n" +
 
-            var alert = MessageFactory.CreateTextMessage()
-                .WithInterpolatedMarkdownText(
-@$"🚨🚨🚨🚨🚨🚨🚨
+                $"<b>Адрес:</b> {address}\n" +
+                $"<b>Участник:</b> {accidentReport.AccidentParticipant.HtmlEscaped()}\n" +
+                $"<b>Пострадавшие:</b> {accidentReport.AccidentVictims.HtmlEscaped()}\n" +
+                $"<b>Телефон:</b> {accidentReport.ReporterPhoneNumber.HtmlEscaped()}\n\n" +
 
- *СООБЩЕНИЕ О ДТП*
- _Номер:_ *{accidentReport.ReportId}*
- _Получено: {reportDateTimeFormatted}_
-
- *Адрес:* {address}
- *Участник:* {accidentReport.AccidentParticipant}
- *Пострадавшие:* {accidentReport.AccidentVictims}
- *Телефон сообщившего:* {accidentReport.ReporterPhoneNumber}
-
-🚨🚨🚨🚨🚨🚨🚨");
-
-            compositeMessage.AddMessage(alert);
-
-            if (locationSpecified)
-            {
-                var location = MessageFactory.CreateVenueMessage()
-                    .WithLocation(accidentReport.AccidentLocation!.Latitude, accidentReport.AccidentLocation.Longitude)
-                    .WithTitle($"ДТП {accidentReport.ReportId}");
-
-                compositeMessage.AddMessage(location);
-            }
-
-            return compositeMessage;
+                $"<b>Получено:</b> <i>{reportedAtLocalTime:dd/MM - HH:mm:ss}</i>\n" +
+                @$"<a href=""{BuildUserMentionLink(accidentReport.ReporterTelegramUserId)}"">Отправитель | {accidentReport.ReporterTelegramUserId}</a>" +
+                $"\n\n{alertBorder}"
+            ).WithDisabledWebPagePreview();
         }
+
+        private static string BuildGoogleMapsLink(MapLocation location) 
+            => $"https://www.google.com/maps/search/?api=1&query={location.Latitude},{location.Longitude}";
+
+        private static string BuildUserMentionLink(int userId)
+            => $"tg://user?id={userId}";
     }
 }

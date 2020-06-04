@@ -2,7 +2,7 @@
 {
     internal static class FunctionNames
     {
-        public const string AdminBotUpdatesHandler = "AdminBotUpdatesHandler";
+        public const string ChatTopicSubscriptionChangedEventHandler = "ChatTopicSubscriptionChangedEventHandler";
         public const string AccidentReportedEventHandler = "AccidentReportedEventHandler";
 
         public static class AccidentAlerting

@@ -1,7 +1,7 @@
 ﻿using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 
-namespace MotoHealth.Core.Bot
+namespace MotoHealth.Core.Bot.Abstractions
 {
     public interface IBotTelemetryService
     {
@@ -18,6 +18,10 @@ namespace MotoHealth.Core.Bot
         void OnMotoHealthInfoProvided();
 
         void OnNothingToSay();
+
+        void OnChatSubscribedToAccidentAlerting();
+
+        void OnChatUnsubscribedFromAccidentAlerting();
 
         IAccidentReportingTelemetryService GetTelemetryServiceForAccidentReporting(IAccidentReportDialogState dialogState);
     }
