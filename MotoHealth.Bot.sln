@@ -10,6 +10,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Infrastructure", "MotoHealth.Infrastructure\MotoHealth.Infrastructure.csproj", "{E556F19E-F47D-4D05-83E3-6EEB20228C2C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{5F96DE0B-0BFC-47AE-B862-4B7C80EE6B6B}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Directory.Build.props = Tests\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Bot.Tests", "Tests\MotoHealth.Bot.Tests\MotoHealth.Bot.Tests.csproj", "{F59A8B73-3FE8-4D3D-B0F7-2000DB06D0A6}"
 EndProject
@@ -22,9 +25,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Functions", "Mot
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Telegram", "MotoHealth.Telegram\MotoHealth.Telegram.csproj", "{91BD97EB-FDDB-4B58-B533-271CF89282AE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Telegram.Tests", "MotoHealth.Telegram.Tests\MotoHealth.Telegram.Tests.csproj", "{C802E28D-4084-4A10-AD5F-547459D287D5}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.PubSub", "MotoHealth.PubSub\MotoHealth.PubSub.csproj", "{5E2B5585-CAF6-4C31-ACF0-7A404987E4DE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Telegram.Tests", "Tests\MotoHealth.Telegram.Tests\MotoHealth.Telegram.Tests.csproj", "{700E351D-E063-425C-9C04-D498E1DD4406}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,21 +59,21 @@ Global
 		{91BD97EB-FDDB-4B58-B533-271CF89282AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91BD97EB-FDDB-4B58-B533-271CF89282AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91BD97EB-FDDB-4B58-B533-271CF89282AE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C802E28D-4084-4A10-AD5F-547459D287D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C802E28D-4084-4A10-AD5F-547459D287D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C802E28D-4084-4A10-AD5F-547459D287D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C802E28D-4084-4A10-AD5F-547459D287D5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5E2B5585-CAF6-4C31-ACF0-7A404987E4DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5E2B5585-CAF6-4C31-ACF0-7A404987E4DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E2B5585-CAF6-4C31-ACF0-7A404987E4DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E2B5585-CAF6-4C31-ACF0-7A404987E4DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{700E351D-E063-425C-9C04-D498E1DD4406}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{700E351D-E063-425C-9C04-D498E1DD4406}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{700E351D-E063-425C-9C04-D498E1DD4406}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{700E351D-E063-425C-9C04-D498E1DD4406}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F59A8B73-3FE8-4D3D-B0F7-2000DB06D0A6} = {5F96DE0B-0BFC-47AE-B862-4B7C80EE6B6B}
-		{C802E28D-4084-4A10-AD5F-547459D287D5} = {5F96DE0B-0BFC-47AE-B862-4B7C80EE6B6B}
+		{700E351D-E063-425C-9C04-D498E1DD4406} = {5F96DE0B-0BFC-47AE-B862-4B7C80EE6B6B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9A81FF3F-5309-4D13-AD13-D7B99768FEC5}
