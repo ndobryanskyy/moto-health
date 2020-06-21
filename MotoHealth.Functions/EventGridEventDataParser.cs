@@ -22,7 +22,9 @@ namespace MotoHealth.Functions
             _logger = logger;
         }
 
-        public bool TryParseEventData<TEventData>(EventGridEvent eventGridEvent, out TEventData? parsedData) where TEventData : class
+        public bool TryParseEventData<TEventData>(
+            EventGridEvent eventGridEvent, 
+            [NotNullWhen(true)] out TEventData? parsedData) where TEventData : class
         {
             parsedData = null;
 
