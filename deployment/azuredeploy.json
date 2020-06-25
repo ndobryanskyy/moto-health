@@ -1,0 +1,308 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS"
+      ]
+    },
+    "appLocation": {
+      "type": "string",
+      "defaultValue": "North Europe"
+    },
+    "functionsLocation": {
+      "type": "string",
+      "defaultValue": "West Europe"
+    },
+    "botLoggingRetentionDays": {
+      "type": "int",
+      "defaultValue": 5
+    },
+    "telegramBotId": {
+      "type": "securestring"
+    },
+    "telegramBotSecret": {
+      "type": "securestring"
+    },
+    "adminSubscriptionsSecret": {
+      "type": "securestring"
+    },
+    "accidentReportEventHandlerName": {
+      "type": "string"
+    },
+    "chatTopicSubscriptionChangedEventHandlerName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "integrationTopic": {
+      "name": "[concat('moto-health-events-', uniqueString(resourceGroup().id))]",
+      "apiVersion": "2019-06-01"
+    },
+
+    "storageName": "[concat('storage', uniqueString(resourceGroup().id))]",
+
+    "botAppInsightsName": "[concat('moto-health-bot-insights-', uniqueString(resourceGroup().id))]",
+    "botHostingPlanName": "[concat('moto-health-bot-hosting-', uniqueString(resourceGroup().id))]",
+    "botAppName": "[concat('moto-health-bot-app-', uniqueString(resourceGroup().id))]",
+
+    "functionsAppName": "[concat('moto-health-functions-', uniqueString(resourceGroup().id))]",
+    "functionsStorageName": "[concat('functions', uniqueString(resourceGroup().id))]",
+    "functionsAppInsightsName": "[concat('moto-health-functions-insights-', uniqueString(resourceGroup().id))]"
+  },
+  "resources": [
+    {
+      "name": "[variables('integrationTopic').name]",
+      "type": "Microsoft.EventGrid/topics",
+      "apiVersion": "[variables('integrationTopic').apiVersion]",
+      "location": "[parameters('appLocation')]",
+      "tags": {
+        "displayName": "Integration EventGrid Topic"
+      },
+      "sku": {
+        "name": "Basic"
+      },
+      "properties": {
+        "inputSchema": "EventGridSchema"
+      }
+    },
+    {
+      "name": "[variables('storageName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-06-01",
+      "location": "[parameters('appLocation')]",
+      "tags": {
+        "displayName": "Storage Account"
+      },
+      "kind": "StorageV2",
+      "sku": {
+        "name": "[parameters('storageType')]"
+      }
+    },
+    {
+      "name": "[variables('botHostingPlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2018-02-01",
+      "location": "[parameters('appLocation')]",
+      "tags": {
+        "displayName": "Bot Hosting Plan"
+      },
+      "kind": "linux",
+      "sku": {
+        "name": "B1",
+        "capacity": 0
+      },
+      "properties": {
+        "reserved": true
+      }
+    },
+    {
+      "name": "[variables('botAppInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2015-05-01",
+      "location": "[parameters('appLocation')]",
+      "kind": "web",
+      "tags": {
+        "displayName": "Bot App Insights",
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('botAppName'))]": "Resource"
+      },
+      "properties": {
+        "Application_Type": "web",
+        "ApplicationId": "[variables('botAppInsightsName')]"
+      }
+    },
+    {
+      "name": "[variables('botAppName')]",
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2018-02-01",
+      "location": "[parameters('appLocation')]",
+      "kind": "app,linux",
+      "tags": {
+        "displayName": "Bot App"
+      },
+      "properties": {
+        "serverFarmId": "[variables('botHostingPlanName')]",
+        "clientAffinityEnabled": false,
+        "siteConfig": {
+          "alwaysOn": true,
+          "linuxFxVersion": "DOTNETCORE|3.1",
+          "appSettings": [
+            {
+              "name": "WEBSITE_HTTPLOGGING_RETENTION_DAYS",
+              "value": "[parameters('botLoggingRetentionDays')]"
+            },
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('botAppInsightsName')), '2015-05-01').InstrumentationKey]"
+            },
+            {
+              "name": "Telegram__BotId",
+              "value": "[parameters('telegramBotId')]"
+            },
+            {
+              "name": "Telegram__BotSecret",
+              "value": "[parameters('telegramBotSecret')]"
+            },
+            {
+              "name": "Secrets__SubscriptionSecret",
+              "value": "[parameters('adminSubscriptionsSecret')]"
+            },
+            {
+              "name": "ConnectionStrings__ChatsStorageAccount",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageName')), '2019-06-01').keys[0].value)]"
+            },
+            {
+              "name": "AzureEventGrid__TopicEndpoint",
+              "value": "[reference(resourceId('Microsoft.EventGrid/topics', variables('integrationTopic').name), variables('integrationTopic').apiVersion).endpoint]"
+            },
+            {
+              "name": "AzureEventGrid__TopicKey",
+              "value": "[listKeys(resourceId('Microsoft.EventGrid/topics', variables('integrationTopic').name), variables('integrationTopic').apiVersion).key1]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [ 
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]",
+        "[resourceId('Microsoft.Web/serverfarms', variables('botHostingPlanName'))]",
+        "[resourceId('Microsoft.EventGrid/topics', variables('integrationTopic').name)]",
+        "[resourceId('Microsoft.Insights/components', variables('botAppInsightsName'))]"
+       ]
+    },
+    {
+      "name": "[variables('functionsStorageName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-06-01",
+      "location": "[parameters('functionsLocation')]",
+      "tags": {
+        "displayName": "Functions Storage"
+      },
+      "kind": "StorageV2",
+      "sku": {
+        "name": "[parameters('storageType')]"
+      }
+    },
+    {
+      "name": "[variables('functionsAppInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2015-05-01",
+      "kind": "web",
+      "location": "[parameters('functionsLocation')]",
+      "tags": {
+        "displayName": "Functions App Insights",
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('functionsAppName'))]": "Resource"
+      },
+      "properties": {
+        "Application_Type": "web",
+        "ApplicationId": "[variables('functionsAppInsightsName')]"
+      }
+    },
+    {
+      "name": "[variables('functionsAppName')]",
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2018-02-01",
+      "kind": "functionapp,linux",
+      "location": "[parameters('functionsLocation')]",
+      "tags": {
+        "displayName": "Functions App"
+      },
+      "properties": {
+        "reserved": true,
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('functionsStorageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('functionsStorageName')), '2019-06-01').keys[0].value)]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~3"
+            },
+            {
+              "name": "FUNCTIONS_WORKER_RUNTIME",
+              "value": "dotnet"
+            },
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('functionsAppInsightsName')), '2015-05-01').InstrumentationKey]"
+            },
+            {
+              "name": "ConnectionStrings__StorageAccount",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageName')), '2019-06-01').keys[0].value)]"
+            },
+            {
+              "name": "Telegram__BotId",
+              "value": "[parameters('telegramBotId')]"
+            },
+            {
+              "name": "Telegram__BotSecret",
+              "value": "[parameters('telegramBotSecret')]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.EventGrid/topics', variables('integrationTopic').name)]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('functionsStorageName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('functionsAppInsightsName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('integrationTopic').name, '/Microsoft.EventGrid/', 'accident-reported')]",
+      "type": "Microsoft.EventGrid/topics/providers/eventSubscriptions",
+      "apiVersion": "2020-06-01",
+      "properties": {
+        "destination": {
+          "endpointType": "AzureFunction",
+          "properties": {
+            "resourceId": "[concat(resourceId('Microsoft.Web/sites', variables('functionsAppName')), '/functions/', parameters('accidentReportEventHandlerName'))]",
+            "maxEventsPerBatch": 1,
+            "preferredBatchSizeInKilobytes": 64
+          }
+        },
+        "filter": {
+          "includedEventTypes": [
+            "AccidentReported"
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.EventGrid/topics', variables('integrationTopic').name)]"
+      ]
+    },
+    {
+      "name": "[concat(variables('integrationTopic').name, '/Microsoft.EventGrid/', 'on-chat-topic-subscription-changed')]",
+      "type": "Microsoft.EventGrid/topics/providers/eventSubscriptions",
+      "apiVersion": "2020-06-01",
+      "properties": {
+        "destination": {
+          "endpointType": "AzureFunction",
+          "properties": {
+            "resourceId": "[concat(resourceId('Microsoft.Web/sites', variables('functionsAppName')), '/functions/', parameters('chatTopicSubscriptionChangedEventHandlerName'))]",
+            "maxEventsPerBatch": 1,
+            "preferredBatchSizeInKilobytes": 64
+          }
+        },
+        "filter": {
+          "includedEventTypes": [
+            "ChatTopicSubscriptionChanged"
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.EventGrid/topics', variables('integrationTopic').name)]"
+      ]
+    }
+  ],
+  "outputs": {
+    "functionsAppName": {
+      "type": "string",
+      "value": "[variables('functionsAppName')]"
+    }
+  }
+}

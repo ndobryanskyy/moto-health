@@ -36,12 +36,19 @@ jobs:
       with:
         name: functions
         path: ${{ env.OUTPUT_PATH }}/functions
+
+    - name: "Publish Bot"
+      run: dotnet publish ./MotoHealth.Bot/MotoHealth.Bot.csproj --no-build --configuration Release --output ${{ env.OUTPUT_PATH }}/bot
+      
+    - name: "Upload Bot Artifacts"
+      uses: actions/upload-artifact@v1
+      with:
+        name: bot
+        path: ${{ env.OUTPUT_PATH }}/bot
         
   deploy-functions:
     runs-on: ubuntu-latest
     needs: [build]
-    env:
-        FUNC_APP_NAME: moto-health-functions-gqb7gpf6go3cq
     steps:
       - name: "Download Artifacts"
         uses: actions/download-artifact@v1
@@ -49,12 +56,30 @@ jobs:
           name: functions
           path: ${{ env.OUTPUT_PATH }}/functions
 
-      - name: "Deploy Functions"
+      - name: "Deploy"
         uses: Azure/functions-action@v1.1.4
         with:
-          app-name: ${{ env.FUNC_APP_NAME }}
+          app-name: ${{ secrets.BETA_FUNC_APP_NAME }}
           package: ${{ env.OUTPUT_PATH }}/functions
-          publish-profile: ${{ secrets.SCM_CREDENTIALS }}
+          publish-profile: ${{ secrets.BETA_FUNC_APP_SCM_CREDENTIALS }}
+  
+  deploy-bot:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: "Download Artifacts"
+        uses: actions/download-artifact@v1
+          with:
+            name: bot
+            path: ${{ env.OUTPUT_PATH }}/bot
+      
+      - name: "Deploy"
+        uses: "azure/webapps-deploy@v2"
+        with:
+          app-name: ${{ secrets.BETA_BOT_APP_NAME }}
+          package: ${{ env.OUTPUT_PATH }}/bot
+          publish-profile: ${{ secrets.BETA_BOT_APP_SCM_CREDENTIALS }}
+
 
 
         
