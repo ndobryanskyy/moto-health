@@ -8,12 +8,13 @@ using MotoHealth.Telegram;
 using MotoHealth.Telegram.Exceptions;
 using MotoHealth.Telegram.Extensions;
 using MotoHealth.Telegram.Messages;
+using TimeZoneConverter;
 
 namespace MotoHealth.Functions.AccidentAlerting.Workflow
 {
     public sealed class AlertChatActivity
     {
-        private static readonly TimeZoneInfo UkraineTimezone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
+        private static readonly TimeZoneInfo UkraineTimezone = TZConvert.GetTimeZoneInfo("FLE Standard Time");
 
         private readonly ILogger<AlertChatActivity> _logger;
         private readonly ITelegramClient _telegramClient;

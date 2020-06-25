@@ -2,6 +2,7 @@ name: "Beta Preview"
 env:
   OUTPUT_PATH: ${{ github.workspace }}/.output
   DOTNET_VERSION: "3.1.101"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
 on:
   push:
     branches: [ master ]
@@ -26,7 +27,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: "Test"
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test --configuration Release --no-build --verbosity normal
     
     - name: "Publish Functions"
       run: dotnet publish ./MotoHealth.Functions/MotoHealth.Functions.csproj --no-build --configuration Release --output ${{ env.OUTPUT_PATH }}/functions
