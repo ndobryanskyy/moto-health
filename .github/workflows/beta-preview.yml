@@ -1,0 +1,69 @@
+name: "Beta Preview" 
+env:
+  OUTPUT_PATH: ${{ github.workspace }}/.output
+  DOTNET_VERSION: "3.1.101"
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+    
+    - name: "Setup dotnet ${{ env.DOTNET_VERSION }}"
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}"
+
+    - name: "Restore"
+      run: dotnet restore
+
+    - name: "Build"
+      run: dotnet build --configuration Release --no-restore
+
+    - name: "Test"
+      run: dotnet test --no-restore --verbosity normal
+    
+    - name: "Publish Bot App"
+      run: dotnet publish ./MotoHealth.Bot/MotoHealth.Bot.csproj --no-build --configuration Release --output ${{ env.OUTPUT_PATH }}/bot
+    
+    - name: "Upload Bot Artifacts"
+      uses: actions/upload-artifact@v1
+      with:
+        name: bot
+        path: ${{ env.OUTPUT_PATH }}/bot
+    
+    - name: "Publish Functions"
+      run: dotnet publish ./MotoHealth.Functions/MotoHealth.Functions.csproj --no-build --configuration Release --output ${{ env.OUTPUT_PATH }}/functions
+      
+    - name: "Upload Functions Artifacts"
+      uses: actions/upload-artifact@v1
+      with:
+        name: functions
+        path: ${{ env.OUTPUT_PATH }}/functions
+        
+  deploy-functions:
+    runs-on: ubuntu-latest
+    needs: [build]
+    env:
+        FUNC_APP_NAME: moto-health-functions-gqb7gpf6go3cq
+    steps:
+      - name: "Download Artifacts"
+        uses: actions/download-artifact@v1
+        with:
+          name: functions
+          path: ${{ env.OUTPUT_PATH }}/functions
+
+      - name: "Deploy Functions"
+        uses: Azure/functions-action@v1.1.4
+        with:
+          app-name: ${{ env.FUNC_APP_NAME }}
+          package: ${{ env.OUTPUT_PATH }}/functions
+          publish-profile: ${{ secrets.SCM_CREDENTIALS }}
+
+
+        
