@@ -21,9 +21,11 @@ namespace MotoHealth.Core.Bot
 
         public IMessage MotoHealthInfo { get; } = MessageFactory.CreateTextMessage()
             .WithHtml(
-                "Moto Health\n\n" +
+                "🚑 <b>MOTO HEALTH</b>\n\n" +
                 "<b>Телефон:</b> +380960543434\n" +
-                @"<b>Сайт:</b> <a href=""http://www.mh.od.ua"">mh.od.ua</a>");
+                @"<b>Сайт:</b> <a href=""http://www.mh.od.ua"">mh.od.ua</a>" + "\n" +
+                @"<b>Instagram:</b> <a href=""https://www.instagram.com/moto_health_odessa"">@moto_health_odessa</a>")
+            .WithDisabledWebPagePreview();
 
         public IMessage NothingToSay { get; } = MessageFactory.CreateCompositeMessage()
             .AddMessage(CommonMessages.NotQuiteGetIt)
