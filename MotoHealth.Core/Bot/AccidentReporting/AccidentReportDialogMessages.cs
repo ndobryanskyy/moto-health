@@ -87,10 +87,10 @@ namespace MotoHealth.Core.Bot.AccidentReporting
         public IMessage SubmitConfirmationExpectedError { get; } = MessageFactory.CreateCompositeMessage()
             .AddMessage(CommonMessages.NotQuiteGetIt)
             .AddMessage(SubmitConfirmationExpectedErrorHint);
-        
-        public IMessage SuccessfullySent { get; } = MessageFactory.CreateTextMessage()
-            .WithPlainText("✅ Успешно отправлено, ожидайте звонка на указанный вами номер")
-            .WithClearedReplyKeyboard();
+
+        public IMessage SuccessfullySent { get; } = MessageFactory.CreateCompositeMessage()
+            .AddMessage(SuccessfullySentConfirmation)
+            .AddMessage(BeforeArrivalHint);
 
         public IMessage ReplyMaxLengthExceededError(int maxLength) => MessageFactory.CreateTextMessage()
             .WithHtml($"😮 Максимальная длина ответа - <b>{maxLength}</b> символов, пожалуйста, сократите сообщение");
@@ -134,5 +134,17 @@ namespace MotoHealth.Core.Bot.AccidentReporting
         private static readonly IMessage SubmitConfirmationExpectedErrorHint = MessageFactory.CreateTextMessage()
             .WithHtml($"Нажмите <b>{SubmitButton.Text}</b>, чтобы сообщить о ДТП или <b>{CancelButton.Text}</b>, чтобы завершить без отправки")
             .WithReplyKeyboard(ReportSummaryKeyboard);
+
+        private static readonly IMessage SuccessfullySentConfirmation = MessageFactory.CreateTextMessage()
+            .WithPlainText("✅ Успешно отправлено, ожидайте звонка на указанный вами номер")
+            .WithClearedReplyKeyboard();
+
+        private static readonly IMessage BeforeArrivalHint = MessageFactory.CreateTextMessage()
+            .WithHtml("🙏 До приезда оператора, вы можете <i>помочь:</i>\n\n" +
+                      "• <b>Тяжело пострадавшие:</b> не перемещать, постараться обездвижить, вызвать скорую помощь\n" +
+                      "• <b>Свидетели:</b> записать ФИО и номер телефона\n" +
+                      "• <b>Скорая:</b> записать номер бригады и в какую больницу везут пострадавшего\n" +
+                      "• <b>Место ДТП:</b> обезопасить и оградить, не перемещать транспортные средства, постараться сохранить следы ДТП (следы протектора и т.п.)\n\n" +
+                      "<i>Спасибо!</i>");
     }
 }
