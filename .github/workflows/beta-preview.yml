@@ -69,9 +69,9 @@ jobs:
     steps:
       - name: "Download Artifacts"
         uses: actions/download-artifact@v1
-          with:
-            name: bot
-            path: ${{ env.OUTPUT_PATH }}/bot
+        with:
+          name: bot
+          path: ${{ env.OUTPUT_PATH }}/bot
       
       - name: "Deploy"
         uses: "azure/webapps-deploy@v2"
