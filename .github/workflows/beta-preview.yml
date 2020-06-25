@@ -17,7 +17,7 @@ jobs:
     - name: "Setup dotnet ${{ env.DOTNET_VERSION }}"
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}"
+        dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: "Restore"
       run: dotnet restore
@@ -27,15 +27,6 @@ jobs:
 
     - name: "Test"
       run: dotnet test --no-restore --verbosity normal
-    
-    - name: "Publish Bot App"
-      run: dotnet publish ./MotoHealth.Bot/MotoHealth.Bot.csproj --no-build --configuration Release --output ${{ env.OUTPUT_PATH }}/bot
-    
-    - name: "Upload Bot Artifacts"
-      uses: actions/upload-artifact@v1
-      with:
-        name: bot
-        path: ${{ env.OUTPUT_PATH }}/bot
     
     - name: "Publish Functions"
       run: dotnet publish ./MotoHealth.Functions/MotoHealth.Functions.csproj --no-build --configuration Release --output ${{ env.OUTPUT_PATH }}/functions
