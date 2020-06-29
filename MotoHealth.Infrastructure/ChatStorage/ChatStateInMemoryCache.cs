@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Caching.Memory;
-using MotoHealth.Core.Bot;
 using MotoHealth.Core.Bot.Abstractions;
 
 namespace MotoHealth.Infrastructure.ChatStorage
@@ -19,7 +18,7 @@ namespace MotoHealth.Infrastructure.ChatStorage
         }
 
         public bool TryGetStateForChat(long chatId, [NotNullWhen(true)] out IChatState? state)
-            => _cache.TryGetValue(chatId, out state);
+            => _cache.TryGetValue(chatId, out state!);
 
         public void CacheChatState(IChatState state)
         {

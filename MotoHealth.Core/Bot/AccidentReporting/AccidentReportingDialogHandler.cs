@@ -9,43 +9,54 @@ using MotoHealth.Telegram.Messages;
 
 namespace MotoHealth.Core.Bot.AccidentReporting
 {
-    public interface IAccidentReportDialogHandler
+    public interface IAccidentReportingDialogHandler
     {
-        Task<bool> AdvanceDialogAsync(IChatUpdateContext context, IAccidentReportDialogState state, CancellationToken cancellationToken);
+        Task StartDialogAsync(IChatUpdateContext context, CancellationToken cancellationToken);
+
+        Task AdvanceDialogAsync(IChatUpdateContext context, CancellationToken cancellationToken);
     }
 
-    internal sealed class AccidentReportDialogHandler : IAccidentReportDialogHandler
+    internal sealed class AccidentReportingDialogHandler : IAccidentReportingDialogHandler
     {
-        private readonly ILogger<AccidentReportDialogHandler> _logger;
-        private readonly IAccidentReportingService _accidentReportingService;
+        private readonly ILogger<AccidentReportingDialogHandler> _logger;
         private readonly IBotTelemetryService _botTelemetry;
+        private readonly IAccidentReportingDialogMessages _messages;
         private readonly IPhoneNumberParser _phoneNumberParser;
+        private readonly IAccidentReportingService _accidentReportingService;
 
-        public AccidentReportDialogHandler(
-            ILogger<AccidentReportDialogHandler> logger,
-            IAccidentReportingService accidentReportingService, 
+        public AccidentReportingDialogHandler(
+            ILogger<AccidentReportingDialogHandler> logger,
             IBotTelemetryService botTelemetry,
+            IAccidentReportingDialogMessages messages,
             IPhoneNumberParser phoneNumberParser,
-            IAccidentReportDialogMessages messages)
+            IAccidentReportingService accidentReportingService)
         {
             _logger = logger;
-            _accidentReportingService = accidentReportingService;
             _botTelemetry = botTelemetry;
+            _messages = messages;
             _phoneNumberParser = phoneNumberParser;
-
-            Messages = messages;
+            _accidentReportingService = accidentReportingService;
         }
 
-        private IAccidentReportDialogMessages Messages { get; }
+        public async Task StartDialogAsync(IChatUpdateContext context, CancellationToken cancellationToken)
+        {
+            var state = await context.GetStagingStateAsync(cancellationToken);
+            var dialogState = state.AccidentReportDialog;
 
-        /// <summary>
-        /// Advances dialog with specified context and state
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="state"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>True if dialog ended.</returns>
-        public async Task<bool> AdvanceDialogAsync(IChatUpdateContext context, IAccidentReportDialogState state, CancellationToken cancellationToken)
+            if (dialogState != null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            dialogState = state.StartAccidentReportingDialog(1);
+
+            await context.SendMessageAsync(_messages.SpecifyAddress, cancellationToken);
+
+            var dialogTelemetry = _botTelemetry.GetTelemetryServiceForAccidentReporting(dialogState);
+            dialogTelemetry.OnStarted();
+        }
+
+        public async Task AdvanceDialogAsync(IChatUpdateContext context, CancellationToken cancellationToken)
         {
             async Task SendMessageAsync(IMessage message)
             {
@@ -53,78 +64,69 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             }
 
             var update = context.Update;
-            var dialogTelemetry = _botTelemetry.GetTelemetryServiceForAccidentReporting(state);
+            var state = await context.GetStagingStateAsync(cancellationToken);
+            var dialogState = state.AccidentReportDialog ?? throw new InvalidOperationException();
+            var dialogTelemetry = _botTelemetry.GetTelemetryServiceForAccidentReporting(dialogState);
 
             var cancelled = CheckIfCancelled();
             if (cancelled)
             {
+                await SendMessageAsync(_messages.Cancelled);
+                state.CompleteAccidentReportingDialog();
+
                 dialogTelemetry.OnCancelled();
-
-                await SendMessageAsync(Messages.Cancelled);
-
-                return true;
+                return;
             }
 
             try
             {
                 var dialogCompleted = await HandleStepAsync();
 
-                if (!dialogCompleted)
+                if (dialogCompleted)
                 {
-                    state.CurrentStep++;
-                    dialogTelemetry.OnNextStep();
+                    dialogTelemetry.OnCompleted();
+                    state.CompleteAccidentReportingDialog();
                 }
                 else
                 {
-                    dialogTelemetry.OnCompleted();
+                    dialogState.CurrentStep++;
+                    dialogTelemetry.OnNextStep();
                 }
-
-                return dialogCompleted;
             }
             catch (UnexpectedReplyTypeException)
             {
                 dialogTelemetry.OnUnexpectedReply();
-
-                return false;
             }
             catch (ReplyValidationException replyValidationException)
             {
                 dialogTelemetry.OnReplyValidationFailed();
 
                 await SendMessageAsync(replyValidationException.UserFriendlyErrorMessage);
-
-                return false;
             }
 
             async Task<bool> HandleStepAsync()
             {
-                switch (state.CurrentStep)
+                switch (dialogState.CurrentStep)
                 {
-                    case 0:
-                        {
-                            await SendMessageAsync(Messages.SpecifyAddress);
-                            break;
-                        }
-
                     case 1:
                         {
                             if (update is IMapLocation location)
                             {
                                 dialogTelemetry.OnLocationSentAutomatically();
 
-                                state.Location = location;
+                                dialogState.Location = location;
                             }
                             else if (update is ITextMessageBotUpdate { Text: var text })
                             {
                                 EnsureMaxLengthNotExceeded(text, 100);
-                                state.Address = text;
+                                dialogState.Address = text;
                             }
                             else
                             {
                                 throw new UnexpectedReplyTypeException();
                             }
 
-                            await SendMessageAsync(Messages.SpecifyParticipants);
+                            await SendMessageAsync(_messages.SpecifyParticipants);
                             break;
                         }
 
@@ -133,9 +135,9 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                             if (update is ITextMessageBotUpdate { Text: var text })
                             {
                                 EnsureMaxLengthNotExceeded(text, 100);
-                                state.Participant = text;
+                                dialogState.Participant = text;
 
-                                await SendMessageAsync(Messages.AreThereVictims);
+                                await SendMessageAsync(_messages.AreThereVictims);
                                 break;
                             }
                             
@@ -147,9 +149,9 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                             if (update is ITextMessageBotUpdate { Text: var text })
                             {
                                 EnsureMaxLengthNotExceeded(text, 100);
-                                state.Victims = text;
+                                dialogState.Victims = text;
 
-                                await SendMessageAsync(Messages.AskForContacts);
+                                await SendMessageAsync(_messages.AskForContacts);
                                 break;
                             }
 
@@ -162,7 +164,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                             {
                                 dialogTelemetry.OnPhoneNumberSharedAutomatically();
 
-                                state.ReporterPhoneNumber = phoneNumber;
+                                dialogState.ReporterPhoneNumber = phoneNumber;
                             }
                             else if (update is ITextMessageBotUpdate { Text: var text })
                             {
@@ -170,17 +172,17 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
                                 if (!_phoneNumberParser.TryParse(text, out var parsedPhoneNumber))
                                 {
-                                    throw new ReplyValidationException(Messages.InvalidPhoneNumberError);
+                                    throw new ReplyValidationException(_messages.InvalidPhoneNumberError);
                                 }
 
-                                state.ReporterPhoneNumber = parsedPhoneNumber;
+                                dialogState.ReporterPhoneNumber = parsedPhoneNumber;
                             }
                             else
                             {
                                 throw new UnexpectedReplyTypeException();
                             }
 
-                            await SendMessageAsync(Messages.ReportSummary(state));
+                            await SendMessageAsync(_messages.ReportSummary(dialogState));
                             break;
                         }
 
@@ -188,16 +190,16 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                         {
                             if (update is ITextMessageBotUpdate textMessage)
                             {
-                                if (textMessage.Text.Trim().Equals(Messages.SubmitButton.Text, StringComparison.InvariantCultureIgnoreCase))
+                                if (textMessage.Text.Trim().Equals(_messages.SubmitButton.Text, StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     await ReportAccidentAsync();
-                                    await SendMessageAsync(Messages.SuccessfullySent);
+                                    await SendMessageAsync(_messages.SuccessfullySent);
 
                                     return true;
                                 }
                                 else
                                 {
-                                    throw new ReplyValidationException(Messages.SubmitConfirmationExpectedError);
+                                    throw new ReplyValidationException(_messages.SubmitConfirmationExpectedError);
                                 }
                             }
 
@@ -214,11 +216,11 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             } 
 
             bool CheckIfCancelled() => update is ITextMessageBotUpdate { Text: var text } &&
-                                       text.Trim().Equals(Messages.CancelButton.Text, StringComparison.InvariantCultureIgnoreCase);
+                                       text.Trim().Equals(_messages.CancelButton.Text, StringComparison.InvariantCultureIgnoreCase);
 
             async Task ReportAccidentAsync()
             {
-                var report = AccidentReport.CreateFromDialogState(state);
+                var report = AccidentReport.CreateFromDialogState(dialogState);
 
                 report.ReporterTelegramUserId = update.Sender.Id;
                 report.ReportedAtUtc = DateTime.UtcNow;
@@ -232,7 +234,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
         {
             if (text.Length > maxLength)
             {
-                throw new ReplyValidationException(Messages.ReplyMaxLengthExceededError(maxLength));
+                throw new ReplyValidationException(_messages.ReplyMaxLengthExceededError(maxLength));
             }
         }
     }

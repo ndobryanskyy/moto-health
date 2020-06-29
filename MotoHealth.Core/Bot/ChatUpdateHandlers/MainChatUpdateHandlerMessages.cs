@@ -1,19 +1,15 @@
 ﻿using MotoHealth.Telegram.Messages;
 
-namespace MotoHealth.Core.Bot
+namespace MotoHealth.Core.Bot.ChatUpdateHandlers
 {
-    public interface IMainChatMessages
+    public interface IMainChatUpdateHandlerMessages
     {
         IMessage Start { get; }
 
         IMessage MotoHealthInfo { get; }
-
-        IMessage NothingToSay { get; }
-
-        IMessage PleaseTryLater { get; }
     }
 
-    internal sealed class MainChatMessages : IMainChatMessages
+    internal sealed class MainChatUpdateHandlerMessages : IMainChatUpdateHandlerMessages
     {
         public IMessage Start { get; } = MessageFactory.CreateCompositeMessage()
                 .AddMessage(StartCommandsHint)
@@ -27,15 +23,6 @@ namespace MotoHealth.Core.Bot
                 @"<b>Instagram:</b> <a href=""https://www.instagram.com/moto_health_odessa"">@moto_health_odessa</a>")
             .WithDisabledWebPagePreview();
 
-        public IMessage NothingToSay { get; } = MessageFactory.CreateCompositeMessage()
-            .AddMessage(CommonMessages.NotQuiteGetIt)
-            .AddMessage(NothingToSayHint);
-
-        public IMessage PleaseTryLater { get; } = MessageFactory.CreateTextMessage()
-            .WithPlainText(
-                "😥 Ой, что-то пошло не так\n\n" + 
-                "Попробуйте ещё раз через пару секунд");
-
         private static readonly IMessage StartCommandsHint = MessageFactory.CreateTextMessage()
             .WithHtml(
                 "Нажмите /dtp чтобы получить помощь, если вы стали участником или свидетелем ДТП\n\n" +
@@ -44,7 +31,5 @@ namespace MotoHealth.Core.Bot
         private static readonly IMessage StartPinHint = MessageFactory.CreateTextMessage()
             .WithPlainText("📌 Чтобы не забыть про бота в экстренной ситуации, можете закрепить себе этот диалог");
 
-        private static readonly IMessage NothingToSayHint = MessageFactory.CreateTextMessage()
-            .WithHtml("Пожалуйста, выберите команду в меню <b>[ / ]</b> внизу");
     }
 }

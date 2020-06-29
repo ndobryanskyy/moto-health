@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MotoHealth.Core.Bot
 {
-    internal interface IChatsDoorman
+    public interface IChatsDoorman
     {
         bool TryLockChat(long chatId, [NotNullWhen(true)] out IDisposable? chatLock);
     }
@@ -28,21 +28,19 @@ namespace MotoHealth.Core.Bot
             var newLock = new ChatLock(chatId);
             var added = _locks.TryAdd(chatId, newLock);
 
-            if (added)
-            {
-                _logger.LogDebug($"Chat {chatId} locked");
-
-                newLock.Released += OnChatLockReleased;
-
-                chatLock = newLock;
-            }
-            else
+            if (!added)
             {
                 _logger.LogInformation($"Chat {chatId} already locked!");
+                
+                return false;
             }
+         
+            _logger.LogDebug($"Chat {chatId} locked");
 
-
-            return added;
+            newLock.Released += OnChatLockReleased;
+            chatLock = newLock;
+            
+            return true;
         }
 
         private void OnChatLockReleased(object sender, EventArgs e)

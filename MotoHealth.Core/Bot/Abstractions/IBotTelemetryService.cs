@@ -1,5 +1,4 @@
 ﻿using MotoHealth.Core.Bot.AccidentReporting;
-using MotoHealth.Core.Bot.Updates.Abstractions;
 
 namespace MotoHealth.Core.Bot.Abstractions
 {
@@ -7,13 +6,13 @@ namespace MotoHealth.Core.Bot.Abstractions
     {
         void OnNewChatStarted();
 
-        void OnUpdateMapped(IBotUpdate botUpdate);
+        void OnMessageFromBannedChat();
 
         void OnUpdateSkipped();
 
-        void OnChatIsStillLocked();
+        void OnUpdateHandled();
 
-        void OnUpdateHandled(bool successfully);
+        void OnUpdateHandlingFailed();
 
         void OnMotoHealthInfoProvided();
 
@@ -23,6 +22,6 @@ namespace MotoHealth.Core.Bot.Abstractions
 
         void OnChatUnsubscribedFromAccidentAlerting();
 
-        IAccidentReportingTelemetryService GetTelemetryServiceForAccidentReporting(IAccidentReportDialogState dialogState);
+        IAccidentReportingTelemetryService GetTelemetryServiceForAccidentReporting(IAccidentReportingDialogState dialogState);
     }
 }

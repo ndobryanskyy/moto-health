@@ -1,14 +1,17 @@
 using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using MotoHealth.Bot.Authorization;
+using MotoHealth.Bot.Extensions;
+using MotoHealth.Bot.Middleware;
 using MotoHealth.Core;
+using MotoHealth.Core.Bot.ChatUpdateHandlers;
 using MotoHealth.Infrastructure;
 
 namespace MotoHealth.Bot
@@ -72,18 +75,42 @@ namespace MotoHealth.Bot
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.Map("/", context =>
-                {
-                    var telemetry = context.Features.Get<RequestTelemetry>();
-                    telemetry.Context.Operation.SyntheticSource = Constants.ApplicationInsights.AlwaysOnPingSyntheticSource;
-
-                    context.Response.StatusCode = StatusCodes.Status200OK;
-                    
-                    return Task.CompletedTask;
-                });
-
-                endpoints.MapControllers();
+                endpoints.Map("/", OnAlwaysOnPingAsync);
+                endpoints.MapPost("/updates", CreateTelegramPipeline(endpoints.CreateApplicationBuilder()));
             });
+        }
+
+        private static Task OnAlwaysOnPingAsync(HttpContext context)
+        {
+            var logger = context.RequestServices
+                .GetRequiredService<ILoggerFactory>()
+                .CreateLogger("AlwaysOn");
+
+            var requestTelemetry = context.GetRequestTelemetry();
+            requestTelemetry.Context.Operation.SyntheticSource = Constants.ApplicationInsights.AlwaysOnPingSyntheticSource;
+
+            context.Response.StatusCode = StatusCodes.Status200OK;
+
+            logger.LogDebug("Always On Ping Received");
+
+            return Task.CompletedTask;
+        }
+
+        private static RequestDelegate CreateTelegramPipeline(IApplicationBuilder builder)
+        {
+            return builder
+                .UseMiddleware<BotTokenVerificationMiddleware>()
+                .UseMiddleware<ReliableUpdateHandlingContextMiddleware>()
+                .UseMiddleware<BotUpdateInitializerMiddleware>()
+                .UseMiddleware<ChatUpdatesFilterMiddleware>()
+                .UseMiddleware<ChatLockingMiddleware>()
+                .UseMiddleware<NewChatsHandlerMiddleware>()
+                .UseMiddleware<ChatUpdateHandlerMiddleware<BannedUsersChatUpdateHandler>>()
+                .UseMiddleware<ChatUpdateHandlerMiddleware<AdminCommandsChatUpdateHandler>>()
+                .UseMiddleware<ChatUpdateHandlerMiddleware<AccidentReportingDialogChatUpdateHandler>>()
+                .UseMiddleware<ChatUpdateHandlerMiddleware<MainChatUpdateHandler>>()
+                .UseMiddleware<TerminatingChatHandlerMiddleware>()
+                .Build();
         }
     }
 }

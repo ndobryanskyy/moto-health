@@ -3,7 +3,7 @@ using MotoHealth.Core.Bot.Abstractions;
 
 namespace MotoHealth.Core.Bot.AccidentReporting
 {
-    public interface IAccidentReportDialogState : IWaterfallDialogState
+    public interface IAccidentReportingDialogState : IWaterfallDialogState
     {
         public string ReportId { get; }
 

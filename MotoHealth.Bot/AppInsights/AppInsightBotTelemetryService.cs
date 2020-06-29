@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Http;
-using MotoHealth.Core.Bot;
+using MotoHealth.Bot.Extensions;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Core.Bot.Updates.Abstractions;
@@ -13,138 +12,68 @@ namespace MotoHealth.Bot.AppInsights
     internal sealed class AppInsightBotTelemetryService : IBotTelemetryService
     {
         private readonly TelemetryClient _telemetryClient;
-        private readonly IBotUpdateAccessor _botUpdateAccessor;
+        private readonly HttpContext _httpContext;
 
-        private readonly Lazy<RequestTelemetry> _lazyRequestTelemetry;
-        
-        private IBotUpdate? _botUpdate;
-
-        public AppInsightBotTelemetryService(
-            TelemetryClient telemetryClient,
-            IHttpContextAccessor httpContextAccessor,
-            IBotUpdateAccessor botUpdateAccessor)
+        public AppInsightBotTelemetryService(TelemetryClient telemetryClient, IHttpContextAccessor httpContextAccessor)
         {
             _telemetryClient = telemetryClient;
-            _botUpdateAccessor = botUpdateAccessor;
-
-            _lazyRequestTelemetry = new Lazy<RequestTelemetry>(() =>
-            {
-                var requestTelemetry = httpContextAccessor.HttpContext?.Features.Get<RequestTelemetry>();
-
-                if (requestTelemetry == null)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                return requestTelemetry;
-            });
+            _httpContext = httpContextAccessor.HttpContext ?? throw new InvalidOperationException();
         }
 
-        private RequestTelemetry RequestTelemetry => _lazyRequestTelemetry.Value;
+        private RequestTelemetry RequestTelemetry => _httpContext.GetRequestTelemetry();
 
-        private IBotUpdate? BotUpdate
+        private IBotUpdate BotUpdate => _httpContext.GetBotUpdate();
+
+        public void OnMessageFromBannedChat()
         {
-            get => _botUpdate;
-            set
-            {
-                _botUpdate = value ?? throw new ArgumentNullException(nameof(value));
-                _botUpdateAccessor.Set(value);
-            }
-        }
-
-        public void OnUpdateMapped(IBotUpdate botUpdate)
-        {
-            BotUpdate = botUpdate;
-
-            RequestTelemetry.Properties.Add(TelemetryProperties.WellKnown.UpdateType, botUpdate.GetUpdateTypeNameForTelemetry());
-        }
-
-        public void OnUpdateSkipped()
-        {
-            EnsureBotUpdateIsPresent();
-
-            RequestTelemetry.Properties.Add(TelemetryProperties.WellKnown.UpdateHandlingResult, UpdateHandlingTelemetryResult.Skipped.ToString());
-
-            var diagnosticProperties = BotUpdate!.ExtractDiagnosticProperties();
-
-            _telemetryClient.TrackEvent("Update Skipped", diagnosticProperties.AsDictionary());
-        }
-
-        public void OnChatIsStillLocked()
-        {
-            EnsureBotUpdateIsPresent();
-
-            RequestTelemetry.Properties.Add(TelemetryProperties.WellKnown.UpdateHandlingResult, UpdateHandlingTelemetryResult.Error.ToString());
-
-            var diagnosticProperties = BotUpdate!.ExtractDiagnosticProperties();
-
-            diagnosticProperties.Add("Action Taken", "'Try again' message sent");
-
-            _telemetryClient.TrackEvent("Message Arrived Before Previous Update Handled", diagnosticProperties.AsDictionary());
+            _telemetryClient.TrackEvent("Message From Banned Chat");
         }
 
         public void OnNewChatStarted()
         {
-            EnsureBotUpdateIsPresent();
-
             _telemetryClient.TrackEvent("New Chat");
         }
 
-        public void OnUpdateHandled(bool successfully)
+        public void OnUpdateSkipped()
         {
-            EnsureBotUpdateIsPresent();
+            RequestTelemetry.Properties[TelemetryProperties.WellKnown.UpdateHandlingResult] = UpdateHandlingTelemetryResult.Skipped.ToString();
+            BotUpdate.ExtractDiagnosticProperties().MergeTo(RequestTelemetry.Properties);
+        }
 
-            var result = successfully
-                ? UpdateHandlingTelemetryResult.Success
-                : UpdateHandlingTelemetryResult.Error;
+        public void OnUpdateHandled()
+        {
+            RequestTelemetry.Properties[TelemetryProperties.WellKnown.UpdateHandlingResult] = UpdateHandlingTelemetryResult.Success.ToString();
+        }
 
-            RequestTelemetry.Properties.TryAdd(TelemetryProperties.WellKnown.UpdateHandlingResult, result.ToString());
+        public void OnUpdateHandlingFailed()
+        {
+            RequestTelemetry.Properties[TelemetryProperties.WellKnown.UpdateHandlingResult] = UpdateHandlingTelemetryResult.Error.ToString();
+            BotUpdate.ExtractDiagnosticProperties().MergeTo(RequestTelemetry.Properties);
         }
 
         public void OnMotoHealthInfoProvided()
         {
-            EnsureBotUpdateIsPresent();
-
             _telemetryClient.TrackEvent("Moto Health Info Provided");   
         }
 
         public void OnNothingToSay()
         {
-            EnsureBotUpdateIsPresent();
-
-            var diagnosticProperties = BotUpdate!.ExtractDiagnosticProperties();
+            var diagnosticProperties = BotUpdate.ExtractDiagnosticProperties();
 
             _telemetryClient.TrackEvent("Bot Has Nothing to Say", diagnosticProperties.AsDictionary());
         }
 
         public void OnChatSubscribedToAccidentAlerting()
         {
-            EnsureBotUpdateIsPresent();
-
             _telemetryClient.TrackEvent("Subscribed to Accident Alerting");
         }
 
         public void OnChatUnsubscribedFromAccidentAlerting()
         {
-            EnsureBotUpdateIsPresent();
-
             _telemetryClient.TrackEvent("Unsubscribed from Accident Alerting");
         }
 
-        public IAccidentReportingTelemetryService GetTelemetryServiceForAccidentReporting(
-            IAccidentReportDialogState dialogState)
-        {
-            EnsureBotUpdateIsPresent();
-
-            return new AppInsightAccidentReportingTelemetryService(dialogState, BotUpdate!, _telemetryClient);
-        }
-
-        private void EnsureBotUpdateIsPresent()
-        {
-            if (BotUpdate == null)
-            {
-                throw new InvalidOperationException("Bot update is not set");
-            }
-        }
+        public IAccidentReportingTelemetryService GetTelemetryServiceForAccidentReporting(IAccidentReportingDialogState dialogState) 
+            => new AppInsightAccidentReportingTelemetryService(dialogState, BotUpdate, _telemetryClient);
     }
 }

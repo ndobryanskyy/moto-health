@@ -6,7 +6,7 @@ namespace MotoHealth.Core.Bot.Abstractions
     {
         CommandDefinition Start { get; }
 
-        CommandDefinition About { get; }
+        CommandDefinition Info { get; }
         
         CommandDefinition ReportAccident { get; }
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.Azure.Cosmos.Table;
-using MotoHealth.Core.Bot;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
 
@@ -12,20 +11,22 @@ namespace MotoHealth.Infrastructure.ChatStorage.Entities
 
         public bool UserSubscribed { get; set; }
 
+        public bool UserBanned { get; set; }
+
         [IgnoreProperty]
-        IAccidentReportDialogState? IChatState.AccidentReportDialog => AccidentReportDialog;
+        IAccidentReportingDialogState? IChatState.AccidentReportDialog => AccidentReportDialog;
 
-        public AccidentReportDialogState? AccidentReportDialog { get; set; }
+        public AccidentReportingDialogState? AccidentReportDialog { get; set; }
 
-        public IAccidentReportDialogState StartAccidentReportingDialog(int version)
+        public IAccidentReportingDialogState StartAccidentReportingDialog(int version)
         {
-            AccidentReportDialog = new AccidentReportDialogState
+            AccidentReportDialog = new AccidentReportingDialogState
             {
                 InstanceId = Guid.NewGuid().ToString(),
                 ReportId = Guid.NewGuid().ToString(),
                 StartedAt = DateTimeOffset.UtcNow,
                 Version = version,
-                CurrentStep = 0
+                CurrentStep = 1
             };
 
             return AccidentReportDialog;
@@ -39,7 +40,7 @@ namespace MotoHealth.Infrastructure.ChatStorage.Entities
         public TableEntity ToTableEntity() 
             => new TableEntityAdapter<ChatState>(this, AssociatedChatId.ToString(), ChatsTableEntityTypes.State) { ETag = "*" };
 
-        public class AccidentReportDialogState : IAccidentReportDialogState
+        public sealed class AccidentReportingDialogState : IAccidentReportingDialogState
         {
             public string ReportId { get; set; } = string.Empty;
 
@@ -54,7 +55,7 @@ namespace MotoHealth.Infrastructure.ChatStorage.Entities
             public string? Address { get; set; }
 
             [IgnoreProperty]
-            IMapLocation? IAccidentReportDialogState.Location
+            IMapLocation? IAccidentReportingDialogState.Location
             {
                 get => Location;
                 set

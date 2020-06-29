@@ -8,7 +8,7 @@ namespace MotoHealth.Core.Bot.Commands
 
         public CommandDefinition ReportAccident { get; } = new CommandDefinition("/dtp", "Сообщить о ДТП");
         
-        public CommandDefinition About { get; } = new CommandDefinition("/info", "О нас");
+        public CommandDefinition Info { get; } = new CommandDefinition("/info", "О нас");
 
         public ChatSubscriptionCommandDefinition SubscribeChat { get; } = new ChatSubscriptionCommandDefinition("/subscribe");
 
@@ -21,7 +21,7 @@ namespace MotoHealth.Core.Bot.Commands
             PublicCommands = new[]
             {
                 ReportAccident,
-                About
+                Info
             };
         }
     }

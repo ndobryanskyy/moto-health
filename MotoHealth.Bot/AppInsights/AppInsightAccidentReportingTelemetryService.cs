@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.ApplicationInsights;
-using MotoHealth.Core.Bot;
+using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 
@@ -13,12 +13,12 @@ namespace MotoHealth.Bot.AppInsights
 
         private static readonly TimeSpan OneDay = TimeSpan.FromDays(1);
 
-        private readonly IAccidentReportDialogState _dialogState;
+        private readonly IAccidentReportingDialogState _dialogState;
         private readonly IBotUpdate _botUpdate;
         private readonly TelemetryClient _telemetryClient;
 
         public AppInsightAccidentReportingTelemetryService(
-            IAccidentReportDialogState dialogState,
+            IAccidentReportingDialogState dialogState,
             IBotUpdate botUpdate,
             TelemetryClient telemetryClient)
         {
@@ -41,7 +41,7 @@ namespace MotoHealth.Bot.AppInsights
         {
             var properties = new TelemetryProperties
             {
-                {"To Step", _dialogState.CurrentStep.ToString()}
+                { "To Step", _dialogState.CurrentStep.ToString() }
             };
 
             Track("Advanced", properties);
@@ -79,8 +79,8 @@ namespace MotoHealth.Bot.AppInsights
         {
             var metrics = new TelemetryMetrics
             {
-                {DialogDurationInSecMetricsKey, GetDialogDurationSec()},
-                {StepsCompletedMetricsKey, _dialogState.CurrentStep - 1}
+                { DialogDurationInSecMetricsKey, GetDialogDurationSec() },
+                { StepsCompletedMetricsKey, _dialogState.CurrentStep - 1 }
             };
 
             Track("Cancelled", metrics: metrics);
@@ -90,8 +90,8 @@ namespace MotoHealth.Bot.AppInsights
         {
             var metrics = new TelemetryMetrics
             {
-                {DialogDurationInSecMetricsKey, GetDialogDurationSec()},
-                {StepsCompletedMetricsKey, _dialogState.CurrentStep}
+                { DialogDurationInSecMetricsKey, GetDialogDurationSec() },
+                { StepsCompletedMetricsKey, _dialogState.CurrentStep }
             };
 
             Track("Completed Successfully", metrics: metrics);

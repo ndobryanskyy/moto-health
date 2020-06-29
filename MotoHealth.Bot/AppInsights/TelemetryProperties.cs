@@ -24,6 +24,14 @@ namespace MotoHealth.Bot.AppInsights
         public IDictionary<string, string> AsDictionary() 
             => _properties;
 
+        public void MergeTo(IDictionary<string, string> properties)
+        {
+            foreach (var (key, value) in _properties)
+            {
+                properties.TryAdd(key, value);
+            }
+        }
+
         public static class WellKnown
         {
             public const string UpdateType = "Update Type";

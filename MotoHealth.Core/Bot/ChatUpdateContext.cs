@@ -1,7 +1,9 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.Updates.Abstractions;
+using MotoHealth.Core.Extensions;
 using MotoHealth.Telegram;
 using MotoHealth.Telegram.Messages;
 
@@ -9,24 +11,42 @@ namespace MotoHealth.Core.Bot
 {
     internal sealed class ChatUpdateContext : IChatUpdateContext
     {
-        private readonly long _chatId;
-
         private readonly ITelegramClient _client;
+        private readonly IChatStatesRepository _chatStatesRepository;
 
-        public ChatUpdateContext(IChatUpdate update, ITelegramClient client)
+        private IChatState? _chatState;
+
+        public ChatUpdateContext(
+            IChatUpdate chatUpdate,
+            ITelegramClient client,
+            IChatStatesRepository chatStatesRepository)
         {
             _client = client;
+            _chatStatesRepository = chatStatesRepository;
 
-            Update = update;
-
-            _chatId = Update.Chat.Id;
+            Update = chatUpdate;
         }
+
+        public long ChatId => Update.Chat.Id;
 
         public IChatUpdate Update { get; }
 
-        public async Task SendMessageAsync(IMessage message, CancellationToken cancellationToken)
+        public bool IsUpdateHandled { get; set; }
+
+        public async ValueTask<IChatState> GetStagingStateAsync(CancellationToken cancellationToken)
         {
-            await message.SendAsync(_chatId, _client, cancellationToken);
+            if (_chatState == null)
+            {
+                var state = await _chatStatesRepository.GetForChatAsync(ChatId, cancellationToken) 
+                            ?? throw new InvalidOperationException();
+                
+                _chatState = state.Clone();
+            }
+
+            return _chatState;
         }
+
+        public async Task SendMessageAsync(IMessage message, CancellationToken cancellationToken) 
+            => await message.SendAsync(ChatId, _client, cancellationToken);
     }
 }

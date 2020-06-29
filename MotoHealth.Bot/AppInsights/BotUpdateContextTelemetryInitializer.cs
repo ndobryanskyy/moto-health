@@ -2,24 +2,24 @@
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.AspNetCore.Http;
+using MotoHealth.Bot.Extensions;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 
 namespace MotoHealth.Bot.AppInsights
 {
     internal sealed class BotUpdateContextTelemetryInitializer : ITelemetryInitializer
     {
-        private readonly IBotUpdateAccessor _botUpdateAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public BotUpdateContextTelemetryInitializer(IBotUpdateAccessor botUpdateAccessor)
+        public BotUpdateContextTelemetryInitializer(IHttpContextAccessor httpContextAccessor)
         {
-            _botUpdateAccessor = botUpdateAccessor;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public void Initialize(ITelemetry telemetry)
         {
-            var botUpdate = _botUpdateAccessor.Current;
-
-            if (botUpdate != null)
+            if (_httpContextAccessor.HttpContext.TryGetBotUpdate(out var botUpdate))
             {
                 telemetry.Context.Operation.Id = botUpdate.UpdateId.ToString();
                 telemetry.Context.Operation.Name = "Handle Telegram Update";
@@ -46,6 +46,18 @@ namespace MotoHealth.Bot.AppInsights
                             telemetryWithProperties.Properties["Group Title"] = chat.Group.Title;
                         }
                     }
+                }
+
+                if (telemetry is RequestTelemetry requestTelemetry)
+                {
+                    requestTelemetry.Name = "Telegram Webhook";
+                    requestTelemetry.Source = "Telegram";
+                    requestTelemetry.Properties[TelemetryProperties.WellKnown.UpdateType] = botUpdate.GetUpdateTypeNameForTelemetry();
+                }
+
+                if (telemetry is ExceptionTelemetry exceptionTelemetry)
+                {
+                    botUpdate.ExtractDiagnosticProperties().MergeTo(exceptionTelemetry.Properties);
                 }
             }
         }

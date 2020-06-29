@@ -4,7 +4,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MotoHealth.Core.Bot.AccidentReporting
 {
-    public interface IAccidentReportDialogMessages
+    public interface IAccidentReportingDialogMessages
     {
         KeyboardButton CancelButton { get; }
         
@@ -26,7 +26,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
         IMessage InvalidPhoneNumberError { get; }
 
-        IMessage ReportSummary(IAccidentReportDialogState state);
+        IMessage ReportSummary(IAccidentReportingDialogState state);
 
         IMessage SubmitConfirmationExpectedError { get; }
 
@@ -35,12 +35,12 @@ namespace MotoHealth.Core.Bot.AccidentReporting
         IMessage ReplyMaxLengthExceededError(int maxLength);
     }
 
-    internal sealed class AccidentReportDialogMessages : IAccidentReportDialogMessages
+    internal sealed class AccidentReportingDialogMessages : IAccidentReportingDialogMessages
     {
-        KeyboardButton IAccidentReportDialogMessages.CancelButton => CancelButton;
-        KeyboardButton IAccidentReportDialogMessages.SharePhoneNumberButton => SharePhoneNumberButton;
-        KeyboardButton IAccidentReportDialogMessages.ShareLocationButton => ShareLocationButton;
-        KeyboardButton IAccidentReportDialogMessages.SubmitButton => SubmitButton;
+        KeyboardButton IAccidentReportingDialogMessages.CancelButton => CancelButton;
+        KeyboardButton IAccidentReportingDialogMessages.SharePhoneNumberButton => SharePhoneNumberButton;
+        KeyboardButton IAccidentReportingDialogMessages.ShareLocationButton => ShareLocationButton;
+        KeyboardButton IAccidentReportingDialogMessages.SubmitButton => SubmitButton;
 
         public IMessage Cancelled { get; } = MessageFactory.CreateTextMessage()
             .WithPlainText("⛔ Отменено")
@@ -75,7 +75,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
             .AddMessage(CommonMessages.NotQuiteGetIt)
             .AddMessage(InvalidPhoneNumberErrorHint);
         
-        public IMessage ReportSummary(IAccidentReportDialogState state) => MessageFactory.CreateTextMessage()
+        public IMessage ReportSummary(IAccidentReportingDialogState state) => MessageFactory.CreateTextMessage()
             .WithHtml(
                 "🚨 Сообщение о ДТП\n\n" +
                 $"• <b>Адрес:</b> {state.Address?.HtmlEscaped() ?? "Геопозиция"}\n" +

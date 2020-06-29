@@ -21,19 +21,21 @@ namespace MotoHealth.Core.Bot
             var normalized = IgnoredCharactersRegex.Replace(input, "");
 
             var match = PhoneNumberRegex.Match(normalized);
-            
-            if (match.Success)
+
+            if (!match.Success)
             {
-                phoneNumber = match switch
-                {
-                    { Groups: var groups } when groups[1].Success => $"+380{groups[1].Value}",
-                    { Groups: var groups } when groups[2].Success => $"+38{groups[2].Value}",
-                    { Groups: var groups } when groups[3].Success => $"+{groups[3].Value}",
-                    _ => throw new ArgumentOutOfRangeException()
-                };
+                return false;
             }
 
-            return match.Success;
+            phoneNumber = match switch
+            {
+                { Groups: var groups } when groups[1].Success => $"+380{groups[1].Value}",
+                { Groups: var groups } when groups[2].Success => $"+38{groups[2].Value}",
+                { Groups: var groups } when groups[3].Success => $"+{groups[3].Value}",
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            return true;
         }
     }
 }

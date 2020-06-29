@@ -25,7 +25,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
         public string AccidentVictims { get; set; } = default!;
 
-        public static AccidentReport CreateFromDialogState(IAccidentReportDialogState dialogState)
+        public static AccidentReport CreateFromDialogState(IAccidentReportingDialogState dialogState)
         {
             if (dialogState.Address == null && dialogState.Location == null)
             {

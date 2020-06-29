@@ -21,7 +21,7 @@ namespace MotoHealth.Bot.Authorization
         {
             if (string.IsNullOrEmpty(_subscriptionSecret))
             {
-                _logger.LogError("Subscription secret is not initialized. Authorization will always fail");
+                _logger.LogCritical("Subscription secret is not initialized. Authorization will always fail");
 
                 return false;
             }
