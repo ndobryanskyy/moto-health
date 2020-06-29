@@ -18,11 +18,16 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
 
         private readonly ILogger<AlertChatActivity> _logger;
         private readonly ITelegramClient _telegramClient;
+        private readonly IGoogleMapsService _googleMapsService;
 
-        public AlertChatActivity(ILogger<AlertChatActivity> logger, ITelegramClient telegramClient)
+        public AlertChatActivity(
+            ILogger<AlertChatActivity> logger,
+            ITelegramClient telegramClient,
+            IGoogleMapsService googleMapsService)
         {
             _logger = logger;
             _telegramClient = telegramClient;
+            _googleMapsService = googleMapsService;
         }
 
         [FunctionName(FunctionNames.AccidentAlerting.AlertChatActivity)]
@@ -59,13 +64,13 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             };
         }
 
-        private static IMessage CreateAccidentAlert(AccidentReportedEventData accidentReport)
+        private IMessage CreateAccidentAlert(AccidentReportedEventData accidentReport)
         {
             var reportedAtLocalTime = TimeZoneInfo.ConvertTimeFromUtc(accidentReport.ReportedAtUtc, UkraineTimezone);
 
             var accidentLocation = accidentReport.AccidentLocation;
             var address = accidentLocation != null
-                ? @$"<a href=""{BuildGoogleMapsLink(accidentLocation)}"">Геопозиция</a>"
+                ? TelegramHtml.Link(_googleMapsService.GetLocationPinUri(accidentLocation.Latitude, accidentLocation.Longitude), "Геопозиция")
                 : accidentReport.AccidentAddress?.HtmlEscaped() ?? "Не указан";
 
             const string alertBorder = "🚨🚨🚨🚨🚨🚨🚨🚨🚨";
@@ -80,15 +85,9 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
                 $"<b>Телефон:</b> {accidentReport.ReporterPhoneNumber.HtmlEscaped()}\n\n" +
 
                 $"<b>Получено:</b> <i>{reportedAtLocalTime:dd/MM - HH:mm:ss}</i>\n" +
-                @$"<a href=""{BuildUserMentionLink(accidentReport.ReporterTelegramUserId)}"">Отправитель | {accidentReport.ReporterTelegramUserId}</a>" +
+                @$"{TelegramHtml.UserLink(accidentReport.ReporterTelegramUserId, $"Отправитель | {accidentReport.ReporterTelegramUserId}")}" +
                 $"\n\n{alertBorder}"
             ).WithDisabledWebPagePreview();
         }
-
-        private static string BuildGoogleMapsLink(MapLocation location) 
-            => $"https://www.google.com/maps/search/?api=1&query={location.Latitude},{location.Longitude}";
-
-        private static string BuildUserMentionLink(int userId)
-            => $"tg://user?id={userId}";
     }
 }

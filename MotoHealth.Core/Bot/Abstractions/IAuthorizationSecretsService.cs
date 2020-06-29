@@ -3,5 +3,7 @@
     public interface IAuthorizationSecretsService
     {
         bool VerifySubscriptionSecret(string secret);
+
+        bool VerifyBanSecret(string secret);
     }
 }

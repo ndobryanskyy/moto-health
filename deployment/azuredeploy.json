@@ -31,6 +31,9 @@
     "adminSubscriptionsSecret": {
       "type": "securestring"
     },
+    "adminBanSecret": {
+      "type": "securestring"
+    },
     "accidentReportEventHandlerName": {
       "type": "string"
     },
@@ -150,6 +153,10 @@
             {
               "name": "Secrets__SubscriptionSecret",
               "value": "[parameters('adminSubscriptionsSecret')]"
+            },
+            {
+              "name": "Secrets__BanSecret",
+              "value": "[parameters('adminBanSecret')]"
             },
             {
               "name": "ConnectionStrings__ChatsStorageAccount",

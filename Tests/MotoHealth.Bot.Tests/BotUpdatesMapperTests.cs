@@ -97,14 +97,15 @@ namespace MotoHealth.Bot.Tests
         }
 
         [Fact]
-        public void Should_Resolve_TextMessage_Update_If_More_Than_One_MessageEntity_Present()
+        public void Should_Resolve_CommandMessageUpdate_If_More_Than_One_NonCommand_MessageEntity_Present()
         {
             var autoFixture = new Fixture();
 
             const string command = "/start";
-            const string url = "https://sample-url.org";
+            const string url = "https://telegram.org";
+            const string phoneNumber = "+380501234567";
 
-            var text = $"{command} {url}";
+            var text = $"{command} {url} {phoneNumber} argument";
 
             var messageEntities = new[]
             {
@@ -120,6 +121,101 @@ namespace MotoHealth.Bot.Tests
                     Type = MessageEntityType.Url,
                     Offset = command.Length + 1,
                     Length = url.Length
+                },
+
+                new MessageEntity
+                {
+                    Type = MessageEntityType.PhoneNumber,
+                    Offset = command.Length + url.Length + 2,
+                    Length = phoneNumber.Length
+                }
+            };
+
+            var message = autoFixture
+                .BuildDefaultPrivateMessage()
+                .With(x => x.Text, text)
+                .With(x => x.Entities, messageEntities)
+                .Create();
+
+            var update = autoFixture.BuildDefaultUpdate()
+                .With(x => x.Message, message)
+                .Create();
+
+            var expectedMappedUpdate = new CommandMessageBotUpdate();
+
+            _mapperMock
+                .Setup(x => x.Map<CommandMessageBotUpdate>(update))
+                .Returns(expectedMappedUpdate);
+
+            var mappedUpdate = _updatesMapper.MapTelegramUpdate(update);
+
+            mappedUpdate.Should().BeSameAs(expectedMappedUpdate);
+        }
+
+        [Fact]
+        public void Should_Resolve_TextMessageUpdate_If_Single_Command_MessageEntity_Is_Not_In_The_Beginning()
+        {
+            var autoFixture = new Fixture();
+
+            const string command = "/dtp";
+
+            var text = $"Report {command}";
+
+            var messageEntities = new[]
+            {
+                new MessageEntity
+                {
+                    Type = MessageEntityType.BotCommand,
+                    Offset = 7,
+                    Length = command.Length
+                }
+            };
+
+            var message = autoFixture
+                .BuildDefaultPrivateMessage()
+                .With(x => x.Text, text)
+                .With(x => x.Entities, messageEntities)
+                .Create();
+
+            var update = autoFixture.BuildDefaultUpdate()
+                .With(x => x.Message, message)
+                .Create();
+
+            var expectedMappedUpdate = new TextMessageBotUpdate();
+
+            _mapperMock
+                .Setup(x => x.Map<TextMessageBotUpdate>(update))
+                .Returns(expectedMappedUpdate);
+
+            var mappedUpdate = _updatesMapper.MapTelegramUpdate(update);
+
+            mappedUpdate.Should().BeSameAs(expectedMappedUpdate);
+        }
+
+        [Fact]
+        public void Should_Resolve_TextMessageUpdate_If_More_Than_One_Command_MessageEntity_Present()
+        {
+            var autoFixture = new Fixture();
+
+            const string command1 = "/start";
+            const string command2 = "/dtp";
+
+            var text = $"{command1} {command2}";
+
+            var messageEntities = new[]
+            {
+                new MessageEntity
+                {
+                    Type = MessageEntityType.BotCommand,
+                    Offset = 0,
+                    Length = command1.Length
+                },
+
+                new MessageEntity
+                {
+                    Type = MessageEntityType.BotCommand,
+                    Offset = command2.Length + 1,
+                    Length = command2.Length
                 }
             };
 

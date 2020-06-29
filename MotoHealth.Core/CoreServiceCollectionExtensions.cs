@@ -29,7 +29,8 @@ namespace MotoHealth.Core
                 .AddTransient<IChatStatesRepository, ChatStatesRepository>()
                 .AddSingleton<IChatsDoorman, ChatsDoorman>()
                 .AddSingleton<IBotCommandsRegistry, BotCommandsRegistry>()
-                .AddSingleton<IPhoneNumberParser, PhoneNumberParser>();
+                .AddSingleton<IPhoneNumberParser, PhoneNumberParser>()
+                .AddTransient<IUsersBanService, UsersBanService>();
 
             services
                 .AddTransient<BannedUsersChatUpdateHandler>();

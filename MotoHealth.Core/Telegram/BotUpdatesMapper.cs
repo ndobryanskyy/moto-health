@@ -47,14 +47,13 @@ namespace MotoHealth.Core.Telegram
 
         private static bool HasOnlyOneCommandEntity(Message message)
         {
-            var entities = message.Entities ?? new MessageEntity[0];
-            var entityValues = message.EntityValues?.ToArray() ?? new string[0];
-            var firstMessageEntity = entities.FirstOrDefault();
+            var commandEntities = message.Entities?
+                .Where(x => x.Type == MessageEntityType.BotCommand)
+                .ToArray();
 
-            var hasOneMessageEntity = entities.Length == 1 && entityValues.Length == 1;
-            var firstEntityIsCommand = firstMessageEntity?.Offset == 0 && firstMessageEntity?.Type == MessageEntityType.BotCommand;
-
-            return hasOneMessageEntity && firstEntityIsCommand;
+            return commandEntities != null && 
+                   commandEntities.Length == 1 &&
+                   commandEntities.First().Offset == 0;
         }
     }
 }

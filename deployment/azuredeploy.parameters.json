@@ -11,6 +11,9 @@
       "adminSubscriptionsSecret": {
           "value": ""
       },
+      "adminBanSecret": {
+          "value": ""
+      },
       "accidentReportEventHandlerName": {
           "value": "AccidentReportedEventHandler"
       },

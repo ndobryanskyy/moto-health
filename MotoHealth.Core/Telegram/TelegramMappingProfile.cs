@@ -29,11 +29,25 @@ namespace MotoHealth.Core.Telegram
             CreateMessageBotUpdateMap<CommandMessageBotUpdate>()
                 .ForMember(
                     x => x.Command,
-                    opts => opts.MapFrom(x => x.Message.EntityValues.First().Split("@", StringSplitOptions.RemoveEmptyEntries).First())
+                    opts => opts.MapFrom((source, destination) =>
+                    {
+                        var message = source.Message;
+                        var commandEntity = message.Entities.Single(x => x.Type == MessageEntityType.BotCommand);
+                        
+                        return message.Text.Substring(commandEntity.Offset, commandEntity.Length)
+                            .Split("@", StringSplitOptions.RemoveEmptyEntries)
+                            .First();
+                    })
                 )
                 .ForMember(
                     x => x.Arguments,
-                    opts => opts.MapFrom(x => x.Message.Text.Substring(x.Message.Entities.First().Length).Trim())
+                    opts => opts.MapFrom((source, destination) =>
+                    {
+                        var message = source.Message;
+                        var commandEntity = message.Entities.Single(x => x.Type == MessageEntityType.BotCommand);
+
+                        return message.Text.Substring(commandEntity.Length).Trim();
+                    })
                 );
 
             CreateMessageBotUpdateMap<ContactMessageBotUpdate>()

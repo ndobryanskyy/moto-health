@@ -7,30 +7,29 @@ namespace MotoHealth.Bot.Authorization
     internal sealed class AuthorizationSecretsService : IAuthorizationSecretsService
     {
         private readonly ILogger<AuthorizationSecretsService> _logger;
-        private readonly string _subscriptionSecret;
+        private readonly AuthorizationSecretsOptions _secrets;
 
         public AuthorizationSecretsService(
             ILogger<AuthorizationSecretsService> logger,
             IOptions<AuthorizationSecretsOptions> options)
         {
             _logger = logger;
-            _subscriptionSecret = options.Value.SubscriptionSecret;
+            _secrets = options.Value;
         }
 
-        public bool VerifySubscriptionSecret(string secret)
+        public bool VerifySubscriptionSecret(string secret) 
+            => VerifySecret(nameof(_secrets.SubscriptionSecret), _secrets.SubscriptionSecret, secret);
+
+        public bool VerifyBanSecret(string secret)
+            => VerifySecret(nameof(_secrets.BanSecret), _secrets.BanSecret, secret);
+
+        private bool VerifySecret(string secretName, string secret, string input)
         {
-            if (string.IsNullOrEmpty(_subscriptionSecret))
-            {
-                _logger.LogCritical("Subscription secret is not initialized. Authorization will always fail");
-
-                return false;
-            }
-
-            var secretValid = secret == _subscriptionSecret;
+            var secretValid = secret == input;
 
             if (!secretValid)
             {
-                _logger.LogWarning($"Secret '{secret}' mismatched");
+                _logger.LogWarning($"Secret {secretName} mismatched for value '{input}'");
             }
 
             return secretValid;

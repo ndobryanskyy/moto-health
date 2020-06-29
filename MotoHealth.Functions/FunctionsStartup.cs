@@ -31,6 +31,7 @@ namespace MotoHealth.Functions
                 .AddSingleton(CreateSharedTableClient)
                 .AddSingleton<IEventGridEventDataParser, EventGridEventDataParser>()
                 .AddSingleton<ICloudTablesProvider, CloudTablesProvider>()
+                .AddSingleton<IGoogleMapsService, GoogleMapsService>()
                 .AddSingleton<IAccidentAlertingSubscriptionsService, AccidentAlertingSubscriptionsService>()
                 .AddSingleton<IAccidentRecordingService, AccidentRecordingService>()
                 .AddSingleton<IChatSubscriptionsEventsStore, ChatSubscriptionsEventsStore>();

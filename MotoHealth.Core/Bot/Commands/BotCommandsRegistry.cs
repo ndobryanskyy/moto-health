@@ -14,6 +14,10 @@ namespace MotoHealth.Core.Bot.Commands
 
         public ChatSubscriptionCommandDefinition UnsubscribeChat { get; } = new ChatSubscriptionCommandDefinition("/unsubscribe");
 
+        public BanCommandDefinition BanUser { get; } = new BanCommandDefinition("/ban");
+
+        public BanCommandDefinition UnbanUser { get; } = new BanCommandDefinition("/unban");
+
         public CommandDefinition[] PublicCommands { get; }
 
         public BotCommandsRegistry()

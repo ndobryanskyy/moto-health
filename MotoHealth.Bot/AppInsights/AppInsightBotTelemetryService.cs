@@ -73,6 +73,26 @@ namespace MotoHealth.Bot.AppInsights
             _telemetryClient.TrackEvent("Unsubscribed from Accident Alerting");
         }
 
+        public void OnUserBanned(int userId)
+        {
+            var properties = new TelemetryProperties
+            {
+                { "Target User Id", userId.ToString() }
+            };
+
+            _telemetryClient.TrackEvent("User Banned", properties.AsDictionary());
+        }
+
+        public void OnUserUnbanned(int userId)
+        {
+            var properties = new TelemetryProperties
+            {
+                { "Target User Id", userId.ToString() }
+            };
+
+            _telemetryClient.TrackEvent("User unbanned", properties.AsDictionary());
+        }
+
         public IAccidentReportingTelemetryService GetTelemetryServiceForAccidentReporting(IAccidentReportingDialogState dialogState) 
             => new AppInsightAccidentReportingTelemetryService(dialogState, BotUpdate, _telemetryClient);
     }

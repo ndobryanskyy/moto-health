@@ -14,6 +14,10 @@ namespace MotoHealth.Core.Bot.Abstractions
         
         ChatSubscriptionCommandDefinition UnsubscribeChat { get; }
 
+        BanCommandDefinition BanUser { get; }
+        
+        BanCommandDefinition UnbanUser { get; }
+
         CommandDefinition[] PublicCommands { get; }
     }
 }

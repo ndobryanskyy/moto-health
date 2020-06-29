@@ -1,4 +1,6 @@
-﻿using MotoHealth.Telegram.Messages;
+﻿using System;
+using MotoHealth.Telegram;
+using MotoHealth.Telegram.Messages;
 
 namespace MotoHealth.Core.Bot.ChatUpdateHandlers
 {
@@ -19,8 +21,8 @@ namespace MotoHealth.Core.Bot.ChatUpdateHandlers
             .WithHtml(
                 "🚑 <b>MOTO HEALTH</b>\n\n" +
                 "<b>Телефон:</b> +380960543434\n" +
-                @"<b>Сайт:</b> <a href=""http://www.mh.od.ua"">mh.od.ua</a>" + "\n" +
-                @"<b>Instagram:</b> <a href=""https://www.instagram.com/moto_health_odessa"">@moto_health_odessa</a>")
+                $"<b>Сайт:</b> {TelegramHtml.Link(new Uri("http://www.mh.od.ua"), "mh.od.ua")}\n" +
+                $"<b>Instagram:</b> {TelegramHtml.Link(new Uri("https://www.instagram.com/moto_health_odessa"), "@moto_health_odessa")}")
             .WithDisabledWebPagePreview();
 
         private static readonly IMessage StartCommandsHint = MessageFactory.CreateTextMessage()
