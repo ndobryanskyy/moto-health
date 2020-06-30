@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
-using MotoHealth.PubSub.EventData;
+using MotoHealth.Common.Dto;
 using MotoHealth.Telegram;
 using MotoHealth.Telegram.Exceptions;
 using MotoHealth.Telegram.Extensions;
@@ -34,9 +34,9 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
         public async Task<AlertChatActivityOutput> RunAsync([ActivityTrigger] AlertChatActivityInput input)
         {
             var chatId = input.ChatId;
-            var reportId = input.AccidentReport.ReportId;
+            var reportId = input.AccidentReport.Id;
 
-            var alert = CreateAccidentAlert(input.AccidentReport);
+            var alert = CreateAccidentAlertMessage(input.AccidentReport);
 
             try
             {
@@ -64,7 +64,7 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             };
         }
 
-        private IMessage CreateAccidentAlert(AccidentReportedEventData accidentReport)
+        private IMessage CreateAccidentAlertMessage(AccidentReportDto accidentReport)
         {
             var reportedAtLocalTime = TimeZoneInfo.ConvertTimeFromUtc(accidentReport.ReportedAtUtc, UkraineTimezone);
 

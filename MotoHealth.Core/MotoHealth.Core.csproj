@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MotoHealth.Common\MotoHealth.Common.csproj" />
     <ProjectReference Include="..\MotoHealth.Telegram\MotoHealth.Telegram.csproj" />
   </ItemGroup>
 

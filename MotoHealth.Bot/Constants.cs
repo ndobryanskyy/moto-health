@@ -2,11 +2,6 @@
 {
     public static class Constants
     {
-        public static class AzureEventGrid
-        {
-            public const string ConfigurationSectionName = "AzureEventGrid";
-        }
-
         public static class Telegram
         {
             public const string ConfigurationSectionName = "Telegram";
@@ -16,9 +11,14 @@
             public const string BotSecretQueryParamName = "botSecret";
         }
 
-        public static class ChatsStorage
+        public static class AzureStorage
         {
-            public const string ConnectionStringName = "ChatsStorageAccount";
+            public const string ConfigurationSectionName = "AzureStorage";
+        }
+
+        public static class AppEventsTopic
+        {
+            public const string ConfigurationSectionName = "AppEventsTopic";
         }
 
         public static class ApplicationInsights

@@ -6,39 +6,39 @@ using Newtonsoft.Json.Linq;
 
 namespace MotoHealth.Functions
 {
-    public interface IEventGridEventDataParser
+    public interface IEventGridEventDataConverter
     {
-        bool TryParseEventData<TEventData>(
+        bool TryConvertEventData<TEventData>(
             EventGridEvent eventGridEvent,
-            [NotNullWhen(true)] out TEventData? parsedData) where TEventData: class;
+            [NotNullWhen(true)] out TEventData? eventData) where TEventData: class;
     }
 
-    internal sealed class EventGridEventDataParser : IEventGridEventDataParser
+    internal sealed class EventGridEventDataConverter : IEventGridEventDataConverter
     {
-        private readonly ILogger<EventGridEventDataParser> _logger;
+        private readonly ILogger<EventGridEventDataConverter> _logger;
 
-        public EventGridEventDataParser(ILogger<EventGridEventDataParser> logger)
+        public EventGridEventDataConverter(ILogger<EventGridEventDataConverter> logger)
         {
             _logger = logger;
         }
 
-        public bool TryParseEventData<TEventData>(
+        public bool TryConvertEventData<TEventData>(
             EventGridEvent eventGridEvent, 
-            [NotNullWhen(true)] out TEventData? parsedData) where TEventData : class
+            [NotNullWhen(true)] out TEventData? eventData) where TEventData : class
         {
-            parsedData = null;
+            eventData = null;
 
             if (eventGridEvent.Data is JObject jObject)
             {
                 try
                 {
-                    parsedData = jObject.ToObject<TEventData>();
+                    eventData = jObject.ToObject<TEventData>();
 
                     return true;
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogError(exception, $"Failed to parse event data of {eventGridEvent.Id}");
+                    _logger.LogError(exception, $"Failed to convert event data of {eventGridEvent.Id} to {typeof(TEventData).FullName}");
                 }
             }
             else

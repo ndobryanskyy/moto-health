@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Caching.Memory;
 using MotoHealth.Core.Bot.Abstractions;
 
-namespace MotoHealth.Infrastructure.ChatStorage
+namespace MotoHealth.Infrastructure.ChatsState
 {
     internal sealed class ChatStateInMemoryCache : IChatStateInMemoryCache
     {

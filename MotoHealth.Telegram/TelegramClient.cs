@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using MotoHealth.Telegram.Exceptions;
 using Newtonsoft.Json;
 using Telegram.Bot.Requests;
@@ -16,23 +15,13 @@ namespace MotoHealth.Telegram
 {
     internal sealed class TelegramClient : ITelegramClient
     {
-        private const string TelegramBaseUrl = "https://api.telegram.org/bot";
-
         private static readonly JsonSerializer JsonSerializer = new JsonSerializer();
 
         private readonly ILogger<TelegramClient> _logger;
         private readonly HttpClient _client;
 
-        public TelegramClient(
-            ILogger<TelegramClient> logger,
-            IOptions<TelegramOptions> telegramOptions,
-            HttpClient client)
+        public TelegramClient(ILogger<TelegramClient> logger, HttpClient client)
         {
-            var options = telegramOptions.Value;
-
-            client.Timeout = options.RequestTimeout;
-            client.BaseAddress = new Uri($"{TelegramBaseUrl}{options.BotToken}/");
-
             _logger = logger;
             _client = client;
         }
@@ -75,8 +64,8 @@ namespace MotoHealth.Telegram
         {
             if (response.IsSuccessStatusCode) return;
 
-            var responseContentStream = await response.Content.ReadAsStreamAsync();
-            var telegramResponse = DeserializeTelegramResponse(responseContentStream);
+            var responseString = await response.Content.ReadAsStringAsync();
+            var telegramResponse = DeserializeTelegramResponse(responseString);
 
             _logger.LogWarning($"Unsuccessful telegram request\nError: {telegramResponse.Description}");
 
@@ -91,11 +80,11 @@ namespace MotoHealth.Telegram
             throw new TelegramApiException(error, telegramResponse.Description);
         }
 
-        private ApiResponse<object> DeserializeTelegramResponse(Stream stream)
+        private ApiResponse<object> DeserializeTelegramResponse(string responseString)
         {
             try
             {
-                using var streamReader = new StreamReader(stream);
+                using var streamReader = new StringReader(responseString);
                 using var jsonReader = new JsonTextReader(streamReader);
 
                 return JsonSerializer.Deserialize<ApiResponse<object>>(jsonReader);

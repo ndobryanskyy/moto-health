@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using MotoHealth.Common;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 using MotoHealth.Telegram.Messages;
@@ -9,7 +10,7 @@ namespace MotoHealth.Core.Bot.ChatUpdateHandlers
 {
     public sealed class AdminCommandsChatUpdateHandler : ChatUpdateHandlerBase
     {
-        private const string AccidentAlertingTopic = "Accidents";
+        private const string AccidentsAlertingTopicName = CommonConstants.AccidentReporting.AlertsChatSubscriptionTopicName;
 
         private readonly IBotTelemetryService _telemetryService;
         private readonly IAdminCommandsChatUpdateHandlerMessages _messages;
@@ -51,7 +52,7 @@ namespace MotoHealth.Core.Bot.ChatUpdateHandlers
                      when _commandsRegistry.SubscribeChat.Matches(commandMessage, out var secret) && 
                           _secretsService.VerifySubscriptionSecret(secret):
                     {
-                        await _chatSubscriptionsService.SubscribeChatToTopicAsync(context.ChatId, AccidentAlertingTopic, cancellationToken);
+                        await _chatSubscriptionsService.SubscribeChatToTopicAsync(context.ChatId, AccidentsAlertingTopicName, cancellationToken);
 
                         await SendMessageAsync(_messages.ChatWasSubscribed);
 
@@ -67,7 +68,7 @@ namespace MotoHealth.Core.Bot.ChatUpdateHandlers
                      when _commandsRegistry.UnsubscribeChat.Matches(commandMessage, out var secret) &&
                           _secretsService.VerifySubscriptionSecret(secret):
                     {
-                        await _chatSubscriptionsService.UnsubscribeChatFromTopicAsync(context.ChatId, AccidentAlertingTopic, cancellationToken);
+                        await _chatSubscriptionsService.UnsubscribeChatFromTopicAsync(context.ChatId, AccidentsAlertingTopicName, cancellationToken);
 
                         await SendMessageAsync(_messages.ChatWasUnsubscribed);
 

@@ -28,7 +28,7 @@ namespace MotoHealth.Functions.AccidentAlerting
         {
             await EnsureTableExistsAsync();
 
-            var entity = AccidentTableEntity.CreateFromReportEventData(activityInput.AccidentReport);
+            var entity = AccidentTableEntity.CreateFromReportDto(activityInput.AccidentReport);
 
             entity.HandledAtUtc = activityInput.ReportHandledAtUtc;
             entity.AnyChatAlerted = activityInput.AnyChatAlerted;
@@ -38,11 +38,12 @@ namespace MotoHealth.Functions.AccidentAlerting
             try
             {
                 await _accidentsTable.ExecuteAsync(tableOperation);
-                _logger.LogInformation($"Successfully recorded accident {activityInput.AccidentReport.ReportId} from {activityInput.AccidentReport.ReporterTelegramUserId}");
+
+                _logger.LogInformation($"Successfully recorded accident {activityInput.AccidentReport.Id} from {activityInput.AccidentReport.ReporterTelegramUserId}");
             }
             catch (StorageException exception) when (exception.RequestInformation.ExtendedErrorInformation.ErrorCode == TableErrorCodeStrings.EntityAlreadyExists)
             {
-                _logger.LogWarning(exception, $"Accident record for {activityInput.AccidentReport.ReportId} already exists");
+                _logger.LogWarning(exception, $"Accident record for {activityInput.AccidentReport.Id} already exists");
             }
         }
 

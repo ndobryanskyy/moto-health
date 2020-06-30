@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -36,7 +37,13 @@ namespace MotoHealth.Telegram
         private static IServiceCollection AddCoreServices(IServiceCollection services)
         {
             services
-                .AddHttpClient<ITelegramClient, TelegramClient>()
+                .AddHttpClient<ITelegramClient, TelegramClient>((container, client) =>
+                {
+                    var telegramOptions = container.GetRequiredService<IOptions<TelegramOptions>>().Value;
+
+                    client.BaseAddress = telegramOptions.BaseAddress;
+                    client.Timeout = telegramOptions.RequestTimeout;
+                })
                 .SetHandlerLifetime(TimeSpan.FromMinutes(10))
                 .AddPolicyHandler(ClientRetryPolicy);
 

@@ -4,7 +4,6 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MotoHealth.Functions.AccidentAlerting;
-using MotoHealth.Functions.ChatSubscriptions;
 using MotoHealth.Telegram;
 using AzureFunctionsStartup = Microsoft.Azure.Functions.Extensions.DependencyInjection.FunctionsStartup;
 
@@ -29,12 +28,10 @@ namespace MotoHealth.Functions
 
             builder.Services
                 .AddSingleton(CreateSharedTableClient)
-                .AddSingleton<IEventGridEventDataParser, EventGridEventDataParser>()
+                .AddSingleton<IEventGridEventDataConverter, EventGridEventDataConverter>()
                 .AddSingleton<ICloudTablesProvider, CloudTablesProvider>()
                 .AddSingleton<IGoogleMapsService, GoogleMapsService>()
-                .AddSingleton<IAccidentAlertingSubscriptionsService, AccidentAlertingSubscriptionsService>()
-                .AddSingleton<IAccidentRecordingService, AccidentRecordingService>()
-                .AddSingleton<IChatSubscriptionsEventsStore, ChatSubscriptionsEventsStore>();
+                .AddSingleton<IAccidentRecordingService, AccidentRecordingService>();
         }
 
         private static CloudTableClient CreateSharedTableClient(IServiceProvider container)

@@ -5,6 +5,7 @@ using MotoHealth.Bot.Extensions;
 using MotoHealth.Core.Bot;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Telegram.Messages;
+using Telegram.Bot.Types.Enums;
 
 namespace MotoHealth.Bot.Middleware
 {
@@ -41,7 +42,10 @@ namespace MotoHealth.Bot.Middleware
                 logger.LogDebug("Update was not handled");
                 _telemetryService.OnNothingToSay();
 
-                await updateContext.SendMessageAsync(NothingToSayMessage, context.RequestAborted);
+                if (updateContext.Update.Chat.Type == ChatType.Private)
+                {
+                    await updateContext.SendMessageAsync(NothingToSayMessage, context.RequestAborted);
+                }
             }
             else
             {

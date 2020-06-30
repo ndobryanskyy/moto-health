@@ -1,14 +1,12 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace MotoHealth.PubSub.EventData
+namespace MotoHealth.Common.Dto
 {
-    public sealed class AccidentReportedEventData
+    public sealed class AccidentReportDto
     {
-        public const string Version = "1";
-
         [JsonProperty(Required = Required.Always)]
-        public string ReportId { get; set; } = default!;
+        public string Id { get; set; } = default!;
 
         [JsonProperty(Required = Required.Always)]
         public int ReporterTelegramUserId { get; set; }
@@ -21,7 +19,7 @@ namespace MotoHealth.PubSub.EventData
 
         public string? AccidentAddress { get; set; }
 
-        public MapLocation? AccidentLocation { get; set; }
+        public MapLocationDto? AccidentLocation { get; set; }
 
         [JsonProperty(Required = Required.Always)]
         public string AccidentParticipant { get; set; } = default!;

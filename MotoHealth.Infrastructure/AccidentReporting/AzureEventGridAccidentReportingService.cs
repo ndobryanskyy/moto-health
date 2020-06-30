@@ -1,49 +1,60 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Extensions.Logging;
+using MotoHealth.Common;
+using MotoHealth.Common.Dto;
+using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Infrastructure.AzureEventGrid;
-using MotoHealth.PubSub;
-using MotoHealth.PubSub.EventData;
 
 namespace MotoHealth.Infrastructure.AccidentReporting
 {
     internal sealed class AzureEventGridAccidentReportingService : IAccidentReportingService
     {
         private readonly ILogger<IAccidentReportingService> _logger;
-        private readonly IAzureEventGridPublisher _publisher;
+        private readonly IChatSubscriptionsService _subscriptionsService;
         private readonly IMapper _mapper;
+        private readonly IAppEventsTopicClient _appEventsTopic;
 
         public AzureEventGridAccidentReportingService(
-            ILogger<IAccidentReportingService> logger,
-            IAzureEventGridPublisher publisher,
-            IMapper mapper)
+            ILogger<AzureEventGridAccidentReportingService> logger,
+            IChatSubscriptionsService subscriptionsService,
+            IMapper mapper,
+            IAppEventsTopicClient appEventsTopic)
         {
             _logger = logger;
-            _publisher = publisher;
+            _subscriptionsService = subscriptionsService;
             _mapper = mapper;
+            _appEventsTopic = appEventsTopic;
         }
 
         public async Task ReportAccidentAsync(AccidentReport report, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Publishing report {report.Id}");
+            _logger.LogInformation($"Start publishing report {report.Id}");
 
-            var eventId = report.Id;
+            var subscriptions = await _subscriptionsService.GetTopicSubscriptionsAsync(
+                CommonConstants.AccidentReporting.AlertsChatSubscriptionTopicName,
+                cancellationToken
+            );
 
-            var eventGridEvent = new EventGridEvent
+            if (subscriptions.Count < 1)
             {
-                Id = eventId,
-                Subject = eventId,
-                EventType = EventTypes.AccidentReported,
-                EventTime = DateTime.UtcNow,
-                Data = _mapper.Map<AccidentReportedEventData>(report),
-                DataVersion = AccidentReportedEventData.Version
+                throw new InvalidOperationException("Tried to report accident before any chats were subscribed");
+            }
+
+            _logger.LogInformation($"{subscriptions.Count} chats would be notified about report {report.Id}");
+
+            var mappedReport = _mapper.Map<AccidentReportDto>(report);
+            var alert = new AccidentAlertEventDataDto
+            {
+                ChatsToNotify = subscriptions.Select(x => x.ChatId).ToArray(),
+                Report = mappedReport
             };
 
-            await _publisher.PublishEventAsync(eventGridEvent, cancellationToken);
+            await _appEventsTopic.PublishAccidentAlertAsync(alert, cancellationToken);
 
             _logger.LogInformation($"Successfully published report {report.Id}");
         }

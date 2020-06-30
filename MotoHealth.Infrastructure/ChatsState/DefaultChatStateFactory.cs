@@ -1,8 +1,7 @@
-﻿using MotoHealth.Core.Bot;
-using MotoHealth.Core.Bot.Abstractions;
-using MotoHealth.Infrastructure.ChatStorage.Entities;
+﻿using MotoHealth.Core.Bot.Abstractions;
+using MotoHealth.Infrastructure.ChatsState.Entities;
 
-namespace MotoHealth.Infrastructure.ChatStorage
+namespace MotoHealth.Infrastructure.ChatsState
 {
     internal sealed class DefaultChatStateFactory : IDefaultChatStateFactory
     {
@@ -11,6 +10,5 @@ namespace MotoHealth.Infrastructure.ChatStorage
             {
                 AssociatedChatId = chatId
             };
-
     }
 }

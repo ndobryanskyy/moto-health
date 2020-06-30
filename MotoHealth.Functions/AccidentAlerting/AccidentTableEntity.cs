@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.Azure.Cosmos.Table;
-using MotoHealth.PubSub.EventData;
+using MotoHealth.Common.Dto;
 
 namespace MotoHealth.Functions.AccidentAlerting
 {
@@ -16,7 +16,7 @@ namespace MotoHealth.Functions.AccidentAlerting
 
         public string? AccidentAddress { get; set; }
 
-        public MapLocation? AccidentLocation { get; set; }
+        public MapLocationDto? AccidentLocation { get; set; }
 
         public string AccidentParticipant { get; set; } = default!;
 
@@ -28,21 +28,21 @@ namespace MotoHealth.Functions.AccidentAlerting
 
         public bool AnyChatAlerted { get; set; }
 
-        public static AccidentTableEntity CreateFromReportEventData(AccidentReportedEventData eventData)
+        public static AccidentTableEntity CreateFromReportDto(AccidentReportDto reportDto)
         {
             return new AccidentTableEntity
             {
-                PartitionKey = eventData.ReportId,
+                PartitionKey = reportDto.Id,
                 RowKey = EntityRowKey,
 
-                Id = eventData.ReportId,
-                ReporterTelegramUserId = eventData.ReporterTelegramUserId,
-                ReporterPhoneNumber = eventData.ReporterPhoneNumber,
-                AccidentAddress = eventData.AccidentAddress,
-                AccidentLocation = eventData.AccidentLocation,
-                AccidentParticipant = eventData.AccidentParticipant,
-                AccidentVictims = eventData.AccidentVictims,
-                ReportedAtUtc = eventData.ReportedAtUtc,
+                Id = reportDto.Id,
+                ReporterTelegramUserId = reportDto.ReporterTelegramUserId,
+                ReporterPhoneNumber = reportDto.ReporterPhoneNumber,
+                AccidentAddress = reportDto.AccidentAddress,
+                AccidentLocation = reportDto.AccidentLocation,
+                AccidentParticipant = reportDto.AccidentParticipant,
+                AccidentVictims = reportDto.AccidentVictims,
+                ReportedAtUtc = reportDto.ReportedAtUtc,
             };
         }
     }

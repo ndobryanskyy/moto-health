@@ -4,7 +4,8 @@ using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Infrastructure.AccidentReporting;
 using MotoHealth.Infrastructure.AzureEventGrid;
-using MotoHealth.Infrastructure.ChatStorage;
+using MotoHealth.Infrastructure.AzureTables;
+using MotoHealth.Infrastructure.ChatsState;
 using MotoHealth.Infrastructure.ChatSubscriptions;
 
 namespace MotoHealth.Infrastructure
@@ -13,21 +14,9 @@ namespace MotoHealth.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(
             this IServiceCollection services,
-            InfrastructureOptionsConfigurator configurator)
+            Action<InfrastructureOptions> configureOptions)
         {
-            if (configurator.ConfigureChatStorage == null)
-            {
-                throw new InvalidOperationException($"{nameof(InfrastructureOptionsConfigurator.ConfigureChatStorage)} must be set");
-            }
-
-            services.Configure(configurator.ConfigureChatStorage);
-
-            if (configurator.ConfigureEventGrid == null)
-            {
-                throw new InvalidOperationException($"{nameof(InfrastructureOptionsConfigurator.ConfigureEventGrid)} must be set");
-            }
-
-            services.Configure(configurator.ConfigureEventGrid);
+            services.Configure(configureOptions);
 
             services
                 .AddSingleton<ICloudTablesProvider, CloudTablesProvider>()
@@ -35,9 +24,12 @@ namespace MotoHealth.Infrastructure
                 .AddSingleton<IDefaultChatStateFactory, DefaultChatStateFactory>()
                 .AddSingleton<IChatStateInMemoryCache, ChatStateInMemoryCache>()
                 .AddSingleton<IChatStatesStore, AzureTableChatStatesStore>()
-                .AddSingleton<IAzureEventGridPublisher, AzureEventGridPublisher>()
-                .AddSingleton<IChatSubscriptionsService, AzureEventGridChatSubscriptionsService>()
-                .AddSingleton<IAccidentReportingService, AzureEventGridAccidentReportingService>();
+                .AddSingleton<IChatSubscriptionsService, AzureTablesChatSubscriptionsService>()
+                .AddScoped<IAccidentReportingService, AzureEventGridAccidentReportingService>();
+                
+            services
+                .AddHttpClient<IAppEventsTopicClient, AppEventsTopicClient>()
+                .SetHandlerLifetime(TimeSpan.FromHours(1));
 
             services.AddHostedService<AzureTablesInitializerHostedService>();
 

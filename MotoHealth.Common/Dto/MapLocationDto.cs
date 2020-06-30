@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace MotoHealth.PubSub.EventData
+namespace MotoHealth.Common.Dto
 {
-    public sealed class MapLocation
+    public sealed class MapLocationDto
     {
         [JsonProperty(Required = Required.Always)]
         public double Latitude { get; set; }

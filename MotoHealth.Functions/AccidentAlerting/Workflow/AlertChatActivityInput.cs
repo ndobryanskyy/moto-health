@@ -1,4 +1,4 @@
-﻿using MotoHealth.PubSub.EventData;
+﻿using MotoHealth.Common.Dto;
 
 namespace MotoHealth.Functions.AccidentAlerting.Workflow
 {
@@ -6,6 +6,6 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
     {
         public long ChatId { get; set; }
 
-        public AccidentReportedEventData AccidentReport { get; set; } = default!;
+        public AccidentReportDto AccidentReport { get; set; } = default!;
     }
 }

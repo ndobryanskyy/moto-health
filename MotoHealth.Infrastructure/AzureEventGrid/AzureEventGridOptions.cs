@@ -2,8 +2,8 @@
 {
     public sealed class AzureEventGridOptions
     {
-        public string TopicEndpoint { get; set; } = string.Empty;
+        public string TopicEndpoint { get; set; } = default!;
 
-        public string TopicKey { get; set; } = string.Empty;
+        public string TopicKey { get; set; } = default!;
     }
 }

@@ -51,16 +51,10 @@ namespace MotoHealth.Bot
                 }
             });
 
-            services.AddInfrastructure(new InfrastructureOptionsConfigurator
+            services.AddInfrastructure(options =>
             {
-                ConfigureChatStorage = chatsStorageOptions =>
-                {
-                    chatsStorageOptions.StorageAccountConnectionString = _configuration.GetConnectionString(Constants.ChatsStorage.ConnectionStringName);
-                },
-                ConfigureEventGrid = eventGridOptions =>
-                {
-                    _configuration.Bind(Constants.AzureEventGrid.ConfigurationSectionName, eventGridOptions);
-                }
+                _configuration.Bind(Constants.AzureStorage.ConfigurationSectionName, options.AzureStorage);
+                _configuration.Bind(Constants.AppEventsTopic.ConfigurationSectionName, options.AppEventsTopic);
             });
         }
 

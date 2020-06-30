@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace MotoHealth.Infrastructure.ChatStorage
+namespace MotoHealth.Infrastructure.AzureTables
 {
     internal sealed class AzureTablesInitializerHostedService : IHostedService
     {

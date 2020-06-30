@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Logging;
 
-namespace MotoHealth.Infrastructure.ChatStorage
+namespace MotoHealth.Infrastructure.AzureTables
 {
     internal interface IAzureTablesInitializer
     {
@@ -14,21 +14,22 @@ namespace MotoHealth.Infrastructure.ChatStorage
     internal sealed class AzureTablesInitializer : IAzureTablesInitializer
     {
         private readonly ILogger<AzureTablesInitializer> _logger;
-        private readonly CloudTable _chatsTable;
+        private readonly ICloudTablesProvider _tablesProvider;
 
         public AzureTablesInitializer(
             ILogger<AzureTablesInitializer> logger,
             ICloudTablesProvider tablesProvider)
         {
             _logger = logger;
-            _chatsTable = tablesProvider.Chats;
+            _tablesProvider = tablesProvider;
         }
 
         public async Task InitializeAllAsync(CancellationToken cancellationToken)
         {
             try
             {
-                await CreateChatsTableAsync(cancellationToken);
+                await EnsureTableExistsAsync(_tablesProvider.Chats, cancellationToken);
+                await EnsureTableExistsAsync(_tablesProvider.ChatSubscriptions, cancellationToken);
             }
             catch (Exception e)
             {
@@ -38,17 +39,17 @@ namespace MotoHealth.Infrastructure.ChatStorage
             }
         }
 
-        private async Task CreateChatsTableAsync(CancellationToken cancellationToken)
+        private async Task EnsureTableExistsAsync(CloudTable table, CancellationToken cancellationToken)
         {
-            var chatsTableCreated = await _chatsTable.CreateIfNotExistsAsync(cancellationToken);
+            var chatsTableCreated = await table.CreateIfNotExistsAsync(cancellationToken);
 
             if (chatsTableCreated)
             {
-                _logger.LogInformation("Chats table created.");
+                _logger.LogInformation($"{table.Name} created.");
             }
             else
             {
-                _logger.LogDebug("Chats table already exists.");
+                _logger.LogDebug($"{table.Name} already exists.");
             }
         }
     }

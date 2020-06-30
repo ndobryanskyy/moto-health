@@ -3,20 +3,12 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
-using MotoHealth.Functions.ChatSubscriptions;
-using MotoHealth.PubSub.EventData;
+using MotoHealth.Common.Dto;
 
 namespace MotoHealth.Functions.AccidentAlerting.Workflow
 {
     public static class AccidentAlertingWorkflow
     {
-        private static readonly RetryOptions GetChatSubscriptionsActivityRetryOptions = new RetryOptions(TimeSpan.FromSeconds(5), 10)
-        {
-            BackoffCoefficient = 2,
-            MaxRetryInterval = TimeSpan.FromMinutes(1),
-            RetryTimeout = TimeSpan.FromMinutes(15)
-        };
-
         private static readonly RetryOptions AlertChatActivityRetryOptions = new RetryOptions(TimeSpan.FromSeconds(20), 5)
         {
             BackoffCoefficient = 2,
@@ -30,22 +22,24 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
         };
 
         [FunctionName(FunctionNames.AccidentAlerting.Workflow)]
-        public static async Task RunAsync([OrchestrationTrigger] IDurableOrchestrationContext context, ILogger logger)
+        public static async Task RunAsync(
+            [OrchestrationTrigger] IDurableOrchestrationContext context,
+            ILogger logger)
         {
             logger = context.CreateReplaySafeLogger(logger);
 
-            var accidentReport = context.GetInput<AccidentReportedEventData>() 
+            var accidentAlert = context.GetInput<AccidentAlertEventDataDto>() 
                                  ?? throw new ArgumentException("Input can not be null", nameof(context));
 
-            var subscriptions = await GetChatSubscriptionsAsync(context);
+            var accidentReport = accidentAlert.Report;
 
             var chatsAlerted = 0;
 
-            foreach (var subscription in subscriptions)
+            foreach (var chatId in accidentAlert.ChatsToNotify)
             {
                 var alertActivityInput = new AlertChatActivityInput
                 {
-                    ChatId = subscription.ChatId,
+                    ChatId = chatId,
                     AccidentReport = accidentReport
                 };
 
@@ -61,11 +55,11 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             
             if (anyChatAlerted)
             {
-                logger.LogInformation($"{chatsAlerted}/{subscriptions.Length} chats were alerted about report {accidentReport.ReportId}");
+                logger.LogInformation($"{chatsAlerted}/{accidentAlert.ChatsToNotify.Length} chats were alerted about report {accidentReport.Id}");
             }
             else
             {
-                logger.LogError($"No chats were alerted about report {accidentReport.ReportId}!");
+                logger.LogError($"No chats were alerted about report {accidentReport.Id}!");
                 // TODO think of restarting again
             }
 
@@ -77,15 +71,6 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             };
 
             await RecordAccidentAsync(context, recordActivityInput, logger);
-        }
-
-        private static async Task<ChatSubscription[]> GetChatSubscriptionsAsync(IDurableOrchestrationContext context)
-        {
-            return await context.CallActivityWithRetryAsync<ChatSubscription[]>(
-                FunctionNames.AccidentAlerting.GetChatSubscriptionsActivity,
-                GetChatSubscriptionsActivityRetryOptions,
-                null
-            );
         }
 
         private static async Task<AlertChatActivityOutput> AlertChatAsync(
@@ -129,7 +114,7 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             }
             catch (FunctionFailedException exception)
             {
-                logger.LogError(exception, $"Failed to record accident {input.AccidentReport.ReportId}");
+                logger.LogError(exception, $"Failed to record accident {input.AccidentReport.Id}");
             }
         }
     }

@@ -1,11 +1,11 @@
 ﻿using System;
-using MotoHealth.PubSub.EventData;
+using MotoHealth.Common.Dto;
 
 namespace MotoHealth.Functions.AccidentAlerting.Workflow
 {
     public sealed class RecordAccidentActivityInput
     {
-        public AccidentReportedEventData AccidentReport { get; set; } = default!;
+        public AccidentReportDto AccidentReport { get; set; } = default!;
 
         public DateTime ReportHandledAtUtc { get; set; }
 

@@ -3,7 +3,7 @@ using Microsoft.Azure.Cosmos.Table;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
 
-namespace MotoHealth.Infrastructure.ChatStorage.Entities
+namespace MotoHealth.Infrastructure.ChatsState.Entities
 {
     internal sealed class ChatState : IChatState
     {

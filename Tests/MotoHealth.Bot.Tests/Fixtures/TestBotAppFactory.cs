@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using MotoHealth.Infrastructure.ChatStorage;
+using MotoHealth.Infrastructure.AzureTables;
 using MotoHealth.Telegram;
 
 namespace MotoHealth.Bot.Tests.Fixtures

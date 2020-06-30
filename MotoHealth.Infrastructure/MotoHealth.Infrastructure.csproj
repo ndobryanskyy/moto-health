@@ -11,8 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MotoHealth.Common\MotoHealth.Common.csproj" />
     <ProjectReference Include="..\MotoHealth.Core\MotoHealth.Core.csproj" />
-    <ProjectReference Include="..\MotoHealth.PubSub\MotoHealth.PubSub.csproj" />
   </ItemGroup>
-
 </Project>

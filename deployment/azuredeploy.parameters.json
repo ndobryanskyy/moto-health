@@ -2,6 +2,18 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+      "appLocation": {
+          "value": "North Europe"
+      },
+      "functionsLocation": {
+          "value": "West Europe"
+      },
+      "storageType": {
+          "value": "Standard_LRS"
+      },
+      "botLoggingRetentionDays": {
+          "value": 5
+      },
       "telegramBotId": {
           "value": ""
       },
@@ -14,11 +26,8 @@
       "adminBanSecret": {
           "value": ""
       },
-      "accidentReportEventHandlerName": {
-          "value": "AccidentReportedEventHandler"
-      },
-      "chatTopicSubscriptionChangedEventHandlerName": {
-          "value": "ChatTopicSubscriptionChangedEventHandler"
+      "deployEventGridSubscriptions": {
+          "value": false
       }
   }
 }

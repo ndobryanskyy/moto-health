@@ -1,4 +1,4 @@
-﻿namespace MotoHealth.Infrastructure.ChatStorage
+﻿namespace MotoHealth.Infrastructure.ChatsState
 {
     public static class ChatsTableEntityTypes
     {

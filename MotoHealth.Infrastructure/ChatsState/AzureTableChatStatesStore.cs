@@ -2,11 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos.Table;
-using MotoHealth.Core.Bot;
 using MotoHealth.Core.Bot.Abstractions;
-using MotoHealth.Infrastructure.ChatStorage.Entities;
+using MotoHealth.Infrastructure.AzureTables;
+using MotoHealth.Infrastructure.ChatsState.Entities;
 
-namespace MotoHealth.Infrastructure.ChatStorage
+namespace MotoHealth.Infrastructure.ChatsState
 {
     internal sealed class AzureTableChatStatesStore : IChatStatesStore
     {
