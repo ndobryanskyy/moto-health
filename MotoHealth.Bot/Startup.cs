@@ -10,9 +10,11 @@ using Microsoft.Extensions.Logging;
 using MotoHealth.Bot.Authorization;
 using MotoHealth.Bot.Extensions;
 using MotoHealth.Bot.Middleware;
+using MotoHealth.Bot.Telegram;
 using MotoHealth.Core;
 using MotoHealth.Core.Bot.ChatUpdateHandlers;
 using MotoHealth.Infrastructure;
+using MotoHealth.Telegram;
 
 namespace MotoHealth.Bot
 {
@@ -36,20 +38,23 @@ namespace MotoHealth.Bot
                 GetType().Assembly
             });
 
-            services.Configure<AuthorizationSecretsOptions>(options =>
-            {
-                _configuration.Bind(Constants.Authorization.SecretsConfigurationSectionName, options);
-            });
+            services
+                .AddOptions<AuthorizationSecretsOptions>()
+                .Bind(_configuration.GetSection(Constants.Authorization.SecretsConfigurationSectionName));
+
+            services
+                .AddOptions<TelegramOptions>()
+                .Bind(_configuration.GetSection(Constants.Telegram.ConfigurationSectionName));
+
+            services
+                .AddOptions<TelegramClientOptions>()
+                .Bind(_configuration
+                        .GetSection(Constants.Telegram.ConfigurationSectionName)
+                        .GetSection(nameof(TelegramOptions.Client)));
 
             services.AddApp(_configuration);
 
-            services.AddCore(new CoreOptionsConfigurator
-            {
-                ConfigureTelegram = telegramOptions =>
-                {
-                    _configuration.Bind(Constants.Telegram.ConfigurationSectionName, telegramOptions);
-                }
-            });
+            services.AddCore();
 
             services.AddInfrastructure(options =>
             {
@@ -70,7 +75,7 @@ namespace MotoHealth.Bot
             app.UseEndpoints(endpoints =>
             {
                 endpoints.Map("/", OnAlwaysOnPingAsync);
-                endpoints.MapPost("/updates", CreateTelegramPipeline(endpoints.CreateApplicationBuilder()));
+                endpoints.MapPost(Constants.Telegram.WebhookPath, CreateTelegramPipeline(endpoints.CreateApplicationBuilder()));
             });
         }
 

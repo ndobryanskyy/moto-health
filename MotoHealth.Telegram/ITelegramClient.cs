@@ -17,5 +17,9 @@ namespace MotoHealth.Telegram
         Task SetBotCommandsAsync(
             SetMyCommandsRequest request,
             CancellationToken cancellationToken);
+
+        Task SetWebhookAsync(
+            SetWebhookRequest request,
+            CancellationToken cancellationToken);
     }
 }

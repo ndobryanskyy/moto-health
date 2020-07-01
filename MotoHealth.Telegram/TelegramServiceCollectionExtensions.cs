@@ -21,14 +21,12 @@ namespace MotoHealth.Telegram
                 return TimeSpan.FromMilliseconds(milliseconds);
             });
 
-        public static IServiceCollection AddTelegram(this IServiceCollection services)
-        {
-            return AddCoreServices(services);
-        }
+        public static IServiceCollection AddTelegram(this IServiceCollection services) 
+            => AddCoreServices(services);
 
         public static IServiceCollection AddTelegram(
             this IServiceCollection services,
-            Action<TelegramOptions> configureTelegramOptions)
+            Action<TelegramClientOptions> configureTelegramOptions)
         {
             return AddCoreServices(services)
                 .Configure(configureTelegramOptions);
@@ -39,7 +37,7 @@ namespace MotoHealth.Telegram
             services
                 .AddHttpClient<ITelegramClient, TelegramClient>((container, client) =>
                 {
-                    var telegramOptions = container.GetRequiredService<IOptions<TelegramOptions>>().Value;
+                    var telegramOptions = container.GetRequiredService<IOptions<TelegramClientOptions>>().Value;
 
                     client.BaseAddress = telegramOptions.BaseAddress;
                     client.Timeout = telegramOptions.RequestTimeout;

@@ -1,4 +1,6 @@
-﻿using Microsoft.ApplicationInsights.AspNetCore.TelemetryInitializers;
+﻿using System;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.ApplicationInsights.AspNetCore.TelemetryInitializers;
 using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +16,9 @@ namespace MotoHealth.Bot
 {
     internal static class AppServiceCollectionExtensions
     {
+        private static string ApplicationVersion
+            => typeof(Startup).Assembly.GetName().Version?.ToString() ?? throw new InvalidOperationException();
+
         public static IServiceCollection AddApp(this IServiceCollection services, IConfiguration configuration)
         {
             ConfigureAppInsights();
@@ -40,7 +45,11 @@ namespace MotoHealth.Bot
 
             void ConfigureAppInsights()
             {
-                services.AddApplicationInsightsTelemetry(configuration);
+                services.AddOptions<ApplicationInsightsServiceOptions>()
+                    .Bind(configuration.GetSection(Constants.ApplicationInsights.ConfigurationSectionName))
+                    .PostConfigure(options => options.ApplicationVersion = ApplicationVersion);
+
+                services.AddApplicationInsightsTelemetry();
 
                 services.RemoveAll<ITelemetryInitializer>();
 

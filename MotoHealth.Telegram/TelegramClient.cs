@@ -50,6 +50,14 @@ namespace MotoHealth.Telegram
             await EnsureRequestSucceededAsync(response);
         }
 
+        public async Task SetWebhookAsync(SetWebhookRequest request, CancellationToken cancellationToken)
+        {
+            using var httpRequest = ConvertToHttpRequest(request);
+            using var response = await _client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+
+            await EnsureRequestSucceededAsync(response);
+        }
+
         private static HttpRequestMessage ConvertToHttpRequest<TResponse>(IRequest<TResponse> telegramRequest)
         {
             var httpRequest = new HttpRequestMessage(telegramRequest.Method, telegramRequest.MethodName)

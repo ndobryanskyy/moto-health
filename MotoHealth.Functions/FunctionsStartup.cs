@@ -18,7 +18,7 @@ namespace MotoHealth.Functions
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.Services.AddOptions<TelegramOptions>()
+            builder.Services.AddOptions<TelegramClientOptions>()
                 .Configure<IConfiguration>((telegramOptions, configuration) =>
                 {
                     configuration.GetSection(TelegramConfigurationSection).Bind(telegramOptions);

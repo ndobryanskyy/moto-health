@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using MotoHealth.Core.Bot;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
@@ -12,16 +11,9 @@ namespace MotoHealth.Core
 {
     public static class CoreServiceCollectionExtensions
     {
-        public static IServiceCollection AddCore(
-            this IServiceCollection services,
-            CoreOptionsConfigurator configurator)
+        public static IServiceCollection AddCore(this IServiceCollection services)
         {
-            if (configurator.ConfigureTelegram == null)
-            {
-                throw new InvalidOperationException($"{nameof(CoreOptionsConfigurator.ConfigureTelegram)} must be set");
-            }
-
-            services.AddTelegram(configurator.ConfigureTelegram);
+            services.AddTelegram();
 
             services
                 .AddSingleton<IBotUpdatesMapper, BotUpdatesMapper>()

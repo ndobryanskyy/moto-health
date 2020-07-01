@@ -9,14 +9,14 @@ namespace MotoHealth.Bot.Middleware
     public sealed class BotTokenVerificationMiddleware : IMiddleware
     {
         private readonly ILogger<BotTokenVerificationMiddleware> _logger;
-        private readonly TelegramOptions _telegramOptions;
+        private readonly TelegramClientOptions _telegramClientOptions;
 
         public BotTokenVerificationMiddleware(
             ILogger<BotTokenVerificationMiddleware> logger,
-            IOptions<TelegramOptions> telegramOptions)
+            IOptions<TelegramClientOptions> telegramClientOptions)
         {
             _logger = logger;
-            _telegramOptions = telegramOptions.Value;
+            _telegramClientOptions = telegramClientOptions.Value;
         }
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -26,7 +26,7 @@ namespace MotoHealth.Bot.Middleware
             var botId = queryParams[Constants.Telegram.BotIdQueryParamName];
             var botSecret = queryParams[Constants.Telegram.BotSecretQueryParamName];
 
-            var tokenValid = botId == _telegramOptions.BotId && botSecret == _telegramOptions.BotSecret;
+            var tokenValid = botId == _telegramClientOptions.BotId && botSecret == _telegramClientOptions.BotSecret;
 
             if (tokenValid)
             {

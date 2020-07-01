@@ -127,50 +127,40 @@
       },
       "properties": {
         "serverFarmId": "[variables('botHostingPlanName')]",
-        "clientAffinityEnabled": false,
-        "siteConfig": {
-          "alwaysOn": true,
-          "linuxFxVersion": "DOTNETCORE|3.1",
-          "appSettings": [
-            {
-              "name": "WEBSITE_HTTPLOGGING_RETENTION_DAYS",
-              "value": "[parameters('botLoggingRetentionDays')]"
-            },
-            {
-              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-              "value": "[reference(resourceId('Microsoft.Insights/components', variables('botAppInsightsName')), '2015-05-01').InstrumentationKey]"
-            },
-            {
-              "name": "Telegram__BotId",
-              "value": "[parameters('telegramBotId')]"
-            },
-            {
-              "name": "Telegram__BotSecret",
-              "value": "[parameters('telegramBotSecret')]"
-            },
-            {
-              "name": "Secrets__SubscriptionSecret",
-              "value": "[parameters('adminSubscriptionsSecret')]"
-            },
-            {
-              "name": "Secrets__BanSecret",
-              "value": "[parameters('adminBanSecret')]"
-            },
-            {
-              "name": "AzureStorage__StorageAccountConnectionString",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageName')), '2019-06-01').keys[0].value)]"
-            },
-            {
-              "name": "AppEventsTopic__TopicEndpoint",
-              "value": "[reference(resourceId('Microsoft.EventGrid/topics', variables('appEventsTopic').name), variables('appEventsTopic').apiVersion).endpoint]"
-            },
-            {
-              "name": "AppEventsTopic__TopicKey",
-              "value": "[listKeys(resourceId('Microsoft.EventGrid/topics', variables('appEventsTopic').name), variables('appEventsTopic').apiVersion).key1]"
-            }
-          ]
-        }
+        "clientAffinityEnabled": false
       },
+      "resources": [
+        {
+          "name": "web",
+          "type": "config",
+          "apiVersion": "2018-02-01",
+          "location": "[parameters('appLocation')]",
+          "dependsOn": [ "[resourceId('Microsoft.Web/sites', variables('botAppName'))]" ],
+          "properties": {
+            "alwaysOn": true,
+            "linuxFxVersion": "DOTNETCORE|3.1"
+          }
+        },
+        {
+            "name": "appsettings",
+            "type": "config",
+            "apiVersion": "2018-02-01",
+            "location": "[parameters('appLocation')]",
+            "dependsOn": [ "[resourceId('Microsoft.Web/sites', variables('botAppName'))]" ],
+            "properties": {
+              "WEBSITE_HTTPLOGGING_RETENTION_DAYS": "[parameters('botLoggingRetentionDays')]",
+              "ApplicationInsights__InstrumentationKey": "[reference(resourceId('Microsoft.Insights/components', variables('botAppInsightsName')), '2015-05-01').InstrumentationKey]",
+              "Telegram__Client__BotId": "[parameters('telegramBotId')]",
+              "Telegram__Client__BotSecret": "[parameters('telegramBotSecret')]",
+              "Telegram__Webhook__BaseUrl": "[concat('https://', reference(resourceId('Microsoft.Web/sites', variables('botAppName'))).defaultHostName)]",
+              "Secrets__BanSecret": "[parameters('adminBanSecret')]",
+              "Secrets__SubscriptionSecret": "[parameters('adminSubscriptionsSecret')]",
+              "AzureStorage__StorageAccountConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageName')), '2019-06-01').keys[0].value)]",
+              "AppEventsTopic__TopicEndpoint": "[reference(resourceId('Microsoft.EventGrid/topics', variables('appEventsTopic').name), variables('appEventsTopic').apiVersion).endpoint]",
+              "AppEventsTopic__TopicKey": "[listKeys(resourceId('Microsoft.EventGrid/topics', variables('appEventsTopic').name), variables('appEventsTopic').apiVersion).key1]"
+            }
+        }
+      ],
       "dependsOn": [ 
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]",
         "[resourceId('Microsoft.Web/serverfarms', variables('botHostingPlanName'))]",
