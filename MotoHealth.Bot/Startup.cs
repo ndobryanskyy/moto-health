@@ -59,7 +59,6 @@ namespace MotoHealth.Bot
             services.AddInfrastructure(options =>
             {
                 _configuration.Bind(Constants.AzureStorage.ConfigurationSectionName, options.AzureStorage);
-                _configuration.Bind(Constants.AppEventsTopic.ConfigurationSectionName, options.AppEventsTopic);
             });
         }
 

@@ -29,17 +29,9 @@
     },
     "adminBanSecret": {
       "type": "securestring"
-    },
-    "deployEventGridSubscriptions": {
-      "type": "bool"
     }
   },
   "variables": {
-    "appEventsTopic": {
-      "name": "[concat('moto-health-events-', uniqueString(resourceGroup().id))]",
-      "apiVersion": "2019-06-01"
-    },
-
     "storageName": "[concat('storage', uniqueString(resourceGroup().id))]",
 
     "botAppInsightsName": "[concat('moto-health-bot-insights-', uniqueString(resourceGroup().id))]",
@@ -48,29 +40,9 @@
 
     "functionsAppName": "[concat('moto-health-functions-', uniqueString(resourceGroup().id))]",
     "functionsStorageName": "[concat('functions', uniqueString(resourceGroup().id))]",
-    "functionsAppInsightsName": "[concat('moto-health-functions-insights-', uniqueString(resourceGroup().id))]",
-
-    "accidentAlerting": {
-      "eventType": "MotoHealth.Events.AccidentAlerted",
-      "handlingFunctionName": "AccidentAlerting_WorkflowTrigger"
-    }
+    "functionsAppInsightsName": "[concat('moto-health-functions-insights-', uniqueString(resourceGroup().id))]"
   },
   "resources": [
-    {
-      "name": "[variables('appEventsTopic').name]",
-      "type": "Microsoft.EventGrid/topics",
-      "apiVersion": "[variables('appEventsTopic').apiVersion]",
-      "location": "[parameters('appLocation')]",
-      "tags": {
-        "displayName": "Integration EventGrid Topic"
-      },
-      "sku": {
-        "name": "Basic"
-      },
-      "properties": {
-        "inputSchema": "EventGridSchema"
-      }
-    },
     {
       "name": "[variables('storageName')]",
       "type": "Microsoft.Storage/storageAccounts",
@@ -155,16 +127,13 @@
               "Telegram__Webhook__BaseUrl": "[concat('https://', reference(resourceId('Microsoft.Web/sites', variables('botAppName'))).defaultHostName)]",
               "Secrets__BanSecret": "[parameters('adminBanSecret')]",
               "Secrets__SubscriptionSecret": "[parameters('adminSubscriptionsSecret')]",
-              "AzureStorage__StorageAccountConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageName')), '2019-06-01').keys[0].value)]",
-              "AppEventsTopic__TopicEndpoint": "[reference(resourceId('Microsoft.EventGrid/topics', variables('appEventsTopic').name), variables('appEventsTopic').apiVersion).endpoint]",
-              "AppEventsTopic__TopicKey": "[listKeys(resourceId('Microsoft.EventGrid/topics', variables('appEventsTopic').name), variables('appEventsTopic').apiVersion).key1]"
+              "AzureStorage__StorageAccountConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageName')), '2019-06-01').keys[0].value)]"
             }
         }
       ],
       "dependsOn": [ 
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]",
         "[resourceId('Microsoft.Web/serverfarms', variables('botHostingPlanName'))]",
-        "[resourceId('Microsoft.EventGrid/topics', variables('appEventsTopic').name)]",
         "[resourceId('Microsoft.Insights/components', variables('botAppInsightsName'))]"
        ]
     },
@@ -241,34 +210,9 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.EventGrid/topics', variables('appEventsTopic').name)]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('functionsStorageName'))]",
         "[resourceId('Microsoft.Insights/components', variables('functionsAppInsightsName'))]"
-      ]
-    },
-    {
-      "name": "[concat(variables('appEventsTopic').name, '/Microsoft.EventGrid/', toLower(replace(variables('accidentAlerting').eventType, '.', '-')))]",
-      "type": "Microsoft.EventGrid/topics/providers/eventSubscriptions",
-      "apiVersion": "2020-06-01",
-      "condition": "[parameters('deployEventGridSubscriptions')]",
-      "properties": {
-        "destination": {
-          "endpointType": "AzureFunction",
-          "properties": {
-            "resourceId": "[concat(resourceId('Microsoft.Web/sites', variables('functionsAppName')), '/functions/', variables('accidentAlerting').handlingFunctionName)]",
-            "maxEventsPerBatch": 1,
-            "preferredBatchSizeInKilobytes": 64
-          }
-        },
-        "filter": {
-          "includedEventTypes": [
-            "[variables('accidentAlerting').eventType]"
-          ]
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.EventGrid/topics', variables('appEventsTopic').name)]"
       ]
     }
   ],

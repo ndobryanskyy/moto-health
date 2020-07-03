@@ -1,14 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table.Protocol;
-using MotoHealth.Functions.AccidentAlerting.Workflow;
 
 namespace MotoHealth.Functions.AccidentAlerting
 {
     public interface IAccidentRecordingService
     {
-        Task RecordAsync(RecordAccidentActivityInput activityInput);
+        Task RecordAsync(AccidentTableEntity accident, CancellationToken cancellationToken);
     }
 
     internal sealed class AccidentRecordingService : IAccidentRecordingService
@@ -24,34 +24,29 @@ namespace MotoHealth.Functions.AccidentAlerting
             _accidentsTable = tables.Accidents;
         }
 
-        public async Task RecordAsync(RecordAccidentActivityInput activityInput)
+        public async Task RecordAsync(AccidentTableEntity accident, CancellationToken cancellationToken)
         {
-            await EnsureTableExistsAsync();
+            await EnsureTableExistsAsync(cancellationToken);
 
-            var entity = AccidentTableEntity.CreateFromReportDto(activityInput.AccidentReport);
-
-            entity.HandledAtUtc = activityInput.ReportHandledAtUtc;
-            entity.AnyChatAlerted = activityInput.AnyChatAlerted;
-
-            var tableOperation = TableOperation.Insert(entity);
+            var tableOperation = TableOperation.Insert(accident);
 
             try
             {
-                await _accidentsTable.ExecuteAsync(tableOperation);
+                await _accidentsTable.ExecuteAsync(tableOperation, cancellationToken);
 
-                _logger.LogInformation($"Successfully recorded accident {activityInput.AccidentReport.Id} from {activityInput.AccidentReport.ReporterTelegramUserId}");
+                _logger.LogDebug($"Successfully recorded accident {accident.Id}");
             }
             catch (StorageException exception) when (exception.RequestInformation.ExtendedErrorInformation.ErrorCode == TableErrorCodeStrings.EntityAlreadyExists)
             {
-                _logger.LogWarning(exception, $"Accident record for {activityInput.AccidentReport.Id} already exists");
+                _logger.LogWarning(exception, $"Accident record for {accident.Id} already exists");
             }
         }
 
-        private async ValueTask EnsureTableExistsAsync()
+        private async ValueTask EnsureTableExistsAsync(CancellationToken cancellationToken)
         {
             if (_isTableInitialized) return;
 
-            await _accidentsTable.CreateIfNotExistsAsync();
+            await _accidentsTable.CreateIfNotExistsAsync(cancellationToken);
 
             _isTableInitialized = true;
         }

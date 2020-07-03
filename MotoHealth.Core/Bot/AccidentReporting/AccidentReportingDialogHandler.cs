@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting.Exceptions;
@@ -23,17 +24,20 @@ namespace MotoHealth.Core.Bot.AccidentReporting
         private readonly IAccidentReportingDialogMessages _messages;
         private readonly IPhoneNumberParser _phoneNumberParser;
         private readonly IAccidentReportingService _accidentReportingService;
+        private readonly IMapper _mapper;
 
         public AccidentReportingDialogHandler(
             ILogger<AccidentReportingDialogHandler> logger,
             IBotTelemetryService botTelemetry,
             IAccidentReportingDialogMessages messages,
+            IMapper mapper,
             IPhoneNumberParser phoneNumberParser,
             IAccidentReportingService accidentReportingService)
         {
             _logger = logger;
             _botTelemetry = botTelemetry;
             _messages = messages;
+            _mapper = mapper;
             _phoneNumberParser = phoneNumberParser;
             _accidentReportingService = accidentReportingService;
         }
@@ -220,10 +224,9 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
             async Task ReportAccidentAsync()
             {
-                var report = AccidentReport.CreateFromDialogState(dialogState);
-
-                report.ReporterTelegramUserId = update.Sender.Id;
-                report.ReportedAtUtc = DateTime.UtcNow;
+                var details = _mapper.Map<AccidentDetails>(dialogState);
+                var reporter = new AccidentReporter(update.Sender.Id, dialogState.ReporterPhoneNumber);
+                var report = new AccidentReport(dialogState.ReportId, DateTime.UtcNow, reporter, details);
 
                 await _accidentReportingService.ReportAccidentAsync(report, cancellationToken);
             }

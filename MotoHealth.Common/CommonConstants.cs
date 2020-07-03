@@ -5,11 +5,7 @@
         public static class AccidentReporting
         {
             public const string AlertsChatSubscriptionTopicName = "Accidents";
-        }
-
-        public static class EventTypes
-        {
-            public const string AccidentAlerted = "MotoHealth.Events.AccidentAlerted";
+            public const string AlertsQueueName = "accident-alerts";
         }
     }
 }

@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
-using MotoHealth.Common.Dto;
 using MotoHealth.Telegram;
 using MotoHealth.Telegram.Exceptions;
 using MotoHealth.Telegram.Extensions;
@@ -30,7 +29,7 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             _googleMapsService = googleMapsService;
         }
 
-        [FunctionName(FunctionNames.AccidentAlerting.AlertChatActivity)]
+        [FunctionName(Constants.FunctionNames.AccidentAlerting.AlertChatActivity)]
         public async Task<AlertChatActivityOutput> RunAsync([ActivityTrigger] AlertChatActivityInput input)
         {
             var chatId = input.ChatId;
@@ -64,14 +63,19 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             };
         }
 
-        private IMessage CreateAccidentAlertMessage(AccidentReportDto accidentReport)
+        private IMessage CreateAccidentAlertMessage(AccidentAlertingWorkflowInput.AccidentReportSummary accidentReport)
         {
             var reportedAtLocalTime = TimeZoneInfo.ConvertTimeFromUtc(accidentReport.ReportedAtUtc, UkraineTimezone);
 
-            var accidentLocation = accidentReport.AccidentLocation;
-            var address = accidentLocation != null
-                ? TelegramHtml.Link(_googleMapsService.GetLocationPinUri(accidentLocation.Latitude, accidentLocation.Longitude), "Геопозиция")
-                : accidentReport.AccidentAddress?.HtmlEscaped() ?? "Не указан";
+            var addressText = accidentReport switch
+            {
+                { AccidentLocation: var location } when location != null 
+                    => TelegramHtml.Link(_googleMapsService.GetLocationPinUri(location.Latitude, location.Longitude), "Геопозиция"),
+                { AccidentAddress: var address } when !string.IsNullOrEmpty(address)
+                    => address.HtmlEscaped(),
+                _ 
+                    => "Не указан"
+            };
 
             const string alertBorder = "🚨🚨🚨🚨🚨🚨🚨🚨🚨";
 
@@ -79,7 +83,7 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
                 $"{alertBorder}\n\n" +
                 "<b>СООБЩЕНИЕ О ДТП</b>\n\n" +
 
-                $"<b>Адрес:</b> {address}\n" +
+                $"<b>Адрес:</b> {addressText}\n" +
                 $"<b>Участник:</b> {accidentReport.AccidentParticipant.HtmlEscaped()}\n" +
                 $"<b>Пострадавшие:</b> {accidentReport.AccidentVictims.HtmlEscaped()}\n" +
                 $"<b>Телефон:</b> {accidentReport.ReporterPhoneNumber.HtmlEscaped()}\n\n" +

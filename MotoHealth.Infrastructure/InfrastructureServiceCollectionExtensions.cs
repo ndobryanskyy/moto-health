@@ -1,9 +1,10 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Infrastructure.AccidentReporting;
-using MotoHealth.Infrastructure.AzureEventGrid;
+using MotoHealth.Infrastructure.AzureStorageQueue;
 using MotoHealth.Infrastructure.AzureTables;
 using MotoHealth.Infrastructure.ChatsState;
 using MotoHealth.Infrastructure.ChatSubscriptions;
@@ -25,11 +26,16 @@ namespace MotoHealth.Infrastructure
                 .AddSingleton<IChatStateInMemoryCache, ChatStateInMemoryCache>()
                 .AddSingleton<IChatStatesStore, AzureTableChatStatesStore>()
                 .AddSingleton<IChatSubscriptionsService, AzureTablesChatSubscriptionsService>()
-                .AddScoped<IAccidentReportingService, AzureEventGridAccidentReportingService>();
-                
+                .AddScoped<IAccidentReportingService, AzureStorageQueueAccidentReportingService>();
+
             services
-                .AddHttpClient<IAppEventsTopicClient, AppEventsTopicClient>()
-                .SetHandlerLifetime(TimeSpan.FromHours(1));
+                .AddHttpClient<IAppEventsQueueClient, AppEventsAzureStorageQueueClient>()
+                .ConfigureHttpClient((container, client) =>
+                {
+                    var options = container.GetRequiredService<IOptions<InfrastructureOptions>>().Value;
+
+                    client.Timeout = options.AzureStorage.QueuesRequestTimeout;
+                });
 
             services.AddHostedService<AzureTablesInitializerHostedService>();
 

@@ -1,0 +1,35 @@
+﻿syntax = "proto3";
+
+package moto_health.events.dto;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+message AccidentAlertDto {
+	repeated int64 chats_to_notify = 1;
+	AccidentReportDto report = 2;
+}
+
+message AccidentReportDto {
+	string id = 1;
+	google.protobuf.Timestamp reported_at_utc = 2;
+	AccidentReporterDto reporter = 3;
+	AccidentDetailsDto accident = 4;
+}
+
+message AccidentReporterDto {
+	int32 telegram_user_id = 1;
+	string phone_number = 2;
+}
+
+message AccidentDetailsDto {
+	google.protobuf.StringValue address = 1;
+	MapLocationDto location = 2;
+	string participant = 3;
+	string victims = 4;
+}
+
+message MapLocationDto {
+	double latitude = 1;
+	double longitude = 2;
+}

@@ -1,10 +1,9 @@
 ﻿using System;
 using Microsoft.Azure.Cosmos.Table;
-using MotoHealth.Common.Dto;
 
 namespace MotoHealth.Functions.AccidentAlerting
 {
-    internal sealed class AccidentTableEntity : TableEntity
+    public sealed class AccidentTableEntity : TableEntity
     {
         public const string EntityRowKey = "Details";
 
@@ -16,7 +15,9 @@ namespace MotoHealth.Functions.AccidentAlerting
 
         public string? AccidentAddress { get; set; }
 
-        public MapLocationDto? AccidentLocation { get; set; }
+        public double? AccidentLocationLongitude { get; set; }
+        
+        public double? AccidentLocationLatitude { get; set; }
 
         public string AccidentParticipant { get; set; } = default!;
 
@@ -24,26 +25,8 @@ namespace MotoHealth.Functions.AccidentAlerting
 
         public DateTime ReportedAtUtc { get; set; }
 
-        public DateTime HandledAtUtc { get; set; }
+        public DateTime ReportHandledAtUtc { get; set; }
 
         public bool AnyChatAlerted { get; set; }
-
-        public static AccidentTableEntity CreateFromReportDto(AccidentReportDto reportDto)
-        {
-            return new AccidentTableEntity
-            {
-                PartitionKey = reportDto.Id,
-                RowKey = EntityRowKey,
-
-                Id = reportDto.Id,
-                ReporterTelegramUserId = reportDto.ReporterTelegramUserId,
-                ReporterPhoneNumber = reportDto.ReporterPhoneNumber,
-                AccidentAddress = reportDto.AccidentAddress,
-                AccidentLocation = reportDto.AccidentLocation,
-                AccidentParticipant = reportDto.AccidentParticipant,
-                AccidentVictims = reportDto.AccidentVictims,
-                ReportedAtUtc = reportDto.ReportedAtUtc,
-            };
-        }
     }
 }

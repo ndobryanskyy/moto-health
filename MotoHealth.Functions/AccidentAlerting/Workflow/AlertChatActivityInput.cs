@@ -1,11 +1,9 @@
-﻿using MotoHealth.Common.Dto;
-
-namespace MotoHealth.Functions.AccidentAlerting.Workflow
+﻿namespace MotoHealth.Functions.AccidentAlerting.Workflow
 {
     public sealed class AlertChatActivityInput
     {
         public long ChatId { get; set; }
 
-        public AccidentReportDto AccidentReport { get; set; } = default!;
+        public AccidentAlertingWorkflowInput.AccidentReportSummary AccidentReport { get; set; } = default!;
     }
 }

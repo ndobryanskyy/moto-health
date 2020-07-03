@@ -1,6 +1,6 @@
 ﻿namespace MotoHealth.Bot
 {
-    public static class Constants
+    internal static class Constants
     {
         public static class Telegram
         {
@@ -16,11 +16,6 @@
         public static class AzureStorage
         {
             public const string ConfigurationSectionName = "AzureStorage";
-        }
-
-        public static class AppEventsTopic
-        {
-            public const string ConfigurationSectionName = "AppEventsTopic";
         }
 
         public static class ApplicationInsights

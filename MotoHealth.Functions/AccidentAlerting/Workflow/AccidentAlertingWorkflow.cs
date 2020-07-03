@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
-using MotoHealth.Common.Dto;
 
 namespace MotoHealth.Functions.AccidentAlerting.Workflow
 {
@@ -21,21 +20,21 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             MaxRetryInterval = TimeSpan.FromMinutes(5),
         };
 
-        [FunctionName(FunctionNames.AccidentAlerting.Workflow)]
+        [FunctionName(Constants.FunctionNames.AccidentAlerting.Workflow)]
         public static async Task RunAsync(
             [OrchestrationTrigger] IDurableOrchestrationContext context,
             ILogger logger)
         {
             logger = context.CreateReplaySafeLogger(logger);
 
-            var accidentAlert = context.GetInput<AccidentAlertEventDataDto>() 
+            var input = context.GetInput<AccidentAlertingWorkflowInput>() 
                                  ?? throw new ArgumentException("Input can not be null", nameof(context));
 
-            var accidentReport = accidentAlert.Report;
+            var accidentReport = input.Report;
 
             var chatsAlerted = 0;
 
-            foreach (var chatId in accidentAlert.ChatsToNotify)
+            foreach (var chatId in input.ChatsToNotify)
             {
                 var alertActivityInput = new AlertChatActivityInput
                 {
@@ -55,7 +54,7 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             
             if (anyChatAlerted)
             {
-                logger.LogInformation($"{chatsAlerted}/{accidentAlert.ChatsToNotify.Length} chats were alerted about report {accidentReport.Id}");
+                logger.LogInformation($"{chatsAlerted}/{input.ChatsToNotify.Length} chats were alerted about report {accidentReport.Id}");
             }
             else
             {
@@ -81,10 +80,9 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             try
             {
                 var output = await context.CallActivityWithRetryAsync<AlertChatActivityOutput>(
-                    FunctionNames.AccidentAlerting.AlertChatActivity,
+                    Constants.FunctionNames.AccidentAlerting.AlertChatActivity,
                     AlertChatActivityRetryOptions,
-                    input
-                );
+                    input);
 
                 return output;
             }
@@ -107,10 +105,9 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             try
             {
                 await context.CallActivityWithRetryAsync(
-                    FunctionNames.AccidentAlerting.RecordAccidentActivity,
+                    Constants.FunctionNames.AccidentAlerting.RecordAccidentActivity,
                     RecordAccidentActivityRetryOptions,
-                    input
-                );
+                    input);
             }
             catch (FunctionFailedException exception)
             {

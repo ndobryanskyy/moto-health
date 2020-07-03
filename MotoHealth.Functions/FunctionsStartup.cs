@@ -1,4 +1,5 @@
 ﻿using System;
+using AutoMapper;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -13,22 +14,23 @@ namespace MotoHealth.Functions
 {
     public sealed class FunctionsStartup : AzureFunctionsStartup
     {
-        private const string TelegramConfigurationSection = "Telegram";
-        private const string StorageAccountConfigurationKey = "StorageAccount";
-
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.Services.AddOptions<TelegramClientOptions>()
-                .Configure<IConfiguration>((telegramOptions, configuration) =>
-                {
-                    configuration.GetSection(TelegramConfigurationSection).Bind(telegramOptions);
-                });
+            builder.Services.AddAutoMapper(typeof(FunctionsStartup));
 
             builder.Services.AddTelegram();
 
             builder.Services
+                .AddOptions<TelegramClientOptions>()
+                .Configure<IConfiguration>((telegramOptions, configuration) =>
+                {
+                    configuration
+                        .GetSection(Constants.Telegram.ConfigurationSectionName)
+                        .Bind(telegramOptions);
+                });
+
+            builder.Services
                 .AddSingleton(CreateSharedTableClient)
-                .AddSingleton<IEventGridEventDataConverter, EventGridEventDataConverter>()
                 .AddSingleton<ICloudTablesProvider, CloudTablesProvider>()
                 .AddSingleton<IGoogleMapsService, GoogleMapsService>()
                 .AddSingleton<IAccidentRecordingService, AccidentRecordingService>();
@@ -38,7 +40,9 @@ namespace MotoHealth.Functions
         {
             var configuration = container.GetRequiredService<IConfiguration>();
 
-            var storageAccount = CloudStorageAccount.Parse(configuration.GetConnectionString(StorageAccountConfigurationKey));
+            var storageAccount = CloudStorageAccount.Parse(
+                configuration.GetConnectionString(Constants.AzureStorage.StorageAccountConnectionStringName));
+
             return storageAccount.CreateCloudTableClient();
         }
     }
