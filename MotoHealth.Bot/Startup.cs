@@ -9,10 +9,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Bot.Authorization;
 using MotoHealth.Bot.Extensions;
-using MotoHealth.Bot.Middleware;
 using MotoHealth.Bot.Telegram;
 using MotoHealth.Core;
-using MotoHealth.Core.Bot.ChatUpdateHandlers;
 using MotoHealth.Infrastructure;
 using MotoHealth.Telegram;
 
@@ -77,9 +75,7 @@ namespace MotoHealth.Bot
                     .Map("/", OnAlwaysOnPingAsync)
                     .WithDisplayName("Always On Ping");
 
-                endpoints
-                    .MapPost(Constants.Telegram.WebhookPath, CreateTelegramPipeline(endpoints.CreateApplicationBuilder()))
-                    .WithDisplayName("Telegram Webhook");
+                endpoints.MapTelegramWebhook();
             });
         }
 
@@ -97,23 +93,6 @@ namespace MotoHealth.Bot
             logger.LogDebug("Always On Ping Received");
 
             return Task.CompletedTask;
-        }
-
-        private static RequestDelegate CreateTelegramPipeline(IApplicationBuilder builder)
-        {
-            return builder
-                .UseMiddleware<BotTokenVerificationMiddleware>()
-                .UseMiddleware<ReliableUpdateHandlingContextMiddleware>()
-                .UseMiddleware<BotUpdateInitializerMiddleware>()
-                .UseMiddleware<ChatUpdatesFilterMiddleware>()
-                .UseMiddleware<ChatLockingMiddleware>()
-                .UseMiddleware<NewChatsHandlerMiddleware>()
-                .UseMiddleware<ChatUpdateHandlerMiddleware<BannedUsersChatUpdateHandler>>()
-                .UseMiddleware<ChatUpdateHandlerMiddleware<AdminCommandsChatUpdateHandler>>()
-                .UseMiddleware<ChatUpdateHandlerMiddleware<AccidentReportingDialogChatUpdateHandler>>()
-                .UseMiddleware<ChatUpdateHandlerMiddleware<MainChatUpdateHandler>>()
-                .UseMiddleware<TerminatingChatHandlerMiddleware>()
-                .Build();
         }
     }
 }
