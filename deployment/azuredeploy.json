@@ -195,7 +195,7 @@
               "value": "[reference(resourceId('Microsoft.Insights/components', variables('functionsAppInsightsName')), '2015-05-01').InstrumentationKey]"
             },
             {
-              "name": "ConnectionStrings__StorageAccount",
+              "name": "StorageAccount",
               "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageName')), '2019-06-01').keys[0].value)]"
             },
             {

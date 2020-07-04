@@ -41,7 +41,7 @@ namespace MotoHealth.Functions
             var configuration = container.GetRequiredService<IConfiguration>();
 
             var storageAccount = CloudStorageAccount.Parse(
-                configuration.GetConnectionString(Constants.AzureStorage.StorageAccountConnectionStringName));
+                configuration.GetSection(Constants.AzureStorage.StorageAccountConnectionStringName).Value);
 
             return storageAccount.CreateCloudTableClient();
         }
