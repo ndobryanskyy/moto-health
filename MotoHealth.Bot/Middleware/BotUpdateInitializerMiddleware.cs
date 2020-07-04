@@ -27,8 +27,9 @@ namespace MotoHealth.Bot.Middleware
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            var memoryStream = await ReadRequestBodyAsync(context);
-            var update = DeserializeUpdate(memoryStream);
+            using var streamReader = new StreamReader(context.Request.BodyReader.AsStream());
+            var bodyText = await streamReader.ReadToEndAsync();
+            var update = DeserializeUpdate(bodyText);
             
             _logger.LogDebug($"Successfully deserialized update {update.Id}");
 
@@ -41,18 +42,9 @@ namespace MotoHealth.Bot.Middleware
             await next(context);
         }
 
-        private static async Task<MemoryStream> ReadRequestBodyAsync(HttpContext context)
+        private static Update DeserializeUpdate(string text)
         {
-            var memoryStream = new MemoryStream();
-            await context.Request.Body.CopyToAsync(memoryStream, context.RequestAborted);
-            memoryStream.Seek(0, SeekOrigin.Begin);
-
-            return memoryStream;
-        }
-
-        private static Update DeserializeUpdate(Stream stream)
-        {
-            using var streamReader = new StreamReader(stream);
+            using var streamReader = new StringReader(text);
             using var jsonReader = new JsonTextReader(streamReader);
 
             var update = JsonSerializer.Deserialize<Update>(jsonReader);
