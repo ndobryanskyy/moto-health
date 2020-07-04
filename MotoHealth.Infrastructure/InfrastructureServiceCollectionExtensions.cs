@@ -21,7 +21,7 @@ namespace MotoHealth.Infrastructure
 
             services
                 .AddSingleton<ICloudTablesProvider, CloudTablesProvider>()
-                .AddSingleton<IAzureTablesInitializer, AzureTablesInitializer>()
+                .AddSingleton<IAzureStorageInitializer, AzureStorageInitializer>()
                 .AddSingleton<IDefaultChatStateFactory, DefaultChatStateFactory>()
                 .AddSingleton<IChatStateInMemoryCache, ChatStateInMemoryCache>()
                 .AddSingleton<IChatStatesStore, AzureTableChatStatesStore>()
@@ -29,7 +29,7 @@ namespace MotoHealth.Infrastructure
                 .AddScoped<IAccidentReportingService, AzureStorageQueueAccidentReportingService>();
 
             services
-                .AddHttpClient<IAppEventsQueueClient, AppEventsAzureStorageQueueClient>()
+                .AddHttpClient<IAppEventsQueuesClient, AppEventsAzureStorageQueuesClient>()
                 .ConfigureHttpClient((container, client) =>
                 {
                     var options = container.GetRequiredService<IOptions<InfrastructureOptions>>().Value;
@@ -37,7 +37,7 @@ namespace MotoHealth.Infrastructure
                     client.Timeout = options.AzureStorage.QueuesRequestTimeout;
                 });
 
-            services.AddHostedService<AzureTablesInitializerHostedService>();
+            services.AddHostedService<AzureStorageInitializerHostedService>();
 
             return services;
         }

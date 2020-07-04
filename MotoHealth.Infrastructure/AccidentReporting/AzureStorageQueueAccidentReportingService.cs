@@ -17,18 +17,18 @@ namespace MotoHealth.Infrastructure.AccidentReporting
         private readonly ILogger<IAccidentReportingService> _logger;
         private readonly IChatSubscriptionsService _subscriptionsService;
         private readonly IMapper _mapper;
-        private readonly IAppEventsQueueClient _queueClient;
+        private readonly IAppEventsQueuesClient _queuesClient;
 
         public AzureStorageQueueAccidentReportingService(
             ILogger<AzureStorageQueueAccidentReportingService> logger,
             IChatSubscriptionsService subscriptionsService,
             IMapper mapper,
-            IAppEventsQueueClient queueClient)
+            IAppEventsQueuesClient queuesClient)
         {
             _logger = logger;
             _subscriptionsService = subscriptionsService;
             _mapper = mapper;
-            _queueClient = queueClient;
+            _queuesClient = queuesClient;
         }
 
         public async Task ReportAccidentAsync(AccidentReport report, CancellationToken cancellationToken)
@@ -53,7 +53,7 @@ namespace MotoHealth.Infrastructure.AccidentReporting
             alert.ChatsToNotify.AddRange(subscriptions.Select(x => x.ChatId));
             alert.Report = mappedReport;
 
-            await _queueClient.PublishAccidentAlertAsync(alert, cancellationToken);
+            await _queuesClient.PublishAccidentAlertAsync(alert, cancellationToken);
 
             _logger.LogInformation($"Successfully published report {report.Id}");
         }

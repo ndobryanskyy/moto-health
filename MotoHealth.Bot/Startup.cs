@@ -29,7 +29,7 @@ namespace MotoHealth.Bot
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddNewtonsoftJson();
+            services.AddRouting();
 
             services.AddAutoMapper(new []
             {
@@ -73,8 +73,13 @@ namespace MotoHealth.Bot
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.Map("/", OnAlwaysOnPingAsync);
-                endpoints.MapPost(Constants.Telegram.WebhookPath, CreateTelegramPipeline(endpoints.CreateApplicationBuilder()));
+                endpoints
+                    .Map("/", OnAlwaysOnPingAsync)
+                    .WithDisplayName("Always On Ping");
+
+                endpoints
+                    .MapPost(Constants.Telegram.WebhookPath, CreateTelegramPipeline(endpoints.CreateApplicationBuilder()))
+                    .WithDisplayName("Telegram Webhook");
             });
         }
 

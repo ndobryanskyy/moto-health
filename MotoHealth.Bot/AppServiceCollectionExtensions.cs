@@ -49,7 +49,12 @@ namespace MotoHealth.Bot
                     .Bind(configuration.GetSection(Constants.ApplicationInsights.ConfigurationSectionName))
                     .PostConfigure(options => options.ApplicationVersion = ApplicationVersion);
 
-                services.AddApplicationInsightsTelemetry();
+                services.AddApplicationInsightsTelemetry(options =>
+                {
+                    // TODO investigate memory leak and re-enable
+                    options.EnablePerformanceCounterCollectionModule = false;
+                    options.EnableEventCounterCollectionModule = false;
+                });
 
                 services.RemoveAll<ITelemetryInitializer>();
 

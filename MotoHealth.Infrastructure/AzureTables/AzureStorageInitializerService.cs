@@ -3,37 +3,43 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Logging;
+using MotoHealth.Infrastructure.AzureStorageQueue;
 
 namespace MotoHealth.Infrastructure.AzureTables
 {
-    internal interface IAzureTablesInitializer
+    internal interface IAzureStorageInitializer
     {
-        Task InitializeAllAsync(CancellationToken cancellationToken);
+        Task InitializeAsync(CancellationToken cancellationToken);
     }
 
-    internal sealed class AzureTablesInitializer : IAzureTablesInitializer
+    internal sealed class AzureStorageInitializer : IAzureStorageInitializer
     {
-        private readonly ILogger<AzureTablesInitializer> _logger;
+        private readonly ILogger<AzureStorageInitializer> _logger;
         private readonly ICloudTablesProvider _tablesProvider;
+        private readonly IAppEventsQueuesClient _queuesClient;
 
-        public AzureTablesInitializer(
-            ILogger<AzureTablesInitializer> logger,
-            ICloudTablesProvider tablesProvider)
+        public AzureStorageInitializer(
+            ILogger<AzureStorageInitializer> logger,
+            ICloudTablesProvider tablesProvider,
+            IAppEventsQueuesClient queuesClient)
         {
             _logger = logger;
             _tablesProvider = tablesProvider;
+            _queuesClient = queuesClient;
         }
 
-        public async Task InitializeAllAsync(CancellationToken cancellationToken)
+        public async Task InitializeAsync(CancellationToken cancellationToken)
         {
             try
             {
+                await _queuesClient.InitializeQueuesAsync(cancellationToken);
+
                 await EnsureTableExistsAsync(_tablesProvider.Chats, cancellationToken);
                 await EnsureTableExistsAsync(_tablesProvider.ChatSubscriptions, cancellationToken);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to initialize tables");
+                _logger.LogError(e, "Failed to initialize storage");
                 
                 throw new Exception("Fatal startup error");
             }
@@ -41,9 +47,9 @@ namespace MotoHealth.Infrastructure.AzureTables
 
         private async Task EnsureTableExistsAsync(CloudTable table, CancellationToken cancellationToken)
         {
-            var chatsTableCreated = await table.CreateIfNotExistsAsync(cancellationToken);
+            var tableCreated = await table.CreateIfNotExistsAsync(cancellationToken);
 
-            if (chatsTableCreated)
+            if (tableCreated)
             {
                 _logger.LogInformation($"{table.Name} created.");
             }

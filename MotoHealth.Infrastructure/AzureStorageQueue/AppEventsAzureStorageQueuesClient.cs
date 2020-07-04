@@ -12,19 +12,21 @@ using MotoHealth.Events.Dto;
 
 namespace MotoHealth.Infrastructure.AzureStorageQueue
 {
-    public interface IAppEventsQueueClient
+    public interface IAppEventsQueuesClient
     {
+        Task InitializeQueuesAsync(CancellationToken cancellationToken);
+
         Task PublishAccidentAlertAsync(AccidentAlertDto alert, CancellationToken cancellationToken);
     }
 
-    internal sealed class AppEventsAzureStorageQueueClient : IAppEventsQueueClient
+    internal sealed class AppEventsAzureStorageQueuesClient : IAppEventsQueuesClient
     {
-        private readonly ILogger<AppEventsAzureStorageQueueClient> _logger;
+        private readonly ILogger<AppEventsAzureStorageQueuesClient> _logger;
         private readonly QueueClient _alertsQueueClient;
 
-        public AppEventsAzureStorageQueueClient(
+        public AppEventsAzureStorageQueuesClient(
             HttpClient client,
-            ILogger<AppEventsAzureStorageQueueClient> logger,
+            ILogger<AppEventsAzureStorageQueuesClient> logger,
             IOptions<InfrastructureOptions> options)
         {
             _logger = logger;
@@ -43,10 +45,16 @@ namespace MotoHealth.Infrastructure.AzureStorageQueue
             var bytes = alert.ToByteArray();
             var encoded = Convert.ToBase64String(bytes);
 
-            await _alertsQueueClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
             await _alertsQueueClient.SendMessageAsync(encoded, timeToLive: TimeSpan.FromDays(3), cancellationToken: cancellationToken);
 
             _logger.LogDebug($"Successfully added {alert.Report.Id} to queue");
+        }
+
+        public async Task InitializeQueuesAsync(CancellationToken cancellationToken)
+        {
+            await _alertsQueueClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
+
+            _logger.LogDebug("Alerts queue initialized");
         }
     }
 }

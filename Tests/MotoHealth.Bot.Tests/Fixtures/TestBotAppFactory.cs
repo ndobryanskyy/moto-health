@@ -25,12 +25,12 @@ namespace MotoHealth.Bot.Tests.Fixtures
             });
         }
 
-        private static Mock<IAzureTablesInitializer> SetupAzureTablesInitializerMock()
+        private static Mock<IAzureStorageInitializer> SetupAzureTablesInitializerMock()
         {
-            var initializerMock = new Mock<IAzureTablesInitializer>();
+            var initializerMock = new Mock<IAzureStorageInitializer>();
 
             initializerMock
-                .Setup(x => x.InitializeAllAsync(It.IsAny<CancellationToken>()))
+                .Setup(x => x.InitializeAsync(It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             return initializerMock;
