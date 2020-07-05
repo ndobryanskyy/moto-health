@@ -5,7 +5,7 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: "true"
 on:
   push:
-    branches: [ develop, master ]
+    branches: [ develop, main ]
 
 jobs:
   build:
@@ -66,7 +66,7 @@ jobs:
           publish-profile: ${{ secrets.BETA_FUNC_APP_SCM_CREDENTIALS }}
 
       - name: "Deploy Release"
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         uses: Azure/functions-action@v1.1.4
         with:
           app-name: ${{ secrets.RELEASE_FUNC_APP_NAME }}
@@ -92,7 +92,7 @@ jobs:
           publish-profile: ${{ secrets.BETA_BOT_APP_SCM_CREDENTIALS }}
 
       - name: "Deploy Release"
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         uses: "azure/webapps-deploy@v2"
         with:
           app-name: ${{ secrets.RELEASE_BOT_APP_NAME }}
