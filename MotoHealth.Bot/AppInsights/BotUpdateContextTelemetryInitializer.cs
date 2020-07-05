@@ -12,10 +12,14 @@ namespace MotoHealth.Bot.AppInsights
     internal sealed class BotUpdateContextTelemetryInitializer : ITelemetryInitializer
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ITelegramTelemetrySanitizer _telemetrySanitizer;
 
-        public BotUpdateContextTelemetryInitializer(IHttpContextAccessor httpContextAccessor)
+        public BotUpdateContextTelemetryInitializer(
+            IHttpContextAccessor httpContextAccessor,
+            ITelegramTelemetrySanitizer telemetrySanitizer)
         {
             _httpContextAccessor = httpContextAccessor;
+            _telemetrySanitizer = telemetrySanitizer;
         }
 
         public void Initialize(ITelemetry telemetry)
@@ -53,6 +57,7 @@ namespace MotoHealth.Bot.AppInsights
 
                 if (telemetry is RequestTelemetry requestTelemetry)
                 {
+                    requestTelemetry.Url = _telemetrySanitizer.SanitizeWebhookUri(requestTelemetry.Url);
                     requestTelemetry.Name = "Telegram Webhook";
                     requestTelemetry.Source = "Telegram";
                     requestTelemetry.Properties[TelemetryProperties.WellKnown.UpdateType] = botUpdate.GetUpdateTypeNameForTelemetry();

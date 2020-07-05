@@ -4,7 +4,7 @@ namespace MotoHealth.Telegram
 {
     public sealed class TelegramClientOptions
     {
-        private const string TelegramBotApiBaseUrl = "https://api.telegram.org/bot";
+        public const string TelegramBotApiBaseUrl = "https://api.telegram.org/bot";
 
         public string BotId { get; set; } = string.Empty;
 

@@ -26,7 +26,8 @@ namespace MotoHealth.Bot
 
             services
                 .AddSingleton<IAuthorizationSecretsService, AuthorizationSecretsService>()
-                .AddScoped<IBotTelemetryService, AppInsightBotTelemetryService>();
+                .AddScoped<IBotTelemetryService, AppInsightBotTelemetryService>()
+                .AddSingleton<ITelegramTelemetrySanitizer, TelegramTelemetrySanitizer>();
                 
             services
                 .AddHostedService<BotInitializerStartupJob>();
