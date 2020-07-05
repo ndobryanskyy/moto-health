@@ -1,7 +1,7 @@
 name: "Main Workflow" 
 env:
   OUTPUT_PATH: ${{ github.workspace }}/.output
-  DOTNET_VERSION: "3.1.5"
+  DOTNET_VERSION: "3.1.101"
   DOTNET_CLI_TELEMETRY_OPTOUT: "true"
 on:
   push:
