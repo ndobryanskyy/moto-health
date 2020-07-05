@@ -5,7 +5,7 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: "true"
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, master ]
 
 jobs:
   build:
@@ -57,12 +57,21 @@ jobs:
           name: functions
           path: ${{ env.OUTPUT_PATH }}/functions
 
-      - name: "Deploy"
+      - name: "Deploy Beta"
+        if: github.ref == 'refs/heads/develop'
         uses: Azure/functions-action@v1.1.4
         with:
           app-name: ${{ secrets.BETA_FUNC_APP_NAME }}
           package: ${{ env.OUTPUT_PATH }}/functions
           publish-profile: ${{ secrets.BETA_FUNC_APP_SCM_CREDENTIALS }}
+
+      - name: "Deploy Release"
+        if: github.ref == 'refs/heads/master'
+        uses: Azure/functions-action@v1.1.4
+        with:
+          app-name: ${{ secrets.RELEASE_FUNC_APP_NAME }}
+          package: ${{ env.OUTPUT_PATH }}/functions
+          publish-profile: ${{ secrets.RELEASE_FUNC_APP_SCM_CREDENTIALS }}
   
   deploy-bot:
     runs-on: ubuntu-latest
@@ -75,11 +84,20 @@ jobs:
           path: ${{ env.OUTPUT_PATH }}/bot
       
       - name: "Deploy Beta"
+        if: github.ref == 'refs/heads/develop'
         uses: "azure/webapps-deploy@v2"
         with:
           app-name: ${{ secrets.BETA_BOT_APP_NAME }}
           package: ${{ env.OUTPUT_PATH }}/bot
           publish-profile: ${{ secrets.BETA_BOT_APP_SCM_CREDENTIALS }}
+
+      - name: "Deploy Release"
+        if: github.ref == 'refs/heads/master'
+        uses: "azure/webapps-deploy@v2"
+        with:
+          app-name: ${{ secrets.RELEASE_BOT_APP_NAME }}
+          package: ${{ env.OUTPUT_PATH }}/bot
+          publish-profile: ${{ secrets.RELEASE_BOT_APP_SCM_CREDENTIALS }}
 
 
 
