@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -27,9 +28,11 @@ namespace MotoHealth.Bot.AppInsights
                 if (botUpdate is IHasSender botUpdateWithSender)
                 {
                     var sender = botUpdateWithSender.Sender;
+                    var userId = sender.Id.ToString(CultureInfo.InvariantCulture);
 
-                    telemetry.Context.User.Id = sender.Id.ToString();
+                    telemetry.Context.User.Id = userId;
                     telemetry.Context.User.AuthenticatedUserId = GetAuthenticatedUserId(sender);
+                    telemetry.Context.Session.Id = userId;
                 }
 
                 if (telemetry is ISupportProperties telemetryWithProperties)
