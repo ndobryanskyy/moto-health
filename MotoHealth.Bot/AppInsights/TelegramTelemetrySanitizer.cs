@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Text.RegularExpressions;
 using System.Web;
 
@@ -13,7 +14,7 @@ namespace MotoHealth.Bot.AppInsights
 
     internal sealed class TelegramTelemetrySanitizer : ITelegramTelemetrySanitizer
     {
-        private static readonly Regex TelegramRequestUrlBotTokenReplaceRegex = 
+        private static readonly Regex TelegramRequestUrlBotTokenReplaceRegex =
             new Regex(@"bot(.+):(.+)/", RegexOptions.Compiled);
 
         public string SanitizeBotApiRequestUrl(string url) 
@@ -21,7 +22,21 @@ namespace MotoHealth.Bot.AppInsights
 
         public Uri SanitizeWebhookUri(Uri uri)
         {
-            var query = HttpUtility.ParseQueryString(uri.Query);
+            NameValueCollection? query;
+
+            try
+            {
+                query = HttpUtility.ParseQueryString(uri.Query);
+            }
+            catch (Exception)
+            {
+                return uri;
+            }
+
+            if (query == null)
+            {
+                return uri;
+            }
 
             if (query.Get(Constants.Telegram.BotIdQueryParamName) != null)
             {
