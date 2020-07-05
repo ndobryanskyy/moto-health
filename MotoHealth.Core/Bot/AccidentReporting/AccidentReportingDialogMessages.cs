@@ -101,26 +101,26 @@ namespace MotoHealth.Core.Bot.AccidentReporting
         private static readonly KeyboardButton SubmitButton = new KeyboardButton("Отправить");
 
         private static readonly IMessage SpecifyAddressPrompt = MessageFactory.CreateTextMessage()
-            .WithPlainText("📍 Адрес ДТП");
-
-        private static readonly IMessage SpecifyAddressHint = MessageFactory.CreateTextMessage()
-            .WithHtml($"Нажмите <b>{ShareLocationButton.Text}</b>, чтобы автоматически отправить место на карте, где сейчас находитесь (<b>Геолокация</b> на устройстве должна быть включена), либо напишите вручную")
+            .WithPlainText("📍 Адрес ДТП")
             .WithReplyKeyboard(new[]
             {
                 new [] { ShareLocationButton },
                 new [] { CancelButton }
             });
 
-        private static readonly IMessage AskForContactsPrompt = MessageFactory.CreateTextMessage()
-            .WithPlainText("📞 Номер для обратной связи");
+        private static readonly IMessage SpecifyAddressHint = MessageFactory.CreateTextMessage()
+            .WithHtml($"Нажмите <b>{ShareLocationButton.Text}</b>, чтобы автоматически отправить место на карте, где сейчас находитесь (<b>Геолокация</b> на устройстве должна быть <i>включена</i>), либо напишите вручную");
 
-        private static readonly IMessage AskForContactsHint = MessageFactory.CreateTextMessage()
-            .WithHtml($"Нажмите <b>{SharePhoneNumberButton.Text}</b>, чтобы автоматически отправить свой номер телефона, либо напишите другой вручную")
+        private static readonly IMessage AskForContactsPrompt = MessageFactory.CreateTextMessage()
+            .WithPlainText("📞 Номер для обратной связи")
             .WithReplyKeyboard(new[]
             {
                 new [] { SharePhoneNumberButton },
                 new [] { CancelButton }
             });
+
+        private static readonly IMessage AskForContactsHint = MessageFactory.CreateTextMessage()
+            .WithHtml($"Нажмите <b>{SharePhoneNumberButton.Text}</b>, чтобы автоматически отправить свой номер телефона, либо напишите другой вручную");
 
         private static readonly IMessage InvalidPhoneNumberErrorHint = MessageFactory.CreateTextMessage()
             .WithHtml("Попробуйте написать телефон как <i>0671234567</i> или <i>380501234567</i>");

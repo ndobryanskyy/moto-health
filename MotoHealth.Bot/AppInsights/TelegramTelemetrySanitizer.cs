@@ -33,11 +33,6 @@ namespace MotoHealth.Bot.AppInsights
                 return uri;
             }
 
-            if (query == null)
-            {
-                return uri;
-            }
-
             if (query.Get(Constants.Telegram.BotIdQueryParamName) != null)
             {
                 query.Set(Constants.Telegram.BotIdQueryParamName, "***");
@@ -50,7 +45,7 @@ namespace MotoHealth.Bot.AppInsights
 
             var builder = new UriBuilder(uri)
             {
-                Query = query.ToString()
+                Query = query.ToString() ?? string.Empty
             };
 
             return builder.Uri;
