@@ -12,17 +12,19 @@ namespace MotoHealth.Bot.AppInsights
     internal sealed class AppInsightBotTelemetryService : IBotTelemetryService
     {
         private readonly TelemetryClient _telemetryClient;
-        private readonly HttpContext _httpContext;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AppInsightBotTelemetryService(TelemetryClient telemetryClient, IHttpContextAccessor httpContextAccessor)
         {
             _telemetryClient = telemetryClient;
-            _httpContext = httpContextAccessor.HttpContext ?? throw new InvalidOperationException();
+            _httpContextAccessor = httpContextAccessor;
         }
 
-        private RequestTelemetry RequestTelemetry => _httpContext.GetRequestTelemetry();
+        private HttpContext HttpContext => _httpContextAccessor.HttpContext ?? throw new InvalidOperationException();
 
-        private IBotUpdate BotUpdate => _httpContext.GetBotUpdate();
+        private RequestTelemetry RequestTelemetry => HttpContext.GetRequestTelemetry();
+
+        private IBotUpdate BotUpdate => HttpContext.GetBotUpdate();
 
         public void OnMessageFromBannedChat()
         {

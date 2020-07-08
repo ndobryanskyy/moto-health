@@ -6,12 +6,12 @@ using MotoHealth.Core.Bot.ChatUpdateHandlers;
 
 namespace MotoHealth.Bot.Telegram
 {
-    public static class TelegramWebhookEndpointExtensions
+    public static class TelegramBotApplicationExtensions
     {
         public static IServiceCollection AddTelegramBot(this IServiceCollection services)
         {
-            return services
-                .AddTransient<ReliableUpdateHandlingContextMiddleware>()
+            services
+                .AddSingleton<ReliableUpdateHandlingContextMiddleware>()
                 .AddSingleton<BotTokenVerificationMiddleware>()
                 .AddSingleton<BotUpdateInitializerMiddleware>()
                 .AddTransient<ChatUpdatesFilterMiddleware>()
@@ -19,6 +19,11 @@ namespace MotoHealth.Bot.Telegram
                 .AddTransient<NewChatsHandlerMiddleware>()
                 .AddTransient(typeof(ChatUpdateHandlerMiddleware<>))
                 .AddTransient<TerminatingChatHandlerMiddleware>();
+
+            services
+                .AddHostedService<BotInitializerStartupJob>();
+
+            return services;
         }
 
         public static IEndpointConventionBuilder MapTelegramWebhook(this IEndpointRouteBuilder builder)

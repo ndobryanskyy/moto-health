@@ -39,10 +39,10 @@ namespace MotoHealth.Bot.Middleware
                 // So Telegram won't retry
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                var hasBotUpdate = context.TryGetBotUpdate(out var botUpdate);
+                var hasBotUpdate = context.TryGetBotUpdate(out _);
                 var hasChatUpdateContext = context.TryGetChatUpdateContext(out var chatUpdateContext);
 
-                _logger.LogError(exception, $"Error while handling update {(hasBotUpdate ? botUpdate!.UpdateId.ToString() : "")}");
+                _logger.LogError(exception, "Error while handling update");
 
                 if (hasBotUpdate)
                 {

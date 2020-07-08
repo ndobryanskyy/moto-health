@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.ApplicationInsights;
-using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Core.Bot.Updates.Abstractions;
 

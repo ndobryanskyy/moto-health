@@ -99,7 +99,8 @@
       },
       "properties": {
         "serverFarmId": "[variables('botHostingPlanName')]",
-        "clientAffinityEnabled": false
+        "clientAffinityEnabled": false,
+        "httpsOnly": true
       },
       "resources": [
         {

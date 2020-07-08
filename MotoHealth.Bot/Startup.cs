@@ -7,10 +7,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MotoHealth.Bot.AppInsights;
 using MotoHealth.Bot.Authorization;
 using MotoHealth.Bot.Extensions;
 using MotoHealth.Bot.Telegram;
 using MotoHealth.Core;
+using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Infrastructure;
 using MotoHealth.Telegram;
 
@@ -50,7 +52,10 @@ namespace MotoHealth.Bot
                         .GetSection(Constants.Telegram.ConfigurationSectionName)
                         .GetSection(nameof(TelegramOptions.Client)));
 
-            services.AddApp(_configuration);
+            services
+                .AddTelegramBot()
+                .AddAppInsights(_configuration)
+                .AddSingleton<IAuthorizationSecretsService, AuthorizationSecretsService>();
 
             services.AddCore();
 
