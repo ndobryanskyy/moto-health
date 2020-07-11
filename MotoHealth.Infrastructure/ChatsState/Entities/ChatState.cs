@@ -20,6 +20,11 @@ namespace MotoHealth.Infrastructure.ChatsState.Entities
 
         public IAccidentReportingDialogState StartAccidentReportingDialog(int version)
         {
+            if (AccidentReportDialog != null)
+            {
+                throw new InvalidOperationException();
+            }
+
             AccidentReportDialog = new AccidentReportingDialogState
             {
                 InstanceId = Guid.NewGuid().ToString(),
@@ -35,58 +40,6 @@ namespace MotoHealth.Infrastructure.ChatsState.Entities
         public void CompleteAccidentReportingDialog()
         {
             AccidentReportDialog = null;
-        }
-
-        public TableEntity ToTableEntity() 
-            => new TableEntityAdapter<ChatState>(this, AssociatedChatId.ToString(), ChatsTableEntityTypes.State) { ETag = "*" };
-
-        public sealed class AccidentReportingDialogState : IAccidentReportingDialogState
-        {
-            public string ReportId { get; set; } = string.Empty;
-
-            public int Version { get; set; }
-
-            public string InstanceId { get; set; } = string.Empty;
-
-            public int CurrentStep { get; set; }
-
-            public DateTimeOffset StartedAt { get; set; }
-
-            public string? Address { get; set; }
-
-            [IgnoreProperty]
-            IMapLocation? IAccidentReportingDialogState.Location
-            {
-                get => Location;
-                set
-                {
-                    if (value == null)
-                    {
-                        throw new ArgumentNullException(nameof(value));
-                    }
-
-                    Location = new MapLocation
-                    {
-                        Latitude = value.Latitude,
-                        Longitude = value.Longitude
-                    };
-                }
-            }
-
-            public MapLocation? Location { get; set; }
-
-            public string Participant { get; set; } = string.Empty;
-
-            public string Victims { get; set; } = string.Empty;
-
-            public string ReporterPhoneNumber { get; set; } = string.Empty;
-        }
-
-        public sealed class MapLocation : IMapLocation
-        {
-            public double Longitude { get; set; }
-
-            public double Latitude { get; set; }
         }
     }
 }

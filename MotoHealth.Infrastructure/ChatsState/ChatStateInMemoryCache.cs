@@ -8,13 +8,18 @@ namespace MotoHealth.Infrastructure.ChatsState
     internal sealed class ChatStateInMemoryCache : IChatStateInMemoryCache
     {
         // TODO set from configuration
-        private readonly TimeSpan _slidingExpirationTimeout = TimeSpan.FromHours(1);
+        private readonly TimeSpan _slidingExpirationTimeout = TimeSpan.FromMinutes(15);
 
         private readonly MemoryCache _cache;
 
         public ChatStateInMemoryCache()
         {
-            _cache = new MemoryCache(new MemoryCacheOptions());
+            var cacheOptions = new MemoryCacheOptions
+            {
+                ExpirationScanFrequency = TimeSpan.FromMinutes(5)
+            };
+
+            _cache = new MemoryCache(cacheOptions);
         }
 
         public bool TryGetStateForChat(long chatId, [NotNullWhen(true)] out IChatState? state)

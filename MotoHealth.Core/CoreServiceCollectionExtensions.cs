@@ -17,7 +17,7 @@ namespace MotoHealth.Core
 
             services
                 .AddSingleton<IBotUpdatesMapper, BotUpdatesMapper>()
-                .AddTransient<IChatFactory, ChatFactory>()
+                .AddScoped<IChatFactory, ChatFactory>()
                 .AddTransient<IChatStatesRepository, ChatStatesRepository>()
                 .AddSingleton<IChatsDoorman, ChatsDoorman>()
                 .AddSingleton<IBotCommandsRegistry, BotCommandsRegistry>()

@@ -22,7 +22,6 @@ namespace MotoHealth.Infrastructure
             services
                 .AddSingleton<ICloudTablesProvider, CloudTablesProvider>()
                 .AddSingleton<IAzureStorageInitializer, AzureStorageInitializer>()
-                .AddSingleton<IDefaultChatStateFactory, DefaultChatStateFactory>()
                 .AddSingleton<IChatStateInMemoryCache, ChatStateInMemoryCache>()
                 .AddSingleton<IChatStatesStore, AzureTableChatStatesStore>()
                 .AddSingleton<IChatSubscriptionsService, AzureTablesChatSubscriptionsService>()

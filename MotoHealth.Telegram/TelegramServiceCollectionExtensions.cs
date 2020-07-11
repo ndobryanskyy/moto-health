@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Mime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Polly;
@@ -10,6 +12,7 @@ namespace MotoHealth.Telegram
 {
     public static class TelegramServiceCollectionExtensions
     {
+        private static readonly MediaTypeWithQualityHeaderValue ApplicationJsonMediaTypeHeaderValue = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json);
         private static readonly Random Jitter = new Random();
 
         private static readonly IAsyncPolicy<HttpResponseMessage> ClientRetryPolicy = HttpPolicyExtensions
@@ -39,6 +42,7 @@ namespace MotoHealth.Telegram
                 {
                     var telegramOptions = container.GetRequiredService<IOptions<TelegramClientOptions>>().Value;
 
+                    client.DefaultRequestHeaders.Accept.Add(ApplicationJsonMediaTypeHeaderValue);
                     client.BaseAddress = telegramOptions.BaseAddress;
                     client.Timeout = telegramOptions.RequestTimeout;
                 })

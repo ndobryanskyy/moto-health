@@ -12,18 +12,15 @@ namespace MotoHealth.Bot.Middleware
         private readonly ILogger<NewChatsHandlerMiddleware> _logger;
         private readonly IBotTelemetryService _botTelemetryService;
         private readonly IChatStatesRepository _chatStatesRepository;
-        private readonly IDefaultChatStateFactory _defaultChatStateFactory;
 
         public NewChatsHandlerMiddleware(
             ILogger<NewChatsHandlerMiddleware> logger,
             IBotTelemetryService botTelemetryService,
-            IChatStatesRepository chatStatesRepository,
-            IDefaultChatStateFactory defaultChatStateFactory)
+            IChatStatesRepository chatStatesRepository)
         {
             _logger = logger;
             _botTelemetryService = botTelemetryService;
             _chatStatesRepository = chatStatesRepository;
-            _defaultChatStateFactory = defaultChatStateFactory;
         }
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -33,16 +30,15 @@ namespace MotoHealth.Bot.Middleware
             var existingState = await _chatStatesRepository.GetForChatAsync(chatUpdateContext.ChatId, context.RequestAborted);
             if (existingState == null)
             {
-                var defaultState = _defaultChatStateFactory.CreateDefaultState(chatUpdateContext.ChatId);
+                var defaultState = await _chatStatesRepository.CreateForChatAsync(chatUpdateContext.ChatId, context.RequestAborted);
 
                 if (chatUpdateContext.Update.Chat.Type == ChatType.Private)
                 {
                     defaultState.UserSubscribed = true;
+                    await _chatStatesRepository.UpdateAsync(defaultState, context.RequestAborted);
                 }
 
-                await _chatStatesRepository.AddAsync(defaultState, context.RequestAborted);
-                
-                _logger.LogDebug($"New chat {chatUpdateContext.ChatId} started");
+                _logger.LogInformation($"New chat {chatUpdateContext.ChatId} started");
                 _botTelemetryService.OnNewChatStarted();
             }
 

@@ -12,21 +12,21 @@ namespace MotoHealth.Core.Bot.ChatUpdateHandlers
         {
             if (SkipHandledUpdates && context.IsUpdateHandled)
             {
-                logger.LogDebug("Skipping already handled update");
+                logger.LogTrace("Skipping already handled update");
             }
             else
             {
                 if (SkipGroupUpdates && context.Update.Chat.Type != ChatType.Private)
                 {
-                    logger.LogDebug("Skipping group update");
+                    logger.LogTrace("Skipping group update");
                 }
                 else
                 {
-                    logger.LogDebug("Start Handling");
+                    logger.LogTrace("Start Handling");
 
                     await OnUpdateAsync(context, logger, cancellationToken);
 
-                    logger.LogDebug("Finished Handling");
+                    logger.LogTrace("Finished Handling");
                 }
             }
         }

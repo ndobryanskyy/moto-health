@@ -21,6 +21,16 @@ namespace MotoHealth.Core.Bot
             _store = store;
         }
 
+        public async Task<IChatState> CreateForChatAsync(long chatId, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation($"Creating state for chat {chatId}");
+
+            var state = await _store.CreateAsync(chatId, cancellationToken);
+            _cache.CacheChatState(state);
+
+            return state;
+        }
+
         public async ValueTask<IChatState?> GetForChatAsync(long chatId, CancellationToken cancellationToken)
         {
             if (_cache.TryGetStateForChat(chatId, out var fromCache))
@@ -40,14 +50,6 @@ namespace MotoHealth.Core.Bot
             }
 
             return fromStore;
-        }
-
-        public async Task AddAsync(IChatState state, CancellationToken cancellationToken)
-        {
-            _logger.LogDebug($"Adding state for chat {state.AssociatedChatId}");
-
-            await _store.AddAsync(state, cancellationToken);
-            _cache.CacheChatState(state);
         }
 
         public async Task UpdateAsync(IChatState state, CancellationToken cancellationToken)
