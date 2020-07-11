@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -32,23 +33,19 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
 
             var accidentReport = input.Report;
 
-            var chatsAlerted = 0;
-
-            foreach (var chatId in input.ChatsToNotify)
+            var alertingTasks = input.ChatsToNotify.Select(chatId =>
             {
-                var alertActivityInput = new AlertChatActivityInput
+                var alertChatInput = new AlertChatActivityInput
                 {
                     ChatId = chatId,
                     AccidentReport = accidentReport
                 };
 
-                var alertActivityOutput = await AlertChatAsync(context, alertActivityInput, logger);
+                return AlertChatAsync(context, alertChatInput, logger);
+            });
 
-                if (alertActivityOutput.AlertSent)
-                {
-                    chatsAlerted++;
-                }
-            }
+            var alertingResults = await Task.WhenAll(alertingTasks);
+            var chatsAlerted = alertingResults.Count(x => x.AlertSent);
 
             var anyChatAlerted = chatsAlerted > 0;
             
