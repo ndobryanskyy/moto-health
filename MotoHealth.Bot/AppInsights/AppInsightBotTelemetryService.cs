@@ -26,11 +26,6 @@ namespace MotoHealth.Bot.AppInsights
 
         private IBotUpdate BotUpdate => HttpContext.GetBotUpdate();
 
-        public void OnMessageFromBannedChat()
-        {
-            _telemetryClient.TrackEvent("Message From Banned Chat");
-        }
-
         public void OnNewChatStarted()
         {
             _telemetryClient.TrackEvent("New Chat");

@@ -17,6 +17,7 @@ namespace MotoHealth.Bot.Telegram
                 .AddTransient<ChatUpdatesFilterMiddleware>()
                 .AddSingleton<ChatLockingMiddleware>()
                 .AddTransient<NewChatsHandlerMiddleware>()
+                .AddTransient<BannedUsersHandlerMiddleware>()
                 .AddTransient(typeof(ChatUpdateHandlerMiddleware<>))
                 .AddTransient<TerminatingChatHandlerMiddleware>();
 
@@ -35,7 +36,7 @@ namespace MotoHealth.Bot.Telegram
                 .UseMiddleware<ChatUpdatesFilterMiddleware>()
                 .UseMiddleware<ChatLockingMiddleware>()
                 .UseMiddleware<NewChatsHandlerMiddleware>()
-                .UseMiddleware<ChatUpdateHandlerMiddleware<BannedUsersChatUpdateHandler>>()
+                .UseMiddleware<BannedUsersHandlerMiddleware>()
                 .UseMiddleware<ChatUpdateHandlerMiddleware<AdminCommandsChatUpdateHandler>>()
                 .UseMiddleware<ChatUpdateHandlerMiddleware<AccidentReportingDialogChatUpdateHandler>>()
                 .UseMiddleware<ChatUpdateHandlerMiddleware<MainChatUpdateHandler>>()

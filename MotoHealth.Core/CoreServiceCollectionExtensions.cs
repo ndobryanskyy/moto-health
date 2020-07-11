@@ -25,9 +25,6 @@ namespace MotoHealth.Core
                 .AddTransient<IUsersBanService, UsersBanService>();
 
             services
-                .AddTransient<BannedUsersChatUpdateHandler>();
-
-            services
                 .AddTransient<AdminCommandsChatUpdateHandler>()
                 .AddSingleton<IAdminCommandsChatUpdateHandlerMessages, AdminCommandsChatUpdateHandlerMessages>();
 

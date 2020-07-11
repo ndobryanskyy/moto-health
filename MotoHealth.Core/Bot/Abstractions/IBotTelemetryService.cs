@@ -6,8 +6,6 @@ namespace MotoHealth.Core.Bot.Abstractions
     {
         void OnNewChatStarted();
 
-        void OnMessageFromBannedChat();
-
         void OnUpdateSkipped();
 
         void OnUpdateHandled();
