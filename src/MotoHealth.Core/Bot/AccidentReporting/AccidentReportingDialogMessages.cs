@@ -81,7 +81,8 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                 $"• <b>Адрес:</b> {state.Address?.HtmlEscaped() ?? "Геопозиция"}\n" +
                 $"• <b>Участник:</b> {state.Participant.HtmlEscaped()}\n"+
                 $"• <b>Пострадавшие:</b> {state.Victims.HtmlEscaped()}\n" +
-                $"• <b>Телефон:</b> {state.ReporterPhoneNumber.HtmlEscaped()}")
+                $"• <b>Телефон:</b> {state.ReporterPhoneNumber.HtmlEscaped()}\n\n" +
+                "<i>Отправить?</i>")
             .WithReplyKeyboard(ReportSummaryKeyboard);
 
         public IMessage SubmitConfirmationExpectedError { get; } = MessageFactory.CreateCompositeMessage()

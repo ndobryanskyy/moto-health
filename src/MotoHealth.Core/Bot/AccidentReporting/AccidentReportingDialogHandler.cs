@@ -192,9 +192,12 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
                     case 5:
                         {
-                            if (update is ITextMessageBotUpdate textMessage)
+                            if (update is ITextMessageBotUpdate { Text: var text })
                             {
-                                if (textMessage.Text.Trim().Equals(_messages.SubmitButton.Text, StringComparison.InvariantCultureIgnoreCase))
+                                var trimmed = text.Trim();
+
+                                if (trimmed.Equals(_messages.SubmitButton.Text, StringComparison.InvariantCultureIgnoreCase) ||
+                                    trimmed.Equals("да", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     await ReportAccidentAsync();
                                     await SendMessageAsync(_messages.SuccessfullySent);
