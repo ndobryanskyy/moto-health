@@ -6,6 +6,9 @@ env:
 on:
   push:
     branches: [ develop, main ]
+defaults:
+  run:
+    working-directory: "src"
 
 jobs:
   build:
@@ -30,7 +33,7 @@ jobs:
       run: dotnet test --configuration Release --no-build --verbosity normal
     
     - name: "Publish Functions"
-      run: dotnet publish ./MotoHealth.Functions/MotoHealth.Functions.csproj --no-build --configuration Release --output ${{ env.OUTPUT_PATH }}/functions
+      run: dotnet publish ./MotoHealth.Functions/MotoHealth.Functions.csproj --configuration Release --no-build --output ${{ env.OUTPUT_PATH }}/functions
       
     - name: "Upload Functions Artifacts"
       uses: actions/upload-artifact@v1
@@ -39,7 +42,7 @@ jobs:
         path: ${{ env.OUTPUT_PATH }}/functions
 
     - name: "Publish Bot"
-      run: dotnet publish ./MotoHealth.Bot/MotoHealth.Bot.csproj --no-build --configuration Release --output ${{ env.OUTPUT_PATH }}/bot
+      run: dotnet publish ./MotoHealth.Bot/MotoHealth.Bot.csproj --configuration Release --no-build --output ${{ env.OUTPUT_PATH }}/bot
       
     - name: "Upload Bot Artifacts"
       uses: actions/upload-artifact@v1

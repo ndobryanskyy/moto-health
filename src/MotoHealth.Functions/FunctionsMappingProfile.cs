@@ -22,13 +22,17 @@ namespace MotoHealth.Functions
             CreateMap<AccidentAlertingWorkflowInput.AccidentReportSummary, AccidentTableEntity>()
                 .ForMember(x => x.RowKey, opts => opts.Ignore())
                 .ForMember(x => x.PartitionKey, opts => opts.Ignore())
+                .ForMember(x => x.Timestamp, opts => opts.Ignore())
+                .ForMember(x => x.ETag, opts => opts.Ignore())
                 .ForMember(x => x.AnyChatAlerted, opts => opts.Ignore())
                 .ForMember(x => x.ReportHandledAtUtc, opts => opts.Ignore());
-            
+
             CreateMap<RecordAccidentActivityInput, AccidentTableEntity>()
                 .IncludeMembers(x => x.AccidentReport)
                 .ForMember(x => x.RowKey, opts => opts.MapFrom(x => AccidentTableEntity.EntityRowKey))
-                .ForMember(x => x.PartitionKey, opts => opts.MapFrom(x => x.AccidentReport.Id));
+                .ForMember(x => x.PartitionKey, opts => opts.MapFrom(x => x.AccidentReport.Id))
+                .ForMember(x => x.Timestamp, opts => opts.Ignore())
+                .ForMember(x => x.ETag, opts => opts.Ignore());
         }
     }
 }

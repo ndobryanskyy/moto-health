@@ -16,16 +16,16 @@ namespace MotoHealth.Bot.Tests.Fixtures
         {
             base.ConfigureWebHost(builder);
 
-            var azureTablesInitializerMock = SetupAzureTablesInitializerMock();
+            var azureStorageInitializerMock = SetupAzureStorageInitializerMock();
 
             builder.ConfigureTestServices(services =>
             {
-                services.AddSingleton(azureTablesInitializerMock.Object);
+                services.AddSingleton(azureStorageInitializerMock.Object);
                 services.AddSingleton(Mock.Of<ITelegramClient>());
             });
         }
 
-        private static Mock<IAzureStorageInitializer> SetupAzureTablesInitializerMock()
+        private static Mock<IAzureStorageInitializer> SetupAzureStorageInitializerMock()
         {
             var initializerMock = new Mock<IAzureStorageInitializer>();
 
