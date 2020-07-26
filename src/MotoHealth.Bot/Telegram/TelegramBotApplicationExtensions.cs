@@ -37,9 +37,8 @@ namespace MotoHealth.Bot.Telegram
                 .UseMiddleware<ChatLockingMiddleware>()
                 .UseMiddleware<NewChatsHandlerMiddleware>()
                 .UseMiddleware<BannedUsersHandlerMiddleware>()
-                .UseMiddleware<ChatUpdateHandlerMiddleware<AdminCommandsChatUpdateHandler>>()
                 .UseMiddleware<ChatUpdateHandlerMiddleware<AccidentReportingDialogChatUpdateHandler>>()
-                .UseMiddleware<ChatUpdateHandlerMiddleware<MainChatUpdateHandler>>()
+                .UseMiddleware<ChatUpdateHandlerMiddleware<MainCommandsChatUpdateHandler>>()
                 .UseMiddleware<TerminatingChatHandlerMiddleware>()
                 .Build();
 

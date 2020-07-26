@@ -8,7 +8,7 @@ namespace MotoHealth.Core.Bot.ChatUpdateHandlers
 {
     public abstract class ChatUpdateHandlerBase
     {
-        public async Task HandleUpdateAsync(IChatUpdateContext context, ILogger logger, CancellationToken cancellationToken)
+        public async ValueTask HandleUpdateAsync(IChatUpdateContext context, ILogger logger, CancellationToken cancellationToken)
         {
             if (SkipHandledUpdates && context.IsUpdateHandled)
             {
@@ -35,6 +35,6 @@ namespace MotoHealth.Core.Bot.ChatUpdateHandlers
 
         protected abstract bool SkipHandledUpdates { get; }
 
-        protected abstract Task OnUpdateAsync(IChatUpdateContext context, ILogger logger, CancellationToken cancellationToken);
+        protected abstract ValueTask OnUpdateAsync(IChatUpdateContext context, ILogger logger, CancellationToken cancellationToken);
     }
 }

@@ -19,7 +19,7 @@ namespace MotoHealth.Core.Bot.ChatUpdateHandlers
         
         protected override bool SkipHandledUpdates => true;
 
-        protected override async Task OnUpdateAsync(IChatUpdateContext context, ILogger logger, CancellationToken cancellationToken)
+        protected override async ValueTask OnUpdateAsync(IChatUpdateContext context, ILogger logger, CancellationToken cancellationToken)
         {
             var state = await context.GetStagingStateAsync(cancellationToken);
 

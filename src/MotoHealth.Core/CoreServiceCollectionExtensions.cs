@@ -4,6 +4,7 @@ using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
 using MotoHealth.Core.Bot.ChatUpdateHandlers;
 using MotoHealth.Core.Bot.Commands;
+using MotoHealth.Core.Bot.Commands.AppCommands;
 using MotoHealth.Core.Telegram;
 using MotoHealth.Telegram;
 
@@ -16,26 +17,29 @@ namespace MotoHealth.Core
             services.AddTelegram();
 
             services
+                .AddSingleton<IPublicCommandsProvider, PublicCommandsProvider>()
+                .AddSingleton<IBotCommand, StartBotCommand>()
+                .AddSingleton<IBotCommand, MotoHealthInfoBotCommand>()
+                .AddTransient<IBotCommand, ReportAccidentBotCommand>()
+                .AddTransient<IBotCommand, SubscribeChatToAccidentAlertingBotCommand>()
+                .AddTransient<IBotCommand, UnsubscribeChatFromAccidentAlertingBotCommand>()
+                .AddTransient<IBotCommand, BanUserBotCommand>()
+                .AddTransient<IBotCommand, UnbanUserBotCommand>();
+
+            services
                 .AddSingleton<IBotUpdatesMapper, BotUpdatesMapper>()
                 .AddScoped<IChatFactory, ChatFactory>()
                 .AddTransient<IChatStatesRepository, ChatStatesRepository>()
                 .AddSingleton<IChatsDoorman, ChatsDoorman>()
-                .AddSingleton<IBotCommandsRegistry, BotCommandsRegistry>()
                 .AddSingleton<IPhoneNumberParser, PhoneNumberParser>()
                 .AddTransient<IUsersBanService, UsersBanService>();
-
-            services
-                .AddTransient<AdminCommandsChatUpdateHandler>()
-                .AddSingleton<IAdminCommandsChatUpdateHandlerMessages, AdminCommandsChatUpdateHandlerMessages>();
 
             services
                 .AddTransient<AccidentReportingDialogChatUpdateHandler>()
                 .AddTransient<IAccidentReportingDialogHandler, AccidentReportingDialogHandler>()
                 .AddSingleton<IAccidentReportingDialogMessages, AccidentReportingDialogMessages>();
 
-            services
-                .AddTransient<MainChatUpdateHandler>()
-                .AddSingleton<IMainChatUpdateHandlerMessages, MainChatUpdateHandlerMessages>();
+            services.AddTransient<MainCommandsChatUpdateHandler>();
 
             return services;
         }
