@@ -97,15 +97,18 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                     dialogTelemetry.OnNextStep();
                 }
             }
-            catch (UnexpectedReplyTypeException)
+            catch (AccidentReportingDialogReplyException dialogException)
             {
-                dialogTelemetry.OnUnexpectedReply();
-            }
-            catch (ReplyValidationException replyValidationException)
-            {
-                dialogTelemetry.OnReplyValidationFailed();
+                if (dialogException is AccidentReportingDialogReplyValidationException)
+                {
+                    dialogTelemetry.OnReplyValidationFailed();
+                }
+                else
+                {
+                    dialogTelemetry.OnUnexpectedReply();
+                }
 
-                await SendMessageAsync(replyValidationException.UserFriendlyErrorMessage);
+                await SendMessageAsync(dialogException.UserFriendlyErrorMessage);
             }
 
             async Task<bool> HandleStepAsync()
@@ -127,7 +130,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                             }
                             else
                             {
-                                throw new UnexpectedReplyTypeException();
+                                throw new AccidentReportingDialogReplyException(_messages.SpecifyAddressRePrompt);
                             }
 
                             await SendMessageAsync(_messages.SpecifyParticipants);
@@ -145,7 +148,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                                 break;
                             }
                             
-                            throw new UnexpectedReplyTypeException();
+                            throw new AccidentReportingDialogReplyException(_messages.SpecifyParticipantsRePrompt);
                         }
 
                     case 3:
@@ -159,7 +162,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                                 break;
                             }
 
-                            throw new UnexpectedReplyTypeException();
+                            throw new AccidentReportingDialogReplyException(_messages.AreThereVictimsRePrompt);
                         }
 
                     case 4:
@@ -176,14 +179,14 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
                                 if (!_phoneNumberParser.TryParse(text, out var parsedPhoneNumber))
                                 {
-                                    throw new ReplyValidationException(_messages.InvalidPhoneNumberError);
+                                    throw new AccidentReportingDialogReplyValidationException(_messages.InvalidPhoneNumberError);
                                 }
 
                                 dialogState.ReporterPhoneNumber = parsedPhoneNumber;
                             }
                             else
                             {
-                                throw new UnexpectedReplyTypeException();
+                                throw new AccidentReportingDialogReplyException(_messages.AskForContactsRePrompt);
                             }
 
                             await SendMessageAsync(_messages.ReportSummary(dialogState));
@@ -206,11 +209,11 @@ namespace MotoHealth.Core.Bot.AccidentReporting
                                 }
                                 else
                                 {
-                                    throw new ReplyValidationException(_messages.SubmitConfirmationExpectedError);
+                                    throw new AccidentReportingDialogReplyValidationException(_messages.SubmitConfirmationRePrompt);
                                 }
                             }
 
-                            throw new UnexpectedReplyTypeException();
+                            throw new AccidentReportingDialogReplyException(_messages.SubmitConfirmationRePrompt);
                         }
 
 
@@ -240,7 +243,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
         {
             if (text.Length > maxLength)
             {
-                throw new ReplyValidationException(_messages.ReplyMaxLengthExceededError(maxLength));
+                throw new AccidentReportingDialogReplyValidationException(_messages.ReplyMaxLengthExceededError(maxLength));
             }
         }
     }

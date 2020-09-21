@@ -29,7 +29,7 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
             logger = context.CreateReplaySafeLogger(logger);
 
             var input = context.GetInput<AccidentAlertingWorkflowInput>() 
-                                 ?? throw new ArgumentException("Input can not be null", nameof(context));
+                        ?? throw new ArgumentException("Input can not be null", nameof(context));
 
             var accidentReport = input.Report;
 
