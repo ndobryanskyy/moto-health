@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using MotoHealth.Bot.Middleware;
+using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.ChatUpdateHandlers;
 
 namespace MotoHealth.Bot.Telegram
@@ -11,6 +12,7 @@ namespace MotoHealth.Bot.Telegram
         public static IServiceCollection AddTelegramBot(this IServiceCollection services)
         {
             services
+                .AddSingleton<IBotInitializer, BotInitializer>()
                 .AddSingleton<ReliableUpdateHandlingContextMiddleware>()
                 .AddSingleton<BotTokenVerificationMiddleware>()
                 .AddSingleton<BotUpdateInitializerMiddleware>()

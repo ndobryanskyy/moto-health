@@ -26,7 +26,7 @@ namespace MotoHealth.Core.Telegram
         {
             return update switch
             {
-                { Type: UpdateType.Message, Message: Message _ } => MapMessageBotUpdate(update),
+                { Type: UpdateType.Message, Message: {} } => MapMessageBotUpdate(update),
                 _ => _mapper.Map<NotMappedBotUpdate>(update)
             };
         }
@@ -38,7 +38,7 @@ namespace MotoHealth.Core.Telegram
             return message switch
             {
                 { Type: MessageType.Location } => _mapper.Map<LocationMessageBotUpdate>(update),
-                { Type: MessageType.Contact, Contact: Contact _ } => _mapper.Map<ContactMessageBotUpdate>(update),
+                { Type: MessageType.Contact, Contact: {} } => _mapper.Map<ContactMessageBotUpdate>(update),
                 { Type: MessageType.Text } when HasOnlyOneCommandEntity(message) => _mapper.Map<CommandMessageBotUpdate>(update),
                 { Type: MessageType.Text } => _mapper.Map<TextMessageBotUpdate>(update),
                 _ => _mapper.Map<NotMappedMessageBotUpdate>(update)

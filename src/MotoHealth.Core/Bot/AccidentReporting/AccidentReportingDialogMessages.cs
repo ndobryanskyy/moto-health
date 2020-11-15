@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MotoHealth.Telegram.Extensions;
+﻿using MotoHealth.Telegram.Extensions;
 using MotoHealth.Telegram.Messages;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -58,7 +57,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
         #region Specify Address
 
-        private static readonly IEnumerable<IEnumerable<KeyboardButton>> SpecifyAddressReplyKeyboard = new[]
+        private static readonly ReplyKeyboard SpecifyAddressReplyKeyboard = new ReplyKeyboard
         {
             new[] { ShareLocationButton },
             new[] { CancelButton }
@@ -87,7 +86,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
         #region Specify Participants
 
-        private static readonly IEnumerable<IEnumerable<KeyboardButton>> SpecifyParticipantsReplyKeyboard = new[]
+        private static readonly ReplyKeyboard SpecifyParticipantsReplyKeyboard = new ReplyKeyboard
         {
             new[] { new KeyboardButton("Мотоцикл") },
             new[] { new KeyboardButton("Мопед"), new KeyboardButton("Велосипед") },
@@ -110,7 +109,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
         #region Are There Victims
 
-        private static readonly IEnumerable<IEnumerable<KeyboardButton>> AreThereVictimsReplyKeyboard = new[]
+        private static readonly ReplyKeyboard AreThereVictimsReplyKeyboard = new ReplyKeyboard
         {
             new[] { new KeyboardButton("Да"), new KeyboardButton("Нет") },
             new[] { CancelButton }
@@ -132,7 +131,7 @@ namespace MotoHealth.Core.Bot.AccidentReporting
 
         #region Ask For Contacts
 
-        private static readonly IEnumerable<IEnumerable<KeyboardButton>> AskForContactsReplyKeyboard = new[]
+        private static readonly ReplyKeyboard AskForContactsReplyKeyboard = new ReplyKeyboard
         {
             new[] { SharePhoneNumberButton },
             new[] { CancelButton }
