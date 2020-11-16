@@ -26,6 +26,17 @@ namespace MotoHealth.Telegram
             _client = client;
         }
 
+        public async Task<User> GetMeAsync(CancellationToken cancellationToken)
+        {
+            using var httpRequest = ConvertToHttpRequest(new GetMeRequest());
+            using var response = await _client.SendAsync(httpRequest, HttpCompletionOption.ResponseContentRead, cancellationToken);
+
+            await EnsureRequestSucceededAsync(response);
+
+            var telegramResponse = await DeserializeTelegramResponseAsync<User>(response);
+            return telegramResponse.Result;
+        }
+
         public async Task SendTextMessageAsync(SendMessageRequest request, CancellationToken cancellationToken)
         {
             using var httpRequest = ConvertToHttpRequest(request); 
@@ -72,8 +83,7 @@ namespace MotoHealth.Telegram
         {
             if (response.IsSuccessStatusCode) return;
 
-            var responseString = await response.Content.ReadAsStringAsync();
-            var telegramResponse = DeserializeTelegramResponse(responseString);
+            var telegramResponse = await DeserializeTelegramResponseAsync<object>(response);
 
             _logger.LogWarning($"Unsuccessful telegram request\nError: {telegramResponse.Description}");
 
@@ -88,14 +98,16 @@ namespace MotoHealth.Telegram
             throw new TelegramApiException(error, telegramResponse.Description);
         }
 
-        private ApiResponse<object> DeserializeTelegramResponse(string responseString)
+        private async Task<ApiResponse<TResult>> DeserializeTelegramResponseAsync<TResult>(HttpResponseMessage response)
         {
             try
             {
+                var responseString = await response.Content.ReadAsStringAsync();
+
                 using var streamReader = new StringReader(responseString);
                 using var jsonReader = new JsonTextReader(streamReader);
 
-                return JsonSerializer.Deserialize<ApiResponse<object>>(jsonReader);
+                return JsonSerializer.Deserialize<ApiResponse<TResult>>(jsonReader);
             }
             catch (Exception exception)
             {

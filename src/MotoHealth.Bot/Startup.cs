@@ -1,16 +1,15 @@
-using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using MotoHealth.Bot.AppInsights;
 using MotoHealth.Bot.Authorization;
 using MotoHealth.Bot.Extensions;
+using MotoHealth.Bot.HealthChecks;
 using MotoHealth.Bot.Telegram;
+using MotoHealth.Bot.Telegram.HealthChecks;
 using MotoHealth.Core;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Infrastructure;
@@ -30,6 +29,10 @@ namespace MotoHealth.Bot
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRouting();
+            
+            services
+                .AddHealthChecks()
+                .AddTelegram();
 
             services.AddAutoMapper(new []
             {
@@ -76,28 +79,10 @@ namespace MotoHealth.Bot
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints
-                    .Map("/", OnAlwaysOnPingAsync)
-                    .WithDisplayName("Always On Ping");
-
+                endpoints.MapHealthChecks();
+                endpoints.MapAlwaysOnPing();
                 endpoints.MapTelegramWebhook();
             });
-        }
-
-        private static Task OnAlwaysOnPingAsync(HttpContext context)
-        {
-            var logger = context.RequestServices
-                .GetRequiredService<ILoggerFactory>()
-                .CreateLogger("AlwaysOn");
-
-            var requestTelemetry = context.GetRequestTelemetry();
-            requestTelemetry.Context.Operation.SyntheticSource = Constants.ApplicationInsights.AlwaysOnPingSyntheticSource;
-
-            context.Response.StatusCode = StatusCodes.Status200OK;
-
-            logger.LogDebug("Always On Ping Received");
-
-            return Task.CompletedTask;
         }
     }
 }

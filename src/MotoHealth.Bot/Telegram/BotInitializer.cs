@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
@@ -36,8 +37,17 @@ namespace MotoHealth.Bot.Telegram
         {
             _logger.LogInformation("Starting bot initialization");
 
-            await SetWebhookAsync(cancellationToken);
-            await SetCommandsAsync(cancellationToken);
+            try
+            {
+                await SetWebhookAsync(cancellationToken);
+                await SetCommandsAsync(cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "Failed to initialize bot");
+
+                throw;
+            }
 
             _logger.LogInformation("Finished bot initialization");
         }

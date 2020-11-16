@@ -37,11 +37,11 @@ namespace MotoHealth.Infrastructure.AzureTables
                 await EnsureTableExistsAsync(_tablesProvider.Chats, cancellationToken);
                 await EnsureTableExistsAsync(_tablesProvider.ChatSubscriptions, cancellationToken);
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                _logger.LogError(e, "Failed to initialize storage");
+                _logger.LogError(exception, "Failed to initialize storage");
                 
-                throw new Exception("Fatal startup error");
+                throw;
             }
         }
 

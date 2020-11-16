@@ -20,6 +20,11 @@ namespace MotoHealth.Infrastructure
             services.Configure(configureOptions);
 
             services
+                .AddHealthChecks()
+                .AddAzureTables()
+                .AddAzureStorageQueues();
+
+            services
                 .AddSingleton<ICloudTablesProvider, CloudTablesProvider>()
                 .AddSingleton<IAzureStorageInitializer, AzureStorageInitializer>()
                 .AddSingleton<IChatStateInMemoryCache, ChatStateInMemoryCache>()
@@ -35,6 +40,8 @@ namespace MotoHealth.Infrastructure
 
                     client.Timeout = options.AzureStorage.QueuesRequestTimeout;
                 });
+
+            services.AddTransient(container => (IAppQueuesStatusProvider)container.GetRequiredService<IAppEventsQueuesClient>());
 
             services.AddHostedService<AzureStorageInitializerHostedService>();
 

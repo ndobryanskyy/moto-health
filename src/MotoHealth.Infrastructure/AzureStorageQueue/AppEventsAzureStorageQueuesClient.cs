@@ -19,7 +19,12 @@ namespace MotoHealth.Infrastructure.AzureStorageQueue
         Task PublishAccidentAlertAsync(AccidentAlertDto alert, CancellationToken cancellationToken);
     }
 
-    internal sealed class AppEventsAzureStorageQueuesClient : IAppEventsQueuesClient
+    internal interface IAppQueuesStatusProvider
+    {
+        Task<bool> CheckQueuesExistAsync(CancellationToken cancellationToken);
+    }
+
+    internal sealed class AppEventsAzureStorageQueuesClient : IAppEventsQueuesClient, IAppQueuesStatusProvider
     {
         private readonly ILogger<AppEventsAzureStorageQueuesClient> _logger;
         private readonly QueueClient _alertsQueueClient;
@@ -56,5 +61,8 @@ namespace MotoHealth.Infrastructure.AzureStorageQueue
 
             _logger.LogDebug("Alerts queue initialized");
         }
+
+        async Task<bool> IAppQueuesStatusProvider.CheckQueuesExistAsync(CancellationToken cancellationToken) 
+            => await _alertsQueueClient.ExistsAsync(cancellationToken);
     }
 }
