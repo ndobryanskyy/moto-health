@@ -36,7 +36,7 @@ jobs:
       run: dotnet publish ./MotoHealth.Functions/MotoHealth.Functions.csproj --configuration Release --no-build --output ${{ env.OUTPUT_PATH }}/functions
       
     - name: "Upload Functions Artifacts"
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
         name: functions
         path: ${{ env.OUTPUT_PATH }}/functions
@@ -45,7 +45,7 @@ jobs:
       run: dotnet publish ./MotoHealth.Bot/MotoHealth.Bot.csproj --configuration Release --no-build --output ${{ env.OUTPUT_PATH }}/bot
       
     - name: "Upload Bot Artifacts"
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
         name: bot
         path: ${{ env.OUTPUT_PATH }}/bot
@@ -55,14 +55,14 @@ jobs:
     needs: [ build ]
     steps:
       - name: "Download Artifacts"
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v2
         with:
           name: functions
           path: ${{ env.OUTPUT_PATH }}/functions
 
       - name: "Deploy Beta"
         if: github.ref == 'refs/heads/develop'
-        uses: Azure/functions-action@v1.1.4
+        uses: Azure/functions-action@v1
         with:
           app-name: ${{ secrets.BETA_FUNC_APP_NAME }}
           package: ${{ env.OUTPUT_PATH }}/functions
@@ -70,7 +70,7 @@ jobs:
 
       - name: "Deploy Release"
         if: github.ref == 'refs/heads/main'
-        uses: Azure/functions-action@v1.1.4
+        uses: Azure/functions-action@v1
         with:
           app-name: ${{ secrets.RELEASE_FUNC_APP_NAME }}
           package: ${{ env.OUTPUT_PATH }}/functions
@@ -81,7 +81,7 @@ jobs:
     needs: [ build ]
     steps:
       - name: "Download Artifacts"
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v2
         with:
           name: bot
           path: ${{ env.OUTPUT_PATH }}/bot
