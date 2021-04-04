@@ -1,7 +1,7 @@
 # Moto Health Emergency Bot
 
 <p align="center">
-    <img src="docs/logo.png" alt="logo" style="zoom:50%;" />
+    <img src="docs/moto-health-bot-logo.png" alt="moto-health-bot-logo" />
 </p>
 
 ### Mission
