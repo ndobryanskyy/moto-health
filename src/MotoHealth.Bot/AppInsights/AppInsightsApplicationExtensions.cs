@@ -48,24 +48,30 @@ namespace MotoHealth.Bot.AppInsights
 
             services
                 .AddApplicationInsightsTelemetryProcessor<AlwaysOnPingFilteringTelemetryProcessor>()
-                .AddSingleton<ITelemetryInitializer, DomainNameRoleInstanceTelemetryInitializer>()
-                .AddSingleton<ITelemetryInitializer, AzureAppServiceRoleNameFromHostNameHeaderInitializer>()
-                .AddSingleton<ITelemetryInitializer, ComponentVersionTelemetryInitializer>()
-                .AddSingleton<ITelemetryInitializer, AspNetCoreEnvironmentTelemetryInitializer>()
-                .AddSingleton<ITelemetryInitializer, HttpDependenciesParsingTelemetryInitializer>()
-                .AddSingleton<ITelemetryInitializer, SyntheticTelemetryInitializer>()
-                .AddSingleton<ITelemetryInitializer, ClientIpHeaderTelemetryInitializer>();
+                .AddApplicationInsightsTelemetryInitializer<DomainNameRoleInstanceTelemetryInitializer>()
+                .AddApplicationInsightsTelemetryInitializer<AzureAppServiceRoleNameFromHostNameHeaderInitializer>()
+                .AddApplicationInsightsTelemetryInitializer<ComponentVersionTelemetryInitializer>()
+                .AddApplicationInsightsTelemetryInitializer<AspNetCoreEnvironmentTelemetryInitializer>()
+                .AddApplicationInsightsTelemetryInitializer<HttpDependenciesParsingTelemetryInitializer>()
+                .AddApplicationInsightsTelemetryInitializer<SyntheticTelemetryInitializer>()
+                .AddApplicationInsightsTelemetryInitializer<ClientIpHeaderTelemetryInitializer>();
 
             services
-                .AddSingleton<ITelemetryInitializer, BotUpdateContextTelemetryInitializer>()
-                .AddSingleton<ITelemetryInitializer, TelegramDependencyTelemetryInitializer>()
-                .AddSingleton<ITelemetryInitializer, AzureTableDependencyTelemetryInitializer>();
+                .AddApplicationInsightsTelemetryInitializer<BotUpdateContextTelemetryInitializer>()
+                .AddApplicationInsightsTelemetryInitializer<TelegramDependencyTelemetryInitializer>()
+                .AddApplicationInsightsTelemetryInitializer<AzureTableDependencyTelemetryInitializer>();
 
             services
                 .AddSingleton<IBotTelemetryService, AppInsightBotTelemetryService>()
                 .AddSingleton<ITelegramTelemetrySanitizer, TelegramTelemetrySanitizer>();
 
             return services;
+        }
+
+        private static IServiceCollection AddApplicationInsightsTelemetryInitializer<TInitializer>(this IServiceCollection services)
+            where TInitializer : class, ITelemetryInitializer
+        {
+            return services.AddSingleton<ITelemetryInitializer, TInitializer>();
         }
     }
 }

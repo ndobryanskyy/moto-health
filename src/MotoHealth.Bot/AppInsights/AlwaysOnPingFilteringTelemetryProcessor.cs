@@ -6,12 +6,11 @@ namespace MotoHealth.Bot.AppInsights
 {
     internal sealed class AlwaysOnPingFilteringTelemetryProcessor : ITelemetryProcessor
     {
-        private ITelemetryProcessor Next { get; }
+        private readonly ITelemetryProcessor _next;
 
-        // Next will point to the next TelemetryProcessor in the chain.
         public AlwaysOnPingFilteringTelemetryProcessor(ITelemetryProcessor next)
         {
-            Next = next;
+            _next = next;
         }
 
         public void Process(ITelemetry item)
@@ -21,7 +20,7 @@ namespace MotoHealth.Bot.AppInsights
                 return;
             }
 
-            Next.Process(item);
+            _next.Process(item);
         }
     }
 }

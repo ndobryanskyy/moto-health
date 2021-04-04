@@ -14,14 +14,12 @@ namespace MotoHealth.Bot.AppInsights
 
         public void Initialize(ITelemetry telemetry)
         {
-            if (telemetry is DependencyTelemetry dependencyTelemetry &&
-                dependencyTelemetry.Type == AzureTableDependencyType &&
-                dependencyTelemetry.Success == false)
+            if (telemetry is DependencyTelemetry { Type: AzureTableDependencyType, Success: false } azureTableDependencyFailedTelemetry)
             {
-                if (dependencyTelemetry.ResultCode == NotFoundResultCode || dependencyTelemetry.ResultCode == ConflictResultCode)
+                if (azureTableDependencyFailedTelemetry.ResultCode == NotFoundResultCode || azureTableDependencyFailedTelemetry.ResultCode == ConflictResultCode)
                 {
-                    dependencyTelemetry.Success = true;
-                    dependencyTelemetry.Properties.Add("Success Changed To", "true");
+                    azureTableDependencyFailedTelemetry.Success = true;
+                    azureTableDependencyFailedTelemetry.Properties.Add("Success Changed To", "true");
                 }
             }
         }

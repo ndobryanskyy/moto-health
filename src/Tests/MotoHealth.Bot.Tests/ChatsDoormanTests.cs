@@ -11,11 +11,11 @@ namespace MotoHealth.Bot.Tests
 {
     public sealed class ChatsDoormanTests
     {
-        private readonly ChatsDoorman _chatsDoorman;
+        private readonly InMemoryChatsDoorman _chatsDoorman;
 
         public ChatsDoormanTests()
         {
-            _chatsDoorman = new ChatsDoorman(Mock.Of<ILogger<ChatsDoorman>>());
+            _chatsDoorman = new InMemoryChatsDoorman(Mock.Of<ILogger<InMemoryChatsDoorman>>());
         }
 
         [Fact]

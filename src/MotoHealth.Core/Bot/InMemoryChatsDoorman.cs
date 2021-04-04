@@ -2,21 +2,17 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using MotoHealth.Core.Bot.Abstractions;
 
 namespace MotoHealth.Core.Bot
 {
-    public interface IChatsDoorman
+    internal sealed class InMemoryChatsDoorman : IChatsDoorman
     {
-        bool TryLockChat(long chatId, [NotNullWhen(true)] out IDisposable? chatLock);
-    }
-
-    internal sealed class ChatsDoorman : IChatsDoorman
-    {
-        private readonly ILogger<ChatsDoorman> _logger;
+        private readonly ILogger<InMemoryChatsDoorman> _logger;
 
         private readonly ConcurrentDictionary<long, ChatLock> _locks = new ConcurrentDictionary<long, ChatLock>();
 
-        public ChatsDoorman(ILogger<ChatsDoorman> logger)
+        public InMemoryChatsDoorman(ILogger<InMemoryChatsDoorman> logger)
         {
             _logger = logger;
         }

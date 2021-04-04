@@ -24,49 +24,51 @@ namespace MotoHealth.Bot.AppInsights
 
         public void Initialize(ITelemetry telemetry)
         {
-            if (_httpContextAccessor.HttpContext.TryGetBotUpdate(out var botUpdate))
+            if (!_httpContextAccessor.HttpContext.TryGetBotUpdate(out var botUpdate))
             {
-                telemetry.Context.Operation.Id = botUpdate.UpdateId.ToString();
-                telemetry.Context.Operation.Name = "Handle Telegram Update";
+                return;
+            }
 
-                if (botUpdate is IHasSender botUpdateWithSender)
+            telemetry.Context.Operation.Id = botUpdate.UpdateId.ToString(CultureInfo.InvariantCulture);
+            telemetry.Context.Operation.Name = "Handle Telegram Update";
+
+            if (botUpdate is IHasSender botUpdateWithSender)
+            {
+                var sender = botUpdateWithSender.Sender;
+                var userId = sender.Id.ToString(CultureInfo.InvariantCulture);
+
+                telemetry.Context.User.Id = userId;
+                telemetry.Context.User.AuthenticatedUserId = GetAuthenticatedUserId(sender);
+                telemetry.Context.Session.Id = userId;
+            }
+
+            if (telemetry is ISupportProperties telemetryWithProperties)
+            {
+                if (botUpdate is IBelongsToChat botUpdateForChat)
                 {
-                    var sender = botUpdateWithSender.Sender;
-                    var userId = sender.Id.ToString(CultureInfo.InvariantCulture);
+                    var chat = botUpdateForChat.Chat;
 
-                    telemetry.Context.User.Id = userId;
-                    telemetry.Context.User.AuthenticatedUserId = GetAuthenticatedUserId(sender);
-                    telemetry.Context.Session.Id = userId;
-                }
+                    telemetryWithProperties.Properties["Chat Id"] = chat.Id.ToString();
+                    telemetryWithProperties.Properties["Chat Type"] = chat.Type.ToString();
 
-                if (telemetry is ISupportProperties telemetryWithProperties)
-                {
-                    if (botUpdate is IBelongsToChat botUpdateForChat)
+                    if (chat.Group != null)
                     {
-                        var chat = botUpdateForChat.Chat;
-
-                        telemetryWithProperties.Properties["Chat Id"] = chat.Id.ToString();
-                        telemetryWithProperties.Properties["Chat Type"] = chat.Type.ToString();
-
-                        if (chat.Group != null)
-                        {
-                            telemetryWithProperties.Properties["Group Title"] = chat.Group.Title;
-                        }
+                        telemetryWithProperties.Properties["Group Title"] = chat.Group.Title;
                     }
                 }
+            }
 
-                if (telemetry is RequestTelemetry requestTelemetry)
-                {
-                    requestTelemetry.Url = _telemetrySanitizer.SanitizeWebhookUri(requestTelemetry.Url);
-                    requestTelemetry.Name = "Telegram Webhook";
-                    requestTelemetry.Source = "Telegram";
-                    requestTelemetry.Properties[TelemetryProperties.WellKnown.UpdateType] = botUpdate.GetUpdateTypeNameForTelemetry();
-                }
+            if (telemetry is RequestTelemetry requestTelemetry)
+            {
+                requestTelemetry.Url = _telemetrySanitizer.SanitizeWebhookUri(requestTelemetry.Url);
+                requestTelemetry.Name = "Telegram Webhook";
+                requestTelemetry.Source = "Telegram";
+                requestTelemetry.Properties[TelemetryProperties.WellKnown.UpdateType] = botUpdate.GetUpdateTypeNameForTelemetry();
+            }
 
-                if (telemetry is ExceptionTelemetry exceptionTelemetry)
-                {
-                    botUpdate.ExtractDiagnosticProperties().MergeTo(exceptionTelemetry.Properties);
-                }
+            if (telemetry is ExceptionTelemetry exceptionTelemetry)
+            {
+                botUpdate.ExtractDiagnosticProperties().MergeTo(exceptionTelemetry.Properties);
             }
         }
 

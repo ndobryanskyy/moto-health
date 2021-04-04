@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using MotoHealth.Bot.Exceptions;
 using MotoHealth.Bot.Extensions;
-using MotoHealth.Core.Bot;
+using MotoHealth.Core.Bot.Abstractions;
 
 namespace MotoHealth.Bot.Middleware
 {

@@ -30,7 +30,7 @@ namespace MotoHealth.Core
                 .AddSingleton<IBotUpdatesMapper, BotUpdatesMapper>()
                 .AddScoped<IChatFactory, ChatFactory>()
                 .AddTransient<IChatStatesRepository, ChatStatesRepository>()
-                .AddSingleton<IChatsDoorman, ChatsDoorman>()
+                .AddSingleton<IChatsDoorman, InMemoryChatsDoorman>()
                 .AddSingleton<IPhoneNumberParser, PhoneNumberParser>()
                 .AddTransient<IUsersBanService, UsersBanService>();
 

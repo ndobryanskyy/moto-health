@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Bot.Extensions;
+using MotoHealth.Core.Bot;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Telegram.Messages;
 using Telegram.Bot.Types.Enums;
@@ -16,29 +16,29 @@ namespace MotoHealth.Bot.Middleware
 
         private readonly ILogger<BannedUsersHandlerMiddleware> _logger;
         private readonly IBotTelemetryService _botTelemetryService;
-        private readonly IChatStatesRepository _chatStatesRepository;
+        private readonly IUsersBanService _banService;
 
         public BannedUsersHandlerMiddleware(
             ILogger<BannedUsersHandlerMiddleware> logger,
             IBotTelemetryService botTelemetryService,
-            IChatStatesRepository chatStatesRepository)
+            IUsersBanService banService)
         {
             _logger = logger;
             _botTelemetryService = botTelemetryService;
-            _chatStatesRepository = chatStatesRepository;
+            _banService = banService;
         }
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             var updateContext = context.GetChatUpdateContext();
 
-            if (!updateContext.IsUpdateHandled && 
-                updateContext.Update.Chat.Type == ChatType.Private)
+            if (updateContext is { IsUpdateHandled: false, Update: { Chat: { Type: ChatType.Private } } })
             {
-                var state = await _chatStatesRepository.GetForChatAsync(updateContext.ChatId, context.RequestAborted)
-                            ?? throw new InvalidOperationException();
+                var isUserBanned = await _banService.CheckIfUserIsBannedAsync(
+                    updateContext.Update.Sender.Id,
+                    context.RequestAborted);
 
-                if (state.UserBanned)
+                if (isUserBanned)
                 {
                     _logger.LogWarning("Message from banned chat");
                     _botTelemetryService.OnUpdateSkipped();

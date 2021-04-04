@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Core.Bot.Abstractions;
@@ -17,6 +18,8 @@ namespace MotoHealth.Core.Bot
         Task<BanOperationResult> BanUserAsync(int userId, CancellationToken cancellationToken);
         
         Task<BanOperationResult> UnbanUserAsync(int userId, CancellationToken cancellationToken);
+
+        ValueTask<bool> CheckIfUserIsBannedAsync(int userId, CancellationToken cancellationToken);
     }
 
     internal sealed class UsersBanService : IUsersBanService
@@ -37,6 +40,14 @@ namespace MotoHealth.Core.Bot
 
         public async Task<BanOperationResult> UnbanUserAsync(int userId, CancellationToken cancellationToken) 
             => await ChangeUserBannedStateAsync(userId, false, cancellationToken);
+
+        public async ValueTask<bool> CheckIfUserIsBannedAsync(int userId, CancellationToken cancellationToken)
+        {
+            var state = await _chatStatesRepository.GetForChatAsync(userId, cancellationToken)
+                        ?? throw new InvalidOperationException($"Chat for user '{userId}' was not found");
+
+            return state.UserBanned;
+        }
 
         private async Task<BanOperationResult> ChangeUserBannedStateAsync(int userId, bool desiredBanState, CancellationToken cancellationToken)
         {
