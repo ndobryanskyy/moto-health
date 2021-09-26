@@ -12,7 +12,9 @@ namespace MotoHealth.Bot.Middleware
     public sealed class TerminatingChatHandlerMiddleware : IMiddleware
     {
         private static readonly IMessage PleaseSelectCommandMessage = MessageFactory.CreateTextMessage()
-            .WithHtml("Пожалуйста, выберите команду в <b>[</b> ☰ <b>]</b> <b>меню</b>");
+            .WithHtml(
+                "Пожалуйста, выберите команду в\n" +
+                "<b>[</b> ☰ <b>]</b> <b>меню</b>");
 
         private static readonly IMessage NothingToSayMessage = MessageFactory.CreateCompositeMessage()
             .AddMessage(CommonMessages.NotQuiteGetIt)

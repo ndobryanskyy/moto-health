@@ -14,7 +14,7 @@ namespace MotoHealth.Core.Bot.Commands.AppCommands
                 "👇 Эта и другие команды также доступны в <b>[</b> ☰ <b>]</b> <b>меню</b>");
 
         private static readonly IMessage StartPinHint = MessageFactory.CreateTextMessage()
-            .WithPlainText("📌 Чтобы не забыть про бота в экстренной ситуации, можете закрепить себе этот диалог");
+            .WithPlainText("📌 Чтобы не забыть про бота в экстренной ситуации — закрепите себе этот диалог");
 
         private static readonly IMessage Start = MessageFactory.CreateCompositeMessage()
             .AddMessage(StartCommandHint)
