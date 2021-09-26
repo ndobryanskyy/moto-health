@@ -11,7 +11,7 @@ namespace MotoHealth.Core.Bot.Commands.AppCommands
         private static readonly IMessage StartCommandHint = MessageFactory.CreateTextMessage()
             .WithHtml(
                 "Нажмите /dtp чтобы получить помощь, если вы стали участником или свидетелем ДТП\n\n" +
-                "Эта и другие команды также доступны в меню внизу 👇");
+                "Эта и другие команды также доступны в меню <b>≡</b> внизу 👇");
 
         private static readonly IMessage StartPinHint = MessageFactory.CreateTextMessage()
             .WithPlainText("📌 Чтобы не забыть про бота в экстренной ситуации, можете закрепить себе этот диалог");

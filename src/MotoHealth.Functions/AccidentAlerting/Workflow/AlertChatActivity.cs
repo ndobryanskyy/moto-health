@@ -89,7 +89,7 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
                 $"<b>Телефон:</b> {accidentReport.ReporterPhoneNumber.HtmlEscaped()}\n\n" +
 
                 $"<b>Получено:</b> <i>{reportedAtLocalTime:dd/MM - HH:mm:ss}</i>\n" +
-                @$"{TelegramHtml.UserLink(accidentReport.ReporterTelegramUserId, $"Отправитель | {accidentReport.ReporterTelegramUserId}")}" +
+                @$"{TelegramHtml.UserLink(accidentReport.ReporterTelegramUserId, $"Отправитель | {accidentReport.ReporterTelegramUserId:D}")}" +
                 $"\n\n{alertBorder}"
             ).WithDisabledWebPagePreview();
         }
