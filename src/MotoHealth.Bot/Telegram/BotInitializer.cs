@@ -41,6 +41,8 @@ namespace MotoHealth.Bot.Telegram
             {
                 await SetWebhookAsync(cancellationToken);
                 await SetCommandsAsync(cancellationToken);
+
+                _logger.LogInformation("Finished bot initialization");
             }
             catch (Exception exception)
             {
@@ -48,8 +50,6 @@ namespace MotoHealth.Bot.Telegram
 
                 throw;
             }
-
-            _logger.LogInformation("Finished bot initialization");
         }
 
         private async Task SetWebhookAsync(CancellationToken cancellationToken)
@@ -60,6 +60,7 @@ namespace MotoHealth.Bot.Telegram
             var maxConnections = webhookOptions.MaxConnections;
             var allowedUpdates = webhookOptions.AllowedUpdates;
 
+            // TODO: sanitize before logging
             _logger.LogDebug($"Setting webhook to {webhookUrl}");
 
             _logger.LogInformation(
@@ -67,7 +68,7 @@ namespace MotoHealth.Bot.Telegram
                 $"Allowed updates: {string.Join(", ", allowedUpdates)}\n" +
                 $"Max connections: {maxConnections}");
 
-            var webhookRequest = new SetWebhookRequest(GetWebhookUrl(), null)
+            var webhookRequest = new SetWebhookRequest(webhookUrl, null)
             {
                 MaxConnections = _telegramOptions.Webhook.MaxConnections,
                 AllowedUpdates = _telegramOptions.Webhook.AllowedUpdates
@@ -80,7 +81,11 @@ namespace MotoHealth.Bot.Telegram
 
         private async Task SetCommandsAsync(CancellationToken cancellationToken)
         {
-            var commandsRequest = new SetMyCommandsRequest(_publicCommandsProvider.Commands);
+            var publicCommands = _publicCommandsProvider.Commands;
+
+            _logger.LogDebug($"Discovered {publicCommands.Length} public commands");
+
+            var commandsRequest = new SetMyCommandsRequest(publicCommands);
             await _telegramClient.SetBotCommandsAsync(commandsRequest, cancellationToken);
 
             _logger.LogInformation("Successfully set commands");

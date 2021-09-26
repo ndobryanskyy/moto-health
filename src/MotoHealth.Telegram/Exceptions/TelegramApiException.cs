@@ -12,10 +12,6 @@ namespace MotoHealth.Telegram.Exceptions
 
     public sealed class TelegramApiException : Exception
     {
-        public TelegramApiError Type { get; }
-
-        public string ErrorDescription { get; }
-
         public TelegramApiException(
             TelegramApiError type,
             string errorDescription) : base(errorDescription)
@@ -23,5 +19,9 @@ namespace MotoHealth.Telegram.Exceptions
             Type = type;
             ErrorDescription = errorDescription;
         }
+
+        public TelegramApiError Type { get; }
+
+        public string ErrorDescription { get; }
     }
 }

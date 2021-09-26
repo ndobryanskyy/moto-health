@@ -23,11 +23,13 @@ namespace MotoHealth.Core.Bot.ChatUpdateHandlers
         {
             var state = await context.GetStagingStateAsync(cancellationToken);
 
-            if (state.AccidentReportDialog != null)
+            if (state.AccidentReportDialog == null)
             {
-                await _dialogHandler.AdvanceDialogAsync(context, cancellationToken);
-                context.IsUpdateHandled = true;
+                return;
             }
+
+            await _dialogHandler.AdvanceDialogAsync(context, cancellationToken);
+            context.IsUpdateHandled = true;
         }
     }
 }

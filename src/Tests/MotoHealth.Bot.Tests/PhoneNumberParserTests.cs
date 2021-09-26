@@ -63,6 +63,8 @@ namespace MotoHealth.Bot.Tests
         [InlineData("05012345678")]
         [InlineData("05012345")]
         [InlineData("Not a phone number")]
+        [InlineData("Number +380501234567")]
+        [InlineData("+380501234567 Number")]
         public void Should_Not_Parse_Invalid_Number(string phoneNumber)
         {
             _parser.TryParse(phoneNumber, out _).Should().BeFalse();

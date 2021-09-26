@@ -21,11 +21,11 @@ namespace MotoHealth.Telegram.Tests
         public void UserLink_Should_Create_Html_Anchor_Tag_With_Telegram_UserId()
         {
             const string title = "<me>";
-            const int userId = 111222333;
+            const long userId = 4_294_967_294; // int.MaxValue * 2
 
             var userLink = TelegramHtml.UserLink(userId, title);
 
-            userLink.Should().Be(@"<a href=""tg://user?id=111222333"">&lt;me&gt;</a>");
+            userLink.Should().Be(@"<a href=""tg://user?id=4294967294"">&lt;me&gt;</a>");
         }
     }
 }

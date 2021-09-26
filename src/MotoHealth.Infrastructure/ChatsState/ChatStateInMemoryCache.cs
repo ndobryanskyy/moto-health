@@ -7,8 +7,9 @@ namespace MotoHealth.Infrastructure.ChatsState
 {
     internal sealed class ChatStateInMemoryCache : IChatStateInMemoryCache
     {
-        // TODO set from configuration
-        private readonly TimeSpan _slidingExpirationTimeout = TimeSpan.FromMinutes(15);
+        // TODO move to configuration
+        private static readonly TimeSpan SlidingExpirationTimeout = TimeSpan.FromMinutes(15);
+        private static readonly TimeSpan ExpirationScanFrequency = TimeSpan.FromMinutes(5);
 
         private readonly MemoryCache _cache;
 
@@ -16,7 +17,7 @@ namespace MotoHealth.Infrastructure.ChatsState
         {
             var cacheOptions = new MemoryCacheOptions
             {
-                ExpirationScanFrequency = TimeSpan.FromMinutes(5)
+                ExpirationScanFrequency = ExpirationScanFrequency
             };
 
             _cache = new MemoryCache(cacheOptions);
@@ -28,7 +29,7 @@ namespace MotoHealth.Infrastructure.ChatsState
         public void CacheChatState(IChatState state)
         {
             var options = new MemoryCacheEntryOptions()
-                .SetSlidingExpiration(_slidingExpirationTimeout);
+                .SetSlidingExpiration(SlidingExpirationTimeout);
 
             _cache.Set(state.AssociatedChatId, state, options);
         }

@@ -15,11 +15,11 @@ namespace MotoHealth.Core.Bot
 
     public interface IUsersBanService
     {
-        Task<BanOperationResult> BanUserAsync(int userId, CancellationToken cancellationToken);
+        Task<BanOperationResult> BanUserAsync(long userId, CancellationToken cancellationToken);
         
-        Task<BanOperationResult> UnbanUserAsync(int userId, CancellationToken cancellationToken);
+        Task<BanOperationResult> UnbanUserAsync(long userId, CancellationToken cancellationToken);
 
-        ValueTask<bool> CheckIfUserIsBannedAsync(int userId, CancellationToken cancellationToken);
+        ValueTask<bool> CheckIfUserIsBannedAsync(long userId, CancellationToken cancellationToken);
     }
 
     internal sealed class UsersBanService : IUsersBanService
@@ -35,13 +35,13 @@ namespace MotoHealth.Core.Bot
             _chatStatesRepository = chatStatesRepository;
         }
 
-        public async Task<BanOperationResult> BanUserAsync(int userId, CancellationToken cancellationToken)
+        public async Task<BanOperationResult> BanUserAsync(long userId, CancellationToken cancellationToken)
             => await ChangeUserBannedStateAsync(userId, true, cancellationToken);
 
-        public async Task<BanOperationResult> UnbanUserAsync(int userId, CancellationToken cancellationToken) 
+        public async Task<BanOperationResult> UnbanUserAsync(long userId, CancellationToken cancellationToken) 
             => await ChangeUserBannedStateAsync(userId, false, cancellationToken);
 
-        public async ValueTask<bool> CheckIfUserIsBannedAsync(int userId, CancellationToken cancellationToken)
+        public async ValueTask<bool> CheckIfUserIsBannedAsync(long userId, CancellationToken cancellationToken)
         {
             var state = await _chatStatesRepository.GetForChatAsync(userId, cancellationToken)
                         ?? throw new InvalidOperationException($"Chat for user '{userId}' was not found");
@@ -49,7 +49,7 @@ namespace MotoHealth.Core.Bot
             return state.UserBanned;
         }
 
-        private async Task<BanOperationResult> ChangeUserBannedStateAsync(int userId, bool desiredBanState, CancellationToken cancellationToken)
+        private async Task<BanOperationResult> ChangeUserBannedStateAsync(long userId, bool desiredBanState, CancellationToken cancellationToken)
         {
             var state = await _chatStatesRepository.GetForChatAsync(userId, cancellationToken);
             if (state == null)
@@ -69,7 +69,7 @@ namespace MotoHealth.Core.Bot
             state.UserBanned = desiredBanState;
             await _chatStatesRepository.UpdateAsync(state, cancellationToken);
 
-            _logger.LogDebug($"User {userId} current ban state: {state.UserBanned}");
+            _logger.LogDebug($"User {userId} new ban state: {state.UserBanned}");
 
             return BanOperationResult.Success;
         }

@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MotoHealth.Core.Bot.Abstractions;
+using MotoHealth.Core.Bot.Updates.Abstractions;
 using MotoHealth.Telegram;
 using MotoHealth.Telegram.Messages;
 
@@ -28,7 +29,7 @@ namespace MotoHealth.Core.Bot.Commands.AppCommands
             _telemetryService = telemetryService;
         }
 
-        protected override async Task ExecuteAsync(IChatUpdateContext context, CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(IChatUpdateContext context, ICommandMessageBotUpdate command, CancellationToken cancellationToken)
         {
             await context.SendMessageAsync(MotoHealthInfo, cancellationToken);
 

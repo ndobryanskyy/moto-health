@@ -14,7 +14,7 @@ namespace MotoHealth.Functions.AccidentAlerting.Workflow
 
             public DateTime ReportedAtUtc { get; set; }
 
-            public int ReporterTelegramUserId { get; set; }
+            public long ReporterTelegramUserId { get; set; }
 
             public string ReporterPhoneNumber { get; set; } = default!;
 

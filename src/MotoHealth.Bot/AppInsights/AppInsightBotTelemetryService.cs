@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Http;
@@ -70,21 +71,21 @@ namespace MotoHealth.Bot.AppInsights
             _telemetryClient.TrackEvent("Unsubscribed from Accident Alerting");
         }
 
-        public void OnUserBanned(int userId)
+        public void OnUserBanned(long userId)
         {
             var properties = new TelemetryProperties
             {
-                { "Target User Id", userId.ToString() }
+                { "Target User Id", userId.ToString(CultureInfo.InvariantCulture) }
             };
 
             _telemetryClient.TrackEvent("User Banned", properties.AsDictionary());
         }
 
-        public void OnUserUnbanned(int userId)
+        public void OnUserUnbanned(long userId)
         {
             var properties = new TelemetryProperties
             {
-                { "Target User Id", userId.ToString() }
+                { "Target User Id", userId.ToString(CultureInfo.InvariantCulture) }
             };
 
             _telemetryClient.TrackEvent("User unbanned", properties.AsDictionary());

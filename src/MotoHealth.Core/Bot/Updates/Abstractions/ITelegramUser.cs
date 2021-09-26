@@ -2,7 +2,7 @@
 {
     public interface ITelegramUser
     {
-        int Id { get; }
+        long Id { get; }
 
         string? Username { get; }
 

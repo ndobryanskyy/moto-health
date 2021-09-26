@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Reflection;
 using Telegram.Bot.Types;
 
@@ -11,20 +12,12 @@ namespace MotoHealth.Core.Bot.Commands
 
     internal sealed class PublicCommandsProvider : IPublicCommandsProvider
     {
-        private BotCommand[]? _commands;
+        private readonly Lazy<BotCommand[]> _commands = new Lazy<BotCommand[]>(GetCommandsFromCoreAssembly);
 
-        public BotCommand[] Commands
-        {
-            get
-            {
-                _commands ??= GetCommandsFromCoreAssembly();
-                
-                return _commands;
-            }
-        }
+        public BotCommand[] Commands => _commands.Value;
 
-        private BotCommand[] GetCommandsFromCoreAssembly() =>
-            GetType().Assembly
+        private static BotCommand[] GetCommandsFromCoreAssembly() =>
+            typeof(PublicCommandsProvider).Assembly
                 .DefinedTypes
                 .Select(x => x.GetCustomAttribute<PublicBotCommandAttribute>())
                 .Where(x => x != null)

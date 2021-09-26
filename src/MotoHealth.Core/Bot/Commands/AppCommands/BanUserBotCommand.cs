@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Core.Bot.Abstractions;
@@ -9,11 +10,11 @@ namespace MotoHealth.Core.Bot.Commands.AppCommands
 {
     internal sealed class BanUserBotCommand : BanBotCommandBase
     {
-        private static IMessage UserIsAlreadyBanned(int userId) => MessageFactory.CreateTextMessage()
-            .WithHtml($"⚠️ Пользователь {TelegramHtml.UserLink(userId, userId.ToString())} уже забанен");
+        private static IMessage UserIsAlreadyBanned(long userId) => MessageFactory.CreateTextMessage()
+            .WithHtml($"⚠️ Пользователь {TelegramHtml.UserLink(userId, userId.ToString(CultureInfo.InvariantCulture))} уже забанен");
 
-        private static IMessage UserWasBanned(int userId) => MessageFactory.CreateTextMessage()
-            .WithHtml($"⛔ Пользователь {TelegramHtml.UserLink(userId, userId.ToString())} забанен");
+        private static IMessage UserWasBanned(long userId) => MessageFactory.CreateTextMessage()
+            .WithHtml($"⛔ Пользователь {TelegramHtml.UserLink(userId, userId.ToString(CultureInfo.InvariantCulture))} забанен");
 
         public BanUserBotCommand(
             IAuthorizationSecretsService secretsService,
@@ -24,7 +25,7 @@ namespace MotoHealth.Core.Bot.Commands.AppCommands
         {
         }
 
-        protected override async Task ExecuteAsync(IChatUpdateContext context, int userId, CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(IChatUpdateContext context, long userId, CancellationToken cancellationToken)
         {
             var result = await BanService.BanUserAsync(userId, cancellationToken);
 

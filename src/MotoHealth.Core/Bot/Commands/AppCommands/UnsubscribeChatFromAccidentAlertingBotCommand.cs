@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using MotoHealth.Core.Bot.Abstractions;
+using MotoHealth.Core.Bot.Updates.Abstractions;
 using MotoHealth.Telegram.Messages;
 
 namespace MotoHealth.Core.Bot.Commands.AppCommands
@@ -18,7 +19,7 @@ namespace MotoHealth.Core.Bot.Commands.AppCommands
         {
         }
 
-        protected override async Task ExecuteAsync(IChatUpdateContext context, CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(IChatUpdateContext context, ICommandMessageBotUpdate command, CancellationToken cancellationToken)
         {
             await SubscriptionsService.UnsubscribeChatFromTopicAsync(context.ChatId, AccidentAlertingTopicName, cancellationToken);
 

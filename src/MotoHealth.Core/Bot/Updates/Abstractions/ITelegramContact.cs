@@ -2,7 +2,7 @@
 {
     public interface ITelegramContact
     {
-        int UserId { get; }
+        long UserId { get; }
 
         string PhoneNumber { get; }
 

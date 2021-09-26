@@ -28,10 +28,7 @@ namespace MotoHealth.Telegram
 
         public async Task<User> GetMeAsync(CancellationToken cancellationToken)
         {
-            using var httpRequest = ConvertToHttpRequest(new GetMeRequest());
-            using var response = await _client.SendAsync(httpRequest, HttpCompletionOption.ResponseContentRead, cancellationToken);
-
-            await EnsureRequestSucceededAsync(response);
+            using var response = await SendAsync(new GetMeRequest(), HttpCompletionOption.ResponseContentRead, cancellationToken);
 
             var telegramResponse = await DeserializeTelegramResponseAsync<User>(response);
             return telegramResponse.Result;
@@ -39,47 +36,41 @@ namespace MotoHealth.Telegram
 
         public async Task SendTextMessageAsync(SendMessageRequest request, CancellationToken cancellationToken)
         {
-            using var httpRequest = ConvertToHttpRequest(request); 
-            using var response = await _client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-            
-            await EnsureRequestSucceededAsync(response);
+            using var response = await SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         }
 
         public async Task SendVenueMessageAsync(SendVenueRequest request, CancellationToken cancellationToken)
         {
-            using var httpRequest = ConvertToHttpRequest(request);
-            using var response = await _client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-
-            await EnsureRequestSucceededAsync(response);
+            using var response = await SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         }
 
         public async Task SetBotCommandsAsync(SetMyCommandsRequest request, CancellationToken cancellationToken)
         {
-            using var httpRequest = ConvertToHttpRequest(request);
-            using var response = await _client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-
-            await EnsureRequestSucceededAsync(response);
+            using var response = await SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         }
 
         public async Task SetWebhookAsync(SetWebhookRequest request, CancellationToken cancellationToken)
         {
-            using var httpRequest = ConvertToHttpRequest(request);
-            using var response = await _client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-
-            await EnsureRequestSucceededAsync(response);
+            using var response = await SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         }
 
-        private static HttpRequestMessage ConvertToHttpRequest<TResponse>(IRequest<TResponse> telegramRequest)
+        private async Task<HttpResponseMessage> SendAsync<TResponse>(
+            IRequest<TResponse> telegramRequest, 
+            HttpCompletionOption completion, 
+            CancellationToken cancellationToken)
         {
-            var httpRequest = new HttpRequestMessage(telegramRequest.Method, telegramRequest.MethodName)
+            using var httpRequest = new HttpRequestMessage(telegramRequest.Method, telegramRequest.MethodName)
             {
                 Content = telegramRequest.ToHttpContent()
             };
 
-            return httpRequest;
+            var response = await _client.SendAsync(httpRequest, completion, cancellationToken);
+            await EnsureSuccessResponseAsync(response);
+
+            return response;
         }
 
-        private async ValueTask EnsureRequestSucceededAsync(HttpResponseMessage response)
+        private async ValueTask EnsureSuccessResponseAsync(HttpResponseMessage response)
         {
             if (response.IsSuccessStatusCode) return;
 

@@ -23,6 +23,7 @@ namespace MotoHealth.Bot.Middleware
             var handlerLogger = _loggerFactory.CreateLogger($"{typeof(TChatUpdateHandler).Name}:{updateContext.ChatId}:{updateContext.Update.UpdateId}");
 
             await _handler.HandleUpdateAsync(updateContext, handlerLogger, context.RequestAborted);
+
             await next(context);
         }
     }

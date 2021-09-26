@@ -4,7 +4,7 @@ namespace MotoHealth.Core.Bot.Updates
 {
     internal sealed class TelegramUser : ITelegramUser
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         public string? Username { get; set; }
 

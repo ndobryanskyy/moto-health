@@ -16,9 +16,9 @@ namespace MotoHealth.Core.Bot.ChatUpdateHandlers
             _commands = commands;
         }
 
-        protected override bool SkipGroupUpdates { get; } = false;
+        protected override bool SkipGroupUpdates => false;
 
-        protected override bool SkipHandledUpdates { get; } = true;
+        protected override bool SkipHandledUpdates => true;
 
         protected override async ValueTask OnUpdateAsync(IChatUpdateContext context, ILogger logger, CancellationToken cancellationToken)
         {

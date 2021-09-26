@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MotoHealth.Core.Bot.Abstractions;
@@ -9,11 +10,11 @@ namespace MotoHealth.Core.Bot.Commands.AppCommands
 {
     internal sealed class UnbanUserBotCommand : BanBotCommandBase
     {
-        private static IMessage UserIsNotBanned(int userId) => MessageFactory.CreateTextMessage()
-            .WithHtml($"⚠️ Пользователь {TelegramHtml.UserLink(userId, userId.ToString())} уже разбанен");
+        private static IMessage UserIsNotBanned(long userId) => MessageFactory.CreateTextMessage()
+            .WithHtml($"⚠️ Пользователь {TelegramHtml.UserLink(userId, userId.ToString(CultureInfo.InvariantCulture))} уже разбанен");
 
-        private static IMessage UserWasUnbanned(int userId) => MessageFactory.CreateTextMessage()
-            .WithHtml($"✅ Пользователь {TelegramHtml.UserLink(userId, userId.ToString())} разбанен");
+        private static IMessage UserWasUnbanned(long userId) => MessageFactory.CreateTextMessage()
+            .WithHtml($"✅ Пользователь {TelegramHtml.UserLink(userId, userId.ToString(CultureInfo.InvariantCulture))} разбанен");
 
         public UnbanUserBotCommand(
             IAuthorizationSecretsService secretsService, 
@@ -24,7 +25,7 @@ namespace MotoHealth.Core.Bot.Commands.AppCommands
         {
         }
 
-        protected override async Task ExecuteAsync(IChatUpdateContext context, int userId, CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(IChatUpdateContext context, long userId, CancellationToken cancellationToken)
         {
             var result = await BanService.UnbanUserAsync(userId, cancellationToken);
 

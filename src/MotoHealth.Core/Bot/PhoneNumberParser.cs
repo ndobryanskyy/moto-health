@@ -12,7 +12,7 @@ namespace MotoHealth.Core.Bot
     internal sealed class PhoneNumberParser : IPhoneNumberParser
     {
         private static readonly Regex IgnoredCharactersRegex = new Regex(@"[\s-)(]", RegexOptions.Compiled);
-        private static readonly Regex PhoneNumberRegex = new Regex(@"(^\d{9}$)|(^\d{10}$)|(?:^\+?(\d{12}$))", RegexOptions.Compiled);
+        private static readonly Regex PhoneNumberRegex = new Regex(@"^(\d{9})$|^(\d{10})$|^\+?(\d{12})$", RegexOptions.Compiled);
 
         public bool TryParse(string input, [NotNullWhen(true)] out string? phoneNumber)
         {

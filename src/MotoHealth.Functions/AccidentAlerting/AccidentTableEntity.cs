@@ -9,7 +9,7 @@ namespace MotoHealth.Functions.AccidentAlerting
 
         public string Id { get; set; } = default!;
 
-        public int ReporterTelegramUserId { get; set; }
+        public long ReporterTelegramUserId { get; set; }
 
         public string ReporterPhoneNumber { get; set; } = default!;
 

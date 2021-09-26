@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AutoMapper;
+using Google.Protobuf;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
@@ -30,22 +31,29 @@ namespace MotoHealth.Functions.AccidentAlerting
                 Connection = Constants.AzureStorage.StorageAccountConnectionStringName)] byte[] data,
             [DurableClient] IDurableOrchestrationClient workflowStarter)
         {
-            var alertDto = AccidentAlertDto.Parser.ParseFrom(data);
-            var alertingWorkflowInput = _mapper.Map<AccidentAlertingWorkflowInput>(alertDto);
-
-            var reportId = alertDto.Report.Id;
-
-            _logger.LogInformation($"Start handling {reportId}");
-
             try
             {
-                await workflowStarter.StartNewAsync(Constants.FunctionNames.AccidentAlerting.Workflow, reportId, alertingWorkflowInput);
+                var alertDto = AccidentAlertDto.Parser.ParseFrom(data);
+                var alertingWorkflowInput = _mapper.Map<AccidentAlertingWorkflowInput>(alertDto);
+
+                var reportId = alertDto.Report.Id;
+
+                _logger.LogInformation($"Start handling {reportId}");
+
+                await workflowStarter.StartNewAsync(
+                    Constants.FunctionNames.AccidentAlerting.Workflow,
+                    reportId,
+                    alertingWorkflowInput);
 
                 _logger.LogInformation($"Successfully triggered alerting workflow for {reportId}");
             }
-            catch (InvalidOperationException exception)
+            catch (InvalidOperationException invalidOperation)
             {
-                _logger.LogWarning(exception, "Ignored exception, while starting alerting workflow. Must have been duplicate");
+                _logger.LogWarning(invalidOperation, "Ignored exception, while starting alerting workflow. Must have been duplicate");
+            }
+            catch (InvalidProtocolBufferException invalidProto)
+            {
+                _logger.LogError(invalidProto, "Failed to parse queue message");
             }
         }
     }

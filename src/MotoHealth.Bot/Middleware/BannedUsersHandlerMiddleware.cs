@@ -32,10 +32,10 @@ namespace MotoHealth.Bot.Middleware
         {
             var updateContext = context.GetChatUpdateContext();
 
-            if (updateContext is { IsUpdateHandled: false, Update: { Chat: { Type: ChatType.Private } } })
+            if (updateContext is { IsUpdateHandled: false, Update: { Chat: { Type: ChatType.Private }, Sender: var sender } })
             {
                 var isUserBanned = await _banService.CheckIfUserIsBannedAsync(
-                    updateContext.Update.Sender.Id,
+                    sender.Id,
                     context.RequestAborted);
 
                 if (isUserBanned)

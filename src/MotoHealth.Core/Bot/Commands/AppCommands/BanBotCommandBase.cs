@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -17,8 +18,6 @@ namespace MotoHealth.Core.Bot.Commands.AppCommands
             .WithPlainText("⚠️ Нельзя забанить или разбанить себя");
 
         private readonly IAuthorizationSecretsService _secretsService;
-
-        private (string BanSecret, int UserId)? _extractedArguments;
 
         protected BanBotCommandBase(
             CommandName name, 
@@ -41,29 +40,19 @@ namespace MotoHealth.Core.Bot.Commands.AppCommands
         
         protected ILogger Logger { get; }
 
-        protected async Task OnUserIsUnknownAsync(IChatUpdateContext context, int userId, CancellationToken cancellationToken)
+        protected abstract Task ExecuteAsync(IChatUpdateContext context, long userId, CancellationToken cancellationToken);
+
+        protected sealed override async Task ExecuteAsync(IChatUpdateContext context, ICommandMessageBotUpdate command, CancellationToken cancellationToken)
         {
-            await context.SendMessageAsync(CannotBanOrUnbanUnknownUser, cancellationToken);
-            
-            Logger.LogWarning($"Tried to ban unknown user: {userId}");
-        }
+            if (!TryExtractArguments(command, out var arguments) || !_secretsService.VerifyBanSecret(arguments.Value.Secret))
+            {
+                await context.SendMessageAsync(CommonMessages.NotQuiteGetIt, cancellationToken);
 
-        protected abstract Task ExecuteAsync(IChatUpdateContext context, int userId, CancellationToken cancellationToken);
+                Logger.LogWarning("Failed to ban/unban. Invalid arguments");
+                return;
+            }
 
-        protected override bool Matches(ICommandMessageBotUpdate commandMessage)
-        {
-            var arguments = ExtractArguments(commandMessage);
-
-            return base.Matches(commandMessage) &&
-                   arguments.HasValue
-                   && _secretsService.VerifyBanSecret(arguments.Value.BanSecret);
-        }
-
-        protected sealed override async Task ExecuteAsync(IChatUpdateContext context, CancellationToken cancellationToken)
-        {
-            var arguments = ExtractArguments((ICommandMessageBotUpdate)context.Update);
-
-            if (context.Update.Sender.Id == arguments!.Value.UserId)
+            if (command.Sender.Id == arguments.Value.UserId)
             {
                 await context.SendMessageAsync(CannotBanOrUnbanSelf, cancellationToken);
                 
@@ -74,22 +63,49 @@ namespace MotoHealth.Core.Bot.Commands.AppCommands
             await ExecuteAsync(context, arguments.Value.UserId, cancellationToken);
         }
 
-        private (string BanSecret, int UserId)? ExtractArguments(ICommandMessageBotUpdate commandMessage)
+        protected async Task OnUserIsUnknownAsync(IChatUpdateContext context, long userId, CancellationToken cancellationToken)
         {
-            if (_extractedArguments == null)
-            {
-                var tokens = commandMessage
-                    .Arguments
-                    .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            await context.SendMessageAsync(CannotBanOrUnbanUnknownUser, cancellationToken);
 
-                if (tokens.Length == 2 &&
-                    int.TryParse(tokens[1].Trim(), out var userId))
-                {
-                    _extractedArguments = (tokens[0].Trim(), userId);
-                }
+            Logger.LogWarning($"Tried to ban/unban unknown user: {userId}");
+        }
+
+        private bool TryExtractArguments(ICommandMessageBotUpdate commandMessage, [NotNullWhen(true)] out BanCommandArguments? arguments)
+        {
+            arguments = null;
+
+            var tokens = commandMessage
+                .Arguments
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            if (tokens.Length != 2)
+            {
+                return false;
             }
 
-            return _extractedArguments;
+            var secretToken = tokens[0].Trim();
+            var userIdToken = tokens[1].Trim();
+
+            if (!long.TryParse(userIdToken, out var userId))
+            {
+                return false;
+            }
+
+            arguments = new BanCommandArguments(secretToken, userId);
+            return true;
+        }
+
+        private readonly struct BanCommandArguments
+        {
+            public BanCommandArguments(string secret, long userId)
+            {
+                Secret = secret;
+                UserId = userId;
+            }
+
+            public string Secret { get; }
+
+            public long UserId { get; }
         }
     }
 }

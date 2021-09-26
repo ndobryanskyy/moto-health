@@ -20,7 +20,7 @@ namespace MotoHealth.Core.Bot.Commands
             if (updateContext.Update is ICommandMessageBotUpdate commandMessage &&
                 Matches(commandMessage))
             {
-                await ExecuteAsync(updateContext, cancellationToken);
+                await ExecuteAsync(updateContext, commandMessage, cancellationToken);
                 return true;
             }
 
@@ -30,6 +30,6 @@ namespace MotoHealth.Core.Bot.Commands
         protected virtual bool Matches(ICommandMessageBotUpdate commandMessage)
             => commandMessage.Command.Equals(_name, StringComparison.InvariantCultureIgnoreCase);
 
-        protected abstract Task ExecuteAsync(IChatUpdateContext context, CancellationToken cancellationToken);
+        protected abstract Task ExecuteAsync(IChatUpdateContext context, ICommandMessageBotUpdate command, CancellationToken cancellationToken);
     }
 }

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using MotoHealth.Core.Bot.Abstractions;
 using MotoHealth.Core.Bot.AccidentReporting;
+using MotoHealth.Core.Bot.Updates.Abstractions;
 
 namespace MotoHealth.Core.Bot.Commands.AppCommands
 {
@@ -18,7 +19,7 @@ namespace MotoHealth.Core.Bot.Commands.AppCommands
             _dialogHandler = dialogHandler;
         }
 
-        protected override async Task ExecuteAsync(IChatUpdateContext context, CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(IChatUpdateContext context, ICommandMessageBotUpdate command, CancellationToken cancellationToken)
         {
             var state = await context.GetStagingStateAsync(cancellationToken);
 

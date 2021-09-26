@@ -20,9 +20,9 @@ namespace MotoHealth.Core.Bot.Abstractions
 
         void OnChatUnsubscribedFromAccidentAlerting();
 
-        void OnUserBanned(int userId);
+        void OnUserBanned(long userId);
 
-        void OnUserUnbanned(int userId);
+        void OnUserUnbanned(long userId);
 
         IAccidentReportingTelemetryService GetTelemetryServiceForAccidentReporting(IAccidentReportingDialogState dialogState);
     }
