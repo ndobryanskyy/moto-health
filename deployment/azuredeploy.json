@@ -15,6 +15,9 @@
         "Standard_ZRS"
       ]
     },
+    "logWorkspaceRetentionDays": {
+      "type": "int"
+    },
     "botLoggingRetentionDays": {
       "type": "int"
     },
@@ -33,6 +36,7 @@
   },
   "variables": {
     "storageName": "[concat('storage', uniqueString(resourceGroup().id))]",
+    "logWorkspaceName": "[concat('log-workspace-', uniqueString(resourceGroup().id))]",
 
     "botAppInsightsName": "[concat('moto-health-bot-insights-', uniqueString(resourceGroup().id))]",
     "botHostingPlanName": "[concat('moto-health-bot-hosting-', uniqueString(resourceGroup().id))]",
@@ -57,6 +61,22 @@
       }
     },
     {
+      "name": "[variables('logWorkspaceName')]",
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2020-08-01",
+      "location": "[parameters('appLocation')]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": "[parameters('logWorkspaceRetentionDays')]",
+        "features": {
+          "searchVersion": 1,
+          "legacy": 0
+        }
+      }
+    },
+    {
       "name": "[variables('botHostingPlanName')]",
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2018-02-01",
@@ -76,7 +96,7 @@
     {
       "name": "[variables('botAppInsightsName')]",
       "type": "Microsoft.Insights/components",
-      "apiVersion": "2015-05-01",
+      "apiVersion": "2020-02-02",
       "location": "[parameters('appLocation')]",
       "kind": "web",
       "tags": {
@@ -85,8 +105,12 @@
       },
       "properties": {
         "Application_Type": "web",
-        "ApplicationId": "[variables('botAppInsightsName')]"
-      }
+        "ApplicationId": "[variables('botAppInsightsName')]",
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logWorkspaceName'))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logWorkspaceName'))]"
+      ]
     },
     {
       "name": "[variables('botAppName')]",
@@ -111,7 +135,8 @@
           "dependsOn": [ "[resourceId('Microsoft.Web/sites', variables('botAppName'))]" ],
           "properties": {
             "alwaysOn": true,
-            "linuxFxVersion": "DOTNETCORE|3.1"
+            "linuxFxVersion": "DOTNETCORE|3.1",
+            "healthCheckPath": "/health"
           }
         },
         {
@@ -154,7 +179,7 @@
     {
       "name": "[variables('functionsAppInsightsName')]",
       "type": "Microsoft.Insights/components",
-      "apiVersion": "2015-05-01",
+      "apiVersion": "2020-02-02",
       "kind": "web",
       "location": "[parameters('functionsLocation')]",
       "tags": {
@@ -163,8 +188,12 @@
       },
       "properties": {
         "Application_Type": "web",
-        "ApplicationId": "[variables('functionsAppInsightsName')]"
-      }
+        "ApplicationId": "[variables('functionsAppInsightsName')]",
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logWorkspaceName'))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logWorkspaceName'))]"
+      ]
     },
     {
       "name": "[variables('functionsAppName')]",
