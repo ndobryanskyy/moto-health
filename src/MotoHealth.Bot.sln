@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29806.167
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Bot", "MotoHealth.Bot\MotoHealth.Bot.csproj", "{5B13F822-45A5-4564-A42A-A79D4EA607DE}"
 EndProject
@@ -29,7 +29,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Telegram.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Common", "MotoHealth.Common\MotoHealth.Common.csproj", "{638E97C2-4BB7-436F-8D6B-E8D1E654D38D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotoHealth.Functions.Tests", "Tests\MotoHealth.Functions.Tests\MotoHealth.Functions.Tests.csproj", "{9B89EE5D-890F-41D2-BA91-A9DBB0380910}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotoHealth.Functions.Tests", "Tests\MotoHealth.Functions.Tests\MotoHealth.Functions.Tests.csproj", "{9B89EE5D-890F-41D2-BA91-A9DBB0380910}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotoHealth.Migrator", "MotoHealth.Migrator\MotoHealth.Migrator.csproj", "{7852EE40-8891-4E53-8BDB-241AF89097DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,6 +75,10 @@ Global
 		{9B89EE5D-890F-41D2-BA91-A9DBB0380910}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B89EE5D-890F-41D2-BA91-A9DBB0380910}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B89EE5D-890F-41D2-BA91-A9DBB0380910}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7852EE40-8891-4E53-8BDB-241AF89097DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7852EE40-8891-4E53-8BDB-241AF89097DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7852EE40-8891-4E53-8BDB-241AF89097DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7852EE40-8891-4E53-8BDB-241AF89097DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
