@@ -134,7 +134,7 @@
           "location": "[parameters('appLocation')]",
           "dependsOn": [ "[resourceId('Microsoft.Web/sites', variables('botAppName'))]" ],
           "properties": {
-            "alwaysOn": true,
+            "alwaysOn": false,
             "linuxFxVersion": "DOTNETCORE|3.1",
             "healthCheckPath": "/health"
           }

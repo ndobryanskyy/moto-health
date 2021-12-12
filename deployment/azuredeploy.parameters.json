@@ -16,18 +16,6 @@
         },
         "botLoggingRetentionDays": {
             "value": 5
-        },
-        "telegramBotId": {
-            "value": ""
-        },
-        "telegramBotSecret": {
-            "value": ""
-        },
-        "adminSubscriptionsSecret": {
-            "value": ""
-        },
-        "adminBanSecret": {
-            "value": ""
         }
     }
 }
